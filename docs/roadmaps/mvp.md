@@ -4,13 +4,13 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 # C58: MVP Roadmap
 
-|          | Status                              | Next Up                        | Blocked                          |
-| -------- | ----------------------------------- | ------------------------------ | -------------------------------- |
-| **FN**   | ✅ Scaffold, Tailwind, Axios done   | Env vars + local dev           | —                                |
-| **CMS**  | ✅ Schema complete                  | Sanity client config in /web   | Client config needs env vars     |
-| **UI**   | Not started                         | Page builder renderer          | Needs CMS queries + types        |
-| **QA**   | Not started                         | Jest tests for data fetching   | Needs fetch utilities            |
-| **DX**   | Not started                         | Env vars                       | —                                |
+|          | Status                                          | Next Up                        | Blocked                          |
+| -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
+| **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
+| **CMS**  | ✅ Schema, client config, TS types done         | GROQ queries                   | —                                |
+| **UI**   | Not started                                     | Page builder renderer          | Needs GROQ queries               |
+| **QA**   | Not started                                     | Jest tests for data fetching   | Needs fetch utilities            |
+| **DX**   | ✅ Env vars done                               | —                              | —                                |
 
 ---
 
@@ -41,8 +41,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
-- [ ] 1DX.1. Set up environment variables and confirm local dev working (web + studio)
-
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
@@ -54,6 +52,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 1CMS.1. Sanity schema: document types (page, event, post, teamMember, siteSettings)
 - [x] 1CMS.2. Sanity schema: page builder block types (hero, nextEvent, featuredPost, eventList, richText, team, contact, image)
 - [x] 1CMS.3. Sanity schema: shared objects (bgMedia) + siteSettings singleton wiring
+- [x] 1DX.1. Set up environment variables and confirm local dev working (web + studio)
 
 ---
 
@@ -64,21 +63,23 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m2-doing"><h4>In Progress (Milestone 2)</h4></a>
 
+- [ ] 2CMS.2. GROQ queries for page builder content
+
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
-- [ ] 2CMS.7. TypeScript types/interfaces matching Sanity schema
+- [ ] 2CMS.3. GROQ queries for events collection
+- [ ] 2CMS.4. GROQ queries for posts collection
+- [ ] 2CMS.5. GROQ query for site settings singleton
+- [ ] 2CMS.6. next-sanity-based data-fetching utilities
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
-- [ ] 2CMS.1. Sanity client config in /web (project ID, dataset, API version) — **depends on 1DX.1**
-- [ ] 2CMS.2. GROQ queries for page builder content — **depends on 2CMS.1**
-- [ ] 2CMS.3. GROQ queries for events collection — **depends on 2CMS.1**
-- [ ] 2CMS.4. GROQ queries for posts collection — **depends on 2CMS.1**
-- [ ] 2CMS.5. GROQ query for site settings singleton — **depends on 2CMS.1**
-- [ ] 2CMS.6. Axios-based data-fetching utilities — **depends on 2CMS.1**
 - [ ] 2QA.1. Jest tests for data-fetching logic — **depends on 2CMS.6**
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
+
+- [x] 2CMS.1. Sanity client config in /web (project ID, dataset, API version)
+- [x] 2CMS.7. TypeScript types/interfaces matching Sanity schema
 
 ---
 
@@ -93,7 +94,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
-- [ ] 3UI.1. Page builder renderer (maps block _type to components) — **depends on 2CMS.2, 2CMS.7**
+- [ ] 3UI.1. Page builder renderer (maps block _type to components) — **depends on 2CMS.2**
 - [ ] 3UI.2. Hero block component (bgMedia, overlay text, down arrow) — **depends on 3UI.1**
 - [ ] 3UI.3. Next event block component (query-driven, nearest upcoming) — **depends on 3UI.1, 2CMS.3**
 - [ ] 3UI.4. Featured post block component — **depends on 3UI.1, 2CMS.4**
@@ -145,15 +146,11 @@ m4["`**Milestone 4**<br/>Launch Ready`"]:::mile
 
 m1 --> m2 --> m3 --> m4
 
-1DX.1["`*1DX.1*<br/>**DX**<br/>Env vars + local dev`"]:::open
-
-2CMS.1["`*2CMS.1*<br/>**CMS**<br/>Sanity client config`"]
-2CMS.2["`*2CMS.2*<br/>**CMS**<br/>Page builder queries`"]
-2CMS.3["`*2CMS.3*<br/>**CMS**<br/>Events queries`"]
-2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]
-2CMS.5["`*2CMS.5*<br/>**CMS**<br/>Site settings query`"]
-2CMS.6["`*2CMS.6*<br/>**CMS**<br/>Fetch utilities`"]
-2CMS.7["`*2CMS.7*<br/>**CMS**<br/>TS types for schema`"]:::open
+2CMS.2["`*2CMS.2*<br/>**CMS**<br/>Page builder queries`"]:::open
+2CMS.3["`*2CMS.3*<br/>**CMS**<br/>Events queries`"]:::open
+2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
+2CMS.5["`*2CMS.5*<br/>**CMS**<br/>Site settings query`"]:::open
+2CMS.6["`*2CMS.6*<br/>**CMS**<br/>Fetch utilities`"]:::open
 2QA.1["`*2QA.1*<br/>**QA**<br/>Jest fetch tests`"]
 
 3UI.1["`*3UI.1*<br/>**UI**<br/>Page builder renderer`"]
@@ -174,11 +171,9 @@ m1 --> m2 --> m3 --> m4
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]
 4DX.3["`*4DX.3*<br/>**DX**<br/>Client CMS docs`"]
 
-1DX.1 --> 2CMS.1
-2CMS.1 --> 2CMS.2 & 2CMS.3 & 2CMS.4 & 2CMS.5 & 2CMS.6
 2CMS.6 --> 2QA.1
 
-2CMS.2 & 2CMS.7 --> 3UI.1
+2CMS.2 --> 3UI.1
 3UI.1 --> 3UI.2 & 3UI.6 & 3UI.7 & 3UI.9
 3UI.1 & 2CMS.3 --> 3UI.3 & 3UI.5
 3UI.1 & 2CMS.4 --> 3UI.4
