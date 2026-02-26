@@ -1,0 +1,19 @@
+Document Types (top level, their own Studio entries)
+page — Home, About, Contact would all be instances of a single page document type with a slug and a pageBuilder array. No need for separate document types for each.
+event — its own document type, queried as a collection. Fields: title, date, time, location, cost, description (portable text), slug, image.
+post / blogPost — own document type. Fields: title, date, body (portable text), slug, image. Basically event minus cost/location/time.
+teamMember — own document type. Fields: name, role, bio, photo. Referenced from the About page builder.
+
+Page Builder Block Types (objects, used inside page documents)
+heroBlock — bg video or image src, overlay text, down arrow. For the home page hero.
+nextEventBlock — a reference to an event document. Renders the "next event" hero on scroll/arrow click.
+featuredPostBlock — reference to a blog post. Similar hero treatment.
+eventListBlock — no real fields needed, just signals "render upcoming events here". Your Next.js component does the querying. Maybe a toggle for upcoming vs past.
+richTextBlock — portable text body. For the mission statement, collaboration info etc.
+teamBlock — array of references to teamMember documents.
+contactBlock — phone, email, address as simple string fields. Plus maybe a boolean for showing the map embed.
+imageBlock — single image with optional caption. General purpose.
+
+Shared Object Types (reusable field groups, not standalone)
+bgMedia — type (video/image toggle), src. Used inside heroBlock rather than duplicating those fields.
+contactInfo — phone, email, address strings. Could be a singleton document actually (site settings) rather than a block, so editors only maintain one set of contact details that surfaces wherever needed.
