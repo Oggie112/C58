@@ -165,7 +165,7 @@ export interface SanityTeamMember {
 }
 
 export interface SanitySiteSettings {
-	_id: string
+	_id: "singleton-siteSettings"
 	_type: 'siteSettings'
 	phone?: string
 	email?: string

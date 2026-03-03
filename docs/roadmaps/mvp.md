@@ -7,8 +7,8 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
-| **CMS**  | ✅ Schema, client config, TS types done         | GROQ queries                   | —                                |
-| **UI**   | Not started                                     | Page builder renderer          | Needs GROQ queries               |
+| **CMS**  | ✅ Schema, client config, TS types, all queries done | Fetch utilities           | —                                |
+| **UI**   | Page builder renderer in progress               | Block components               | —                                |
 | **QA**   | Not started                                     | Jest tests for data fetching   | Needs fetch utilities            |
 | **DX**   | ✅ Env vars done                               | —                              | —                                |
 
@@ -63,13 +63,9 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m2-doing"><h4>In Progress (Milestone 2)</h4></a>
 
-- [ ] 2CMS.2. GROQ queries for page builder content
-
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
-- [ ] 2CMS.3. GROQ queries for events collection
-- [ ] 2CMS.4. GROQ queries for posts collection
-- [ ] 2CMS.5. GROQ query for site settings singleton
+- [ ] 2CMS.4. GROQ queries for posts collection — **push goal, deferred post-MVP**
 - [ ] 2CMS.6. next-sanity-based data-fetching utilities
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
@@ -79,7 +75,10 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
 - [x] 2CMS.1. Sanity client config in /web (project ID, dataset, API version)
+- [x] 2CMS.2. GROQ queries for page builder content
 - [x] 2CMS.7. TypeScript types/interfaces matching Sanity schema
+- [x] 2CMS.3. GROQ queries for events collection
+- [x] 2CMS.5. GROQ query for site settings singleton
 
 ---
 
@@ -90,21 +89,22 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m3-doing"><h4>In Progress (Milestone 3)</h4></a>
 
+- [ ] 3UI.1. Page builder renderer (maps block _type to components)
+
 <a name="m3-todo"><h4>To Do (Milestone 3)</h4></a>
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
-- [ ] 3UI.1. Page builder renderer (maps block _type to components) — **depends on 2CMS.2**
 - [ ] 3UI.2. Hero block component (bgMedia, overlay text, down arrow) — **depends on 3UI.1**
-- [ ] 3UI.3. Next event block component (query-driven, nearest upcoming) — **depends on 3UI.1, 2CMS.3**
+- [ ] 3UI.3. Next event block component (query-driven, nearest upcoming) — **depends on 3UI.1**
 - [ ] 3UI.4. Featured post block component — **depends on 3UI.1, 2CMS.4**
-- [ ] 3UI.5. Event list block component (upcoming/past toggle) — **depends on 3UI.1, 2CMS.3**
+- [ ] 3UI.5. Event list block component (upcoming/past toggle) — **depends on 3UI.1**
 - [ ] 3UI.6. Rich text block component (portable text renderer) — **depends on 3UI.1**
 - [ ] 3UI.7. Team block component — **depends on 3UI.1**
-- [ ] 3UI.8. Contact block component (pulls from site settings) — **depends on 3UI.1, 2CMS.5**
+- [ ] 3UI.8. Contact block component (pulls from site settings) — **depends on 3UI.1**
 - [ ] 3UI.9. Image block component — **depends on 3UI.1**
 - [ ] 3UI.10. Responsive layout and global styling — **depends on 3UI.2**
-- [ ] 3UI.11. Dynamic routing for pages (slug-based) — **depends on 3UI.1, 2CMS.2**
+- [ ] 3UI.11. Dynamic routing for pages (slug-based) — **depends on 3UI.1**
 
 <a name="m3-done"><h4>Completed (Milestone 3)</h4></a>
 
@@ -146,14 +146,11 @@ m4["`**Milestone 4**<br/>Launch Ready`"]:::mile
 
 m1 --> m2 --> m3 --> m4
 
-2CMS.2["`*2CMS.2*<br/>**CMS**<br/>Page builder queries`"]:::open
-2CMS.3["`*2CMS.3*<br/>**CMS**<br/>Events queries`"]:::open
 2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
-2CMS.5["`*2CMS.5*<br/>**CMS**<br/>Site settings query`"]:::open
 2CMS.6["`*2CMS.6*<br/>**CMS**<br/>Fetch utilities`"]:::open
 2QA.1["`*2QA.1*<br/>**QA**<br/>Jest fetch tests`"]
 
-3UI.1["`*3UI.1*<br/>**UI**<br/>Page builder renderer`"]
+3UI.1["`*3UI.1*<br/>**UI**<br/>Page builder renderer`"]:::open
 3UI.2["`*3UI.2*<br/>**UI**<br/>Hero block`"]
 3UI.3["`*3UI.3*<br/>**UI**<br/>Next event block`"]
 3UI.4["`*3UI.4*<br/>**UI**<br/>Featured post block`"]
@@ -173,12 +170,11 @@ m1 --> m2 --> m3 --> m4
 
 2CMS.6 --> 2QA.1
 
-2CMS.2 --> 3UI.1
 3UI.1 --> 3UI.2 & 3UI.6 & 3UI.7 & 3UI.9
-3UI.1 & 2CMS.3 --> 3UI.3 & 3UI.5
+3UI.1 --> 3UI.3 & 3UI.5
 3UI.1 & 2CMS.4 --> 3UI.4
-3UI.1 & 2CMS.5 --> 3UI.8
-3UI.1 & 2CMS.2 --> 3UI.11
+3UI.1 --> 3UI.8
+3UI.1 --> 3UI.11
 3UI.2 --> 3UI.10
 
 3UI.1 --> 4QA.1 & 4QA.2
