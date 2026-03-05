@@ -8,8 +8,8 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities done | —           | —                                |
-| **UI**   | Page builder renderer in progress               | Block components               | —                                |
-| **QA**   | Not started                                     | Jest tests for data fetching   | —                                |
+| **UI**   | ✅ Page builder, all MVP block components, slug routing done | Responsive layout | Featured post (deferred with posts) |
+| **QA**   | ✅ Error handling and edge cases done            | Jest tests for data fetching   | —                                |
 | **DX**   | ✅ Env vars done                               | —                              | —                                |
 
 ---
@@ -66,10 +66,9 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
 - [ ] 2CMS.4. GROQ queries for posts collection — **push goal, deferred post-MVP**
+- [ ] 2QA.1. Jest tests for data-fetching logic
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
-
-- [ ] 2QA.1. Jest tests for data-fetching logic
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
@@ -89,24 +88,24 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m3-doing"><h4>In Progress (Milestone 3)</h4></a>
 
-- [ ] 3UI.1. Page builder renderer (maps block _type to components)
-
 <a name="m3-todo"><h4>To Do (Milestone 3)</h4></a>
+
+- [ ] 3UI.10. Responsive layout and global styling
+- [ ] 3UI.4. Featured post block component — **depends on 2CMS.4 (deferred with posts)**
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
-- [ ] 3UI.2. Hero block component (bgMedia, overlay text, down arrow) — **depends on 3UI.1**
-- [ ] 3UI.3. Next event block component (query-driven, nearest upcoming) — **depends on 3UI.1**
-- [ ] 3UI.4. Featured post block component — **depends on 3UI.1, 2CMS.4**
-- [ ] 3UI.5. Event list block component (upcoming/past toggle) — **depends on 3UI.1**
-- [ ] 3UI.6. Rich text block component (portable text renderer) — **depends on 3UI.1**
-- [ ] 3UI.7. Team block component — **depends on 3UI.1**
-- [ ] 3UI.8. Contact block component (pulls from site settings) — **depends on 3UI.1**
-- [ ] 3UI.9. Image block component — **depends on 3UI.1**
-- [ ] 3UI.10. Responsive layout and global styling — **depends on 3UI.2**
-- [ ] 3UI.11. Dynamic routing for pages (slug-based) — **depends on 3UI.1**
-
 <a name="m3-done"><h4>Completed (Milestone 3)</h4></a>
+
+- [x] 3UI.1. Page builder renderer (maps block _type to components)
+- [x] 3UI.2. Hero block component (bgMedia, overlay text)
+- [x] 3UI.3. Next event block component (query-driven, nearest upcoming, error handling)
+- [x] 3UI.5. Event list block component (upcoming/past toggle)
+- [x] 3UI.6. Rich text block component (portable text renderer)
+- [x] 3UI.7. Team block component
+- [x] 3UI.8. Contact block component (pulls from site settings, map embed)
+- [x] 3UI.9. Image block component
+- [x] 3UI.11. Dynamic routing for pages (slug-based)
 
 ---
 
@@ -119,15 +118,16 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m4-todo"><h4>To Do (Milestone 4)</h4></a>
 
-<a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
-
-- [ ] 4QA.1. Error handling and loading states — **depends on 3UI.1**
-- [ ] 4QA.2. Edge cases (empty content, missing images, no events) — **depends on 3UI.1**
-- [ ] 4DX.1. SEO basics (meta tags, OG image) — **depends on 3UI.11**
-- [ ] 4DX.2. Deployment to Vercel — **depends on 4QA.1, 4DX.1**
+- [ ] 4DX.1. SEO basics (meta tags, OG image)
+- [ ] 4DX.2. Deployment to Vercel — **depends on 4DX.1**
 - [ ] 4DX.3. Client CMS usage documentation — **depends on 4DX.2**
 
+<a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
+
 <a name="m4-done"><h4>Completed (Milestone 4)</h4></a>
+
+- [x] 4QA.1. Error handling and loading states (try/catch in async blocks, null guards)
+- [x] 4QA.2. Edge cases (empty content, missing images, no events, undefined optional fields)
 
 ---
 
@@ -149,34 +149,16 @@ m1 --> m2 --> m3 --> m4
 2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
 2QA.1["`*2QA.1*<br/>**QA**<br/>Jest fetch tests`"]:::open
 
-3UI.1["`*3UI.1*<br/>**UI**<br/>Page builder renderer`"]:::open
-3UI.2["`*3UI.2*<br/>**UI**<br/>Hero block`"]
-3UI.3["`*3UI.3*<br/>**UI**<br/>Next event block`"]
 3UI.4["`*3UI.4*<br/>**UI**<br/>Featured post block`"]
-3UI.5["`*3UI.5*<br/>**UI**<br/>Event list block`"]
-3UI.6["`*3UI.6*<br/>**UI**<br/>Rich text block`"]
-3UI.7["`*3UI.7*<br/>**UI**<br/>Team block`"]
-3UI.8["`*3UI.8*<br/>**UI**<br/>Contact block`"]
-3UI.9["`*3UI.9*<br/>**UI**<br/>Image block`"]
-3UI.10["`*3UI.10*<br/>**UI**<br/>Responsive layout`"]
-3UI.11["`*3UI.11*<br/>**UI**<br/>Slug-based routing`"]
+3UI.10["`*3UI.10*<br/>**UI**<br/>Responsive layout`"]:::open
 
-4QA.1["`*4QA.1*<br/>**QA**<br/>Error handling`"]
-4QA.2["`*4QA.2*<br/>**QA**<br/>Edge cases`"]
-4DX.1["`*4DX.1*<br/>**DX**<br/>SEO basics`"]
+4DX.1["`*4DX.1*<br/>**DX**<br/>SEO basics`"]:::open
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]
 4DX.3["`*4DX.3*<br/>**DX**<br/>Client CMS docs`"]
 
-3UI.1 --> 3UI.2 & 3UI.6 & 3UI.7 & 3UI.9
-3UI.1 --> 3UI.3 & 3UI.5
-3UI.1 & 2CMS.4 --> 3UI.4
-3UI.1 --> 3UI.8
-3UI.1 --> 3UI.11
-3UI.2 --> 3UI.10
+2CMS.4 --> 3UI.4
 
-3UI.1 --> 4QA.1 & 4QA.2
-3UI.11 --> 4DX.1
-4QA.1 & 4DX.1 --> 4DX.2
+4DX.1 --> 4DX.2
 4DX.2 --> 4DX.3
 
 classDef default fill:#f9f

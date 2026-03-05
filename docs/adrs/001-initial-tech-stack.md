@@ -15,7 +15,7 @@ Tailwind CSS for styling — utility-first, fast to build with, and consistent w
 
 Sanity as the CMS and primary data layer. Sanity Studio gives the client a customisable editing interface. No separate database needed — Sanity handles persistence, querying (GROQ), and CDN delivery.
 
-Axios for data fetching from Sanity's API endpoints.
+next-sanity for all Sanity/GROQ data fetching — provides the client, `defineQuery`, and `PortableText` renderer. Axios is installed and reserved for non-Sanity HTTP calls (ticketing, payments) anticipated post-MVP.
 
 Jest for testing. Familiar, well-documented, integrates cleanly with Next.js.
 
