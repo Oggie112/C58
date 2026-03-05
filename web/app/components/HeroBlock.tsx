@@ -8,7 +8,7 @@ export default function HeroBlock( { block }: { block: HeroBlockType }) {
     return (
         <div style={{ position: "relative", width: "100%", height: "400px", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {mediaType === "image" && block.bgMedia?.image && (
-                <Image src={urlFor(block.bgMedia.image).url()} alt="Background" fill/>
+                <Image src={urlFor(block.bgMedia.image).url()} alt="Background" fill priority/>
             )}
             {mediaType === "video" && block.bgMedia?.videoUrl && (
                 <video autoPlay loop muted>
@@ -16,7 +16,7 @@ export default function HeroBlock( { block }: { block: HeroBlockType }) {
                     Your browser does not support the video tag.
                 </video>
             )}
-            <p>{block.overlayText}</p>
+            {block.overlayText && <p>{block.overlayText}</p>}
         </div>
 
     )

@@ -94,7 +94,7 @@ export interface RichTextBlock {
 export interface TeamBlock {
 	_type: 'teamBlock'
 	_key: string
-	members?: SanityReference[]
+	members?: SanityTeamMember[]
 }
 
 export interface ContactBlock {
