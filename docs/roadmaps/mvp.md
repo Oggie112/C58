@@ -7,9 +7,9 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
-| **CMS**  | ✅ Schema, client config, TS types, all queries done | Fetch utilities           | —                                |
+| **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities done | —           | —                                |
 | **UI**   | Page builder renderer in progress               | Block components               | —                                |
-| **QA**   | Not started                                     | Jest tests for data fetching   | Needs fetch utilities            |
+| **QA**   | Not started                                     | Jest tests for data fetching   | —                                |
 | **DX**   | ✅ Env vars done                               | —                              | —                                |
 
 ---
@@ -66,11 +66,10 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
 - [ ] 2CMS.4. GROQ queries for posts collection — **push goal, deferred post-MVP**
-- [ ] 2CMS.6. next-sanity-based data-fetching utilities
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
-- [ ] 2QA.1. Jest tests for data-fetching logic — **depends on 2CMS.6**
+- [ ] 2QA.1. Jest tests for data-fetching logic
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
@@ -79,6 +78,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 2CMS.7. TypeScript types/interfaces matching Sanity schema
 - [x] 2CMS.3. GROQ queries for events collection
 - [x] 2CMS.5. GROQ query for site settings singleton
+- [x] 2CMS.6. next-sanity-based data-fetching utilities
 
 ---
 
@@ -147,8 +147,7 @@ m4["`**Milestone 4**<br/>Launch Ready`"]:::mile
 m1 --> m2 --> m3 --> m4
 
 2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
-2CMS.6["`*2CMS.6*<br/>**CMS**<br/>Fetch utilities`"]:::open
-2QA.1["`*2QA.1*<br/>**QA**<br/>Jest fetch tests`"]
+2QA.1["`*2QA.1*<br/>**QA**<br/>Jest fetch tests`"]:::open
 
 3UI.1["`*3UI.1*<br/>**UI**<br/>Page builder renderer`"]:::open
 3UI.2["`*3UI.2*<br/>**UI**<br/>Hero block`"]
@@ -167,8 +166,6 @@ m1 --> m2 --> m3 --> m4
 4DX.1["`*4DX.1*<br/>**DX**<br/>SEO basics`"]
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]
 4DX.3["`*4DX.3*<br/>**DX**<br/>Client CMS docs`"]
-
-2CMS.6 --> 2QA.1
 
 3UI.1 --> 3UI.2 & 3UI.6 & 3UI.7 & 3UI.9
 3UI.1 --> 3UI.3 & 3UI.5
