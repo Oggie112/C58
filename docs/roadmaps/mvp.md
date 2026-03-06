@@ -7,9 +7,9 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
-| **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities done | —           | —                                |
-| **UI**   | ✅ Page builder, all MVP block components, slug routing done | Responsive layout | Featured post (deferred with posts) |
-| **QA**   | ✅ Error handling and edge cases done            | Jest tests for data fetching   | —                                |
+| **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks done | — | —                                |
+| **UI**   | ✅ Page builder, all MVP blocks, nav, slug routing done | Responsive layout | Featured post (deferred with posts) |
+| **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
 | **DX**   | ✅ Env vars done                               | —                              | —                                |
 
 ---
@@ -66,7 +66,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
 - [ ] 2CMS.4. GROQ queries for posts collection — **push goal, deferred post-MVP**
-- [ ] 2QA.1. Jest tests for data-fetching logic
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
@@ -78,6 +77,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 2CMS.3. GROQ queries for events collection
 - [x] 2CMS.5. GROQ query for site settings singleton
 - [x] 2CMS.6. next-sanity-based data-fetching utilities
+- [x] 2QA.1. Jest tests for data-fetching logic (dateFormat + all fetch utilities, 15/15 passing)
 
 ---
 
@@ -106,6 +106,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 3UI.8. Contact block component (pulls from site settings, map embed)
 - [x] 3UI.9. Image block component
 - [x] 3UI.11. Dynamic routing for pages (slug-based)
+- [x] 3UI.12. Global navigation component (Sanity-managed navLinks with page references)
 
 ---
 
@@ -147,7 +148,6 @@ m4["`**Milestone 4**<br/>Launch Ready`"]:::mile
 m1 --> m2 --> m3 --> m4
 
 2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
-2QA.1["`*2QA.1*<br/>**QA**<br/>Jest fetch tests`"]:::open
 
 3UI.4["`*3UI.4*<br/>**UI**<br/>Featured post block`"]
 3UI.10["`*3UI.10*<br/>**UI**<br/>Responsive layout`"]:::open
