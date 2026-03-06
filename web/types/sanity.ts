@@ -164,10 +164,16 @@ export interface SanityTeamMember {
 	photo?: SanityImage
 }
 
+export interface SanityNavLink {
+	label: string
+	href: string
+}
+
 export interface SanitySiteSettings {
 	_id: "singleton-siteSettings"
 	_type: 'siteSettings'
 	phone?: string
 	email?: string
 	address?: string
+	navLinks?: SanityNavLink[]
 }

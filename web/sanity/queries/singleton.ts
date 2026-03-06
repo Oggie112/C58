@@ -7,5 +7,9 @@ export const GET_SITE_SETTINGS = defineQuery(/* groq */ `
         _type,
         phone,
         email,
-        address
+        address,
+        "navLinks": navLinks[]{
+            label,
+            "href": "/" + page->slug.current
+        }
     }`)
