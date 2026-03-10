@@ -11,12 +11,14 @@ interface EventListClientProps {
 	defaultTab: 'upcoming' | 'past'
 }
 
+const EASING = [0.16, 1, 0.3, 1] as const
+
 const CARD_VARIANTS = {
 	hidden: { opacity: 0, y: 40 },
 	visible: (i: number) => ({
 		opacity: 1,
 		y: 0,
-		transition: { duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] },
+		transition: { duration: 0.6, delay: i * 0.1, ease: EASING },
 	}),
 }
 
@@ -28,7 +30,7 @@ export default function EventListClient({ upcoming, past, defaultTab }: EventLis
 	const [featured, ...rest] = events
 
 	return (
-		<section className="py-32 px-6">
+		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
 
 				{/* Section header */}
@@ -44,7 +46,7 @@ export default function EventListClient({ upcoming, past, defaultTab }: EventLis
 							<button
 								key={tab}
 								onClick={() => setActiveTab(tab)}
-								className={`font-body text-label uppercase tracking-[0.15em] pb-2 transition-colors duration-200 ${
+								className={`font-body text-label uppercase tracking-[0.15em] py-3 transition-colors duration-200 ${
 									activeTab === tab
 										? 'text-c58-white border-b border-c58-ice'
 										: 'text-c58-muted hover:text-c58-white'

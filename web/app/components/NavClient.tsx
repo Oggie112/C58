@@ -40,7 +40,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 						<Link
 							key={link.href}
 							href={link.href}
-							className="font-body text-label uppercase tracking-[0.15em] text-c58-white hover:text-c58-ice transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
+							className="font-body text-label uppercase tracking-[0.15em] text-c58-white hover:text-c58-ice transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4 py-3"
 						>
 							{link.label}
 						</Link>
@@ -49,7 +49,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 
 				{/* Hamburger */}
 				<button
-					className="md:hidden flex flex-col justify-center gap-[6px] w-8 h-8 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
+					className="md:hidden flex flex-col justify-center gap-[6px] w-11 h-11 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
 					onClick={() => setMenuOpen(!menuOpen)}
 					aria-label={menuOpen ? 'Close menu' : 'Open menu'}
 					aria-expanded={menuOpen}

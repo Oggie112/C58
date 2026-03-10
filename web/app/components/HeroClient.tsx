@@ -73,7 +73,7 @@ export default function HeroClient({ block, nextEvent }: HeroClientProps) {
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
 						transition={{ duration: 0.2 }}
-						className="fixed inset-0 z-50 bg-c58-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+						className="fixed inset-0 z-[60] bg-c58-black/80 backdrop-blur-sm flex items-center justify-center p-6"
 						onClick={() => setModalOpen(false)}
 					>
 						<motion.div

@@ -13,7 +13,7 @@ export default async function NextEventBlock() {
 	if (!event) return null
 
 	return (
-		<section className="py-32 px-6">
+		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
 				<div className="w-15 h-px bg-c58-ice mb-6" />
 				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">

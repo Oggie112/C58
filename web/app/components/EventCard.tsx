@@ -47,7 +47,7 @@ export default function EventCard({ event, featured = false, past = false }: Eve
 			</div>
 
 			{/* Card body */}
-			<div className="p-6">
+			<div className="p-4 md:p-6">
 
 				{/* Date + location */}
 				<div className="flex items-center justify-between mb-4">
