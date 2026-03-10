@@ -1,23 +1,14 @@
-import { HeroBlock as HeroBlockType } from "@/types/sanity"
-import { urlFor } from "@/sanity/image"
-import Image from "next/image"
+import { HeroBlock as HeroBlockType } from '@/types/sanity'
+import { getNearestEvent } from '@/sanity/fetch'
+import HeroClient from './HeroClient'
 
-export default function HeroBlock( { block }: { block: HeroBlockType }) {
-    const mediaType = block.bgMedia?.mediaType
+export default async function HeroBlock({ block }: { block: HeroBlockType }) {
+	let nextEvent = null
+	try {
+		nextEvent = await getNearestEvent()
+	} catch (error) {
+		console.error('Failed to fetch nearest event for hero:', error)
+	}
 
-    return (
-        <div style={{ position: "relative", width: "100%", height: "400px", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {mediaType === "image" && block.bgMedia?.image && (
-                <Image src={urlFor(block.bgMedia.image).url()} alt="Background" fill priority/>
-            )}
-            {mediaType === "video" && block.bgMedia?.videoUrl && (
-                <video autoPlay loop muted>
-                    <source src={block.bgMedia.videoUrl} type="video/mp4"/>
-                    Your browser does not support the video tag.
-                </video>
-            )}
-            {block.overlayText && <p>{block.overlayText}</p>}
-        </div>
-
-    )
+	return <HeroClient block={block} nextEvent={nextEvent} />
 }

@@ -176,3 +176,5 @@ classDef mile fill:#9ff
 - Payment processing
 - Email notifications
 - Analytics
+- Event detail page
+- Blog / Editorial
