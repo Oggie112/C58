@@ -8,7 +8,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks done | — | —                                |
-| **UI**   | ✅ Page builder, all MVP blocks, nav, slug routing done | Responsive layout | Featured post (deferred with posts) |
+| **UI**   | ✅ All blocks, nav, slug routing, responsive layout done | —                 | Featured post (deferred with posts) |
 | **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
 | **DX**   | ✅ Env vars done                               | —                              | —                                |
 
@@ -90,7 +90,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m3-todo"><h4>To Do (Milestone 3)</h4></a>
 
-- [ ] 3UI.10. Responsive layout and global styling
 - [ ] 3UI.4. Featured post block component — **depends on 2CMS.4 (deferred with posts)**
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
@@ -107,6 +106,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 3UI.9. Image block component
 - [x] 3UI.11. Dynamic routing for pages (slug-based)
 - [x] 3UI.12. Global navigation component (Sanity-managed navLinks with page references)
+- [x] 3UI.10. Responsive layout and global styling (design tokens, fonts, mobile breakpoints, touch targets, Framer Motion)
 
 ---
 
@@ -150,7 +150,6 @@ m1 --> m2 --> m3 --> m4
 2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
 
 3UI.4["`*3UI.4*<br/>**UI**<br/>Featured post block`"]
-3UI.10["`*3UI.10*<br/>**UI**<br/>Responsive layout`"]:::open
 
 4DX.1["`*4DX.1*<br/>**DX**<br/>SEO basics`"]:::open
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]
