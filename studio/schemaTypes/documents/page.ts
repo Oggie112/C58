@@ -19,6 +19,32 @@ export const page = defineType({
 			validation: (Rule) => Rule.required(),
 		}),
 		defineField({
+			name: 'seo',
+			title: 'SEO',
+			type: 'object',
+			fields: [
+				defineField({
+					name: 'title',
+					title: 'Meta Title',
+					type: 'string',
+					description: 'Overrides the page title in search results. 50–60 characters ideal.',
+				}),
+				defineField({
+					name: 'description',
+					title: 'Meta Description',
+					type: 'text',
+					rows: 3,
+					description: 'Shown under the link in Google. 150–160 characters ideal.',
+				}),
+				defineField({
+					name: 'image',
+					title: 'Social Share Image',
+					type: 'image',
+					description: 'Shown when the page is shared on social media. 1200×630px recommended.',
+				}),
+			],
+		}),
+		defineField({
 			name: 'pageBuilder',
 			title: 'Page Builder',
 			type: 'array',
