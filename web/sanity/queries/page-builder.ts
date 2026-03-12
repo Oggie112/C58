@@ -8,6 +8,11 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 		_type,
 		title,
 		slug,
+		seo {
+			title,
+			description,
+			image
+		},
 		pageBuilder[] {
 			...,
 			_type == "featuredPostBlock" => {

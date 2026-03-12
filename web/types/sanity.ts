@@ -57,6 +57,12 @@ export interface BgMedia {
 	videoUrl?: string
 }
 
+export interface SanityPageSeo {
+	title?: string
+	description?: string
+	image?: SanityImage
+}
+
 // ---------------------------------------------------------------------------
 // Page builder blocks
 // ---------------------------------------------------------------------------
@@ -129,6 +135,7 @@ export interface SanityPage {
 	_type: 'page'
 	title: string
 	slug: SanitySlug
+	seo?: SanityPageSeo
 	pageBuilder?: PageBuilderBlock[]
 }
 
