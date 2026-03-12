@@ -2,7 +2,7 @@ import { defineQuery } from 'next-sanity'
 
 // Fetch the singleton site settings document.
 export const GET_SITE_SETTINGS = defineQuery(/* groq */ `
-    *[_id == "singleton-siteSettings"][0] {
+    *[_id == "siteSettings"][0] {
         _id,
         _type,
         phone,
@@ -10,6 +10,6 @@ export const GET_SITE_SETTINGS = defineQuery(/* groq */ `
         address,
         "navLinks": navLinks[]{
             label,
-            "href": "/" + page->slug.current
+            "href": select(page->slug.current == "home" => "/", "/" + page->slug.current)
         }
     }`)

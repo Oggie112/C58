@@ -2,7 +2,7 @@ import { defineQuery } from 'next-sanity'
 
 // Fetch all upcoming events, ordered by date ascending.
 export const UPCOMING_EVENTS_QUERY = defineQuery(/* groq */ `
-    *[_type == "event" && dateTime(date) >= dateTime(now())] | order(date asc) {
+    *[_type == "event" && date >= $today] | order(date asc) {
         _id,
         _type,
         title,
@@ -19,7 +19,7 @@ export const UPCOMING_EVENTS_QUERY = defineQuery(/* groq */ `
 // Fetch all past events, ordered by date descending.
 
 export const PAST_EVENTS_QUERY = defineQuery(/* groq */ `
-    *[_type == "event" && dateTime(date) < dateTime(now())] | order(date desc) {
+    *[_type == "event" && date < $today] | order(date desc) {
         _id,
         _type,
         title,
@@ -35,7 +35,7 @@ export const PAST_EVENTS_QUERY = defineQuery(/* groq */ `
 
 // Fetch the single nearest upcoming event (for nextEventBlock).
 export const NEAREST_EVENT_QUERY = defineQuery(/* groq */ `
-    *[_type == "event" && dateTime(date) >= dateTime(now())] | order(date asc)[0] {
+    *[_type == "event" && date >= $today] | order(date asc)[0] {
         _id,
         _type,
         title,

@@ -177,7 +177,7 @@ export interface SanityNavLink {
 }
 
 export interface SanitySiteSettings {
-	_id: "singleton-siteSettings"
+	_id: "siteSettings"
 	_type: 'siteSettings'
 	phone?: string
 	email?: string
