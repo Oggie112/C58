@@ -6,18 +6,21 @@ import { ALL_PAGE_SLUGS_QUERY, PAGE_BY_SLUG_QUERY } from "./queries/page-builder
 import { GET_SITE_SETTINGS } from "./queries/singleton"
 
 export async function getUpcomingEvents(): Promise<SanityEvent[]> {
-    const events = await client.fetch<SanityEvent[]>(UPCOMING_EVENTS_QUERY)
+    const today = new Date().toISOString().slice(0, 10)
+    const events = await client.fetch<SanityEvent[]>(UPCOMING_EVENTS_QUERY, { today })
     return events
 }
 
 export async function getPastEvents(): Promise<SanityEvent[]> {
-    const events = await client.fetch<SanityEvent[]>(PAST_EVENTS_QUERY) 
+    const today = new Date().toISOString().slice(0, 10)
+    const events = await client.fetch<SanityEvent[]>(PAST_EVENTS_QUERY, { today })
     return events
 }
 
 export async function getNearestEvent(): Promise<SanityEvent | null> {
-    const event = await client.fetch<SanityEvent | null>(NEAREST_EVENT_QUERY)
-    return event 
+    const today = new Date().toISOString().slice(0, 10)
+    const event = await client.fetch<SanityEvent | null>(NEAREST_EVENT_QUERY, { today })
+    return event
 }
 
 export async function getAllPageSlugs(): Promise<Array<{ slug: string }>> {

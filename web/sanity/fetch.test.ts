@@ -98,7 +98,7 @@ describe('getPageBySlug', () => {
 describe('getSiteSettings', () => {
 	it('returns site settings when the document exists', async () => {
 		const mockSettings = {
-			_id: 'singleton-siteSettings',
+			_id: 'siteSettings',
 			_type: 'siteSettings',
 			phone: '01234 567890',
 			email: 'hello@c58.co.uk',
