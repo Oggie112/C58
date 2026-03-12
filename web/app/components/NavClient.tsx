@@ -17,7 +17,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 		window.addEventListener('scroll', handleScroll, { passive: true })
 		return () => window.removeEventListener('scroll', handleScroll)
 	}, []) 
-
+/* Active link highlighting */
 	return (
 		<header
 			className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -47,7 +47,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 					))}
 				</nav>
 
-				{/* Hamburger */}
+				{/* Hamburger - Needs to close on nav link click? */}
 				<button
 					className="md:hidden flex flex-col justify-center gap-[6px] w-11 h-11 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
 					onClick={() => setMenuOpen(!menuOpen)}
