@@ -10,6 +10,8 @@ export default async function ContactBlock({ block }: { block: ContactBlockType 
 		return null
 	}
 
+	console.log('[ContactBlock] settings:', JSON.stringify(settings, null, 2))
+
 	if (!settings) return null
 
 	return (
