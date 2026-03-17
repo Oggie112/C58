@@ -8,7 +8,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks done | — | —                                |
-| **UI**   | ✅ All blocks, nav, slug routing, responsive layout done | —                 | Featured post (deferred with posts) |
+| **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout done | —          | Featured post (deferred with posts) |
 | **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
 | **DX**   | ✅ Env vars, SEO, Draft Mode done              | CMS docs                       | Custom domain (pending client)   |
 
@@ -107,6 +107,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 3UI.11. Dynamic routing for pages (slug-based)
 - [x] 3UI.12. Global navigation component (Sanity-managed navLinks with page references)
 - [x] 3UI.10. Responsive layout and global styling (design tokens, fonts, mobile breakpoints, touch targets, Framer Motion)
+- [x] 3UI.13. Footer component (social links, privacy policy)
 
 ---
 
