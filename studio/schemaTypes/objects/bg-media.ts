@@ -26,9 +26,10 @@ export const bgMedia = defineType({
 			hidden: ({parent}) => parent?.mediaType !== 'image',
 		}),
 		defineField({
-			name: 'videoUrl',
-			title: 'Video URL',
-			type: 'url',
+			name: 'video',
+			title: 'Video',
+			type: 'file',
+			options: {accept: 'video/mp4,video/webm'},
 			hidden: ({parent}) => parent?.mediaType !== 'video',
 		}),
 	],

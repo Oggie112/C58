@@ -30,12 +30,12 @@ export default function HeroClient({ block, nextEvent }: HeroClientProps) {
 						className="object-cover opacity-35 grayscale-[20%]"
 					/>
 				)}
-				{mediaType === 'video' && block.bgMedia?.videoUrl && (
+				{mediaType === 'video' && block.bgMedia?.video?.asset?.url && (
 					<video
 						autoPlay loop muted playsInline
 						className="absolute inset-0 w-full h-full object-cover opacity-35 grayscale-[20%]"
 					>
-						<source src={block.bgMedia.videoUrl} type="video/mp4" />
+						<source src={block.bgMedia.video.asset.url} type="video/mp4" />
 					</video>
 				)}
 

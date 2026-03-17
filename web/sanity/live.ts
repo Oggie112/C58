@@ -4,6 +4,5 @@ import { client } from './client'
 export const { sanityFetch, SanityLive } = defineLive({
 	client,
 	serverToken: process.env.SANITY_API_READ_TOKEN,
-	// browserToken not needed — Presentation Tool handles its own auth
-	browserToken: false,
+	browserToken: process.env.NEXT_PUBLIC_SANITY_VIEWER_TOKEN,
 })
