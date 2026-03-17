@@ -10,7 +10,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks done | — | —                                |
 | **UI**   | ✅ All blocks, nav, slug routing, responsive layout done | —                 | Featured post (deferred with posts) |
 | **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
-| **DX**   | ✅ Env vars, SEO done                          | Testing, CMS docs              | Custom domain (pending client)   |
+| **DX**   | ✅ Env vars, SEO, Draft Mode done              | CMS docs                       | Custom domain (pending client)   |
 
 ---
 
@@ -118,8 +118,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m4-doing"><h4>In Progress (Milestone 4)</h4></a>
 
 - [ ] 4DX.2. Deployment to Vercel — deployed, testing + custom domain pending
-- [ ] 4DX.4. Next.js Draft Mode — secret token, route handler, authenticated Sanity client — **push goal**
-- [ ] 4CMS.2. Sanity Presentation Tool (`@sanity/presentation`) — live in-Studio preview panel — **push goal, depends on 4DX.4**
 
 <a name="m4-todo"><h4>To Do (Milestone 4)</h4></a>
 
@@ -133,6 +131,8 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 4QA.1. Error handling and loading states (try/catch in async blocks, null guards)
 - [x] 4QA.2. Edge cases (empty content, missing images, no events, undefined optional fields)
 - [x] 4DX.1. SEO basics — dynamic generateMetadata(), per-page OG tags, fallback chain, metadataBase
+- [x] 4DX.4. Next.js Draft Mode — secret token, route handler, authenticated Sanity client
+- [x] 4CMS.2. Sanity Presentation Tool (`@sanity/presentation`) — live in-Studio preview panel
 
 ---
 
@@ -158,12 +158,8 @@ m1 --> m2 --> m3 --> m4
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]:::open
 4DX.3["`*4DX.3*<br/>**DX**<br/>Client CMS docs`"]:::open
 4CMS.1["`*4CMS.1*<br/>**CMS**<br/>Team reordering plugin`"]:::open
-4DX.4["`*4DX.4*<br/>**DX**<br/>Next.js Draft Mode`"]:::open
-4CMS.2["`*4CMS.2*<br/>**CMS**<br/>Presentation Tool`"]
 
 2CMS.4 --> 3UI.4
-
-4DX.4 --> 4CMS.2
 
 classDef default fill:#f9f
 classDef open fill:#ff9

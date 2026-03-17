@@ -15,6 +15,15 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 		},
 		pageBuilder[] {
 			...,
+			_type == "heroBlock" => {
+				...,
+				bgMedia {
+					...,
+					video {
+						asset-> { url }
+					}
+				}
+			},
 			_type == "featuredPostBlock" => {
 				"post": post-> {
 					_id, _type, title, slug, date, image, body
