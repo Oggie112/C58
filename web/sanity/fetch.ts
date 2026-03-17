@@ -1,40 +1,38 @@
-import { client } from "./client"
-import { SanityEvent, SanityPage,  SanitySiteSettings} from "../types/sanity"
-import { QueryParams } from "next-sanity"
-import { UPCOMING_EVENTS_QUERY, PAST_EVENTS_QUERY, NEAREST_EVENT_QUERY} from "./queries/events"
+import { sanityFetch } from "./live"
+import { SanityEvent, SanityPage, SanitySiteSettings } from "../types/sanity"
+import { UPCOMING_EVENTS_QUERY, PAST_EVENTS_QUERY, NEAREST_EVENT_QUERY } from "./queries/events"
 import { ALL_PAGE_SLUGS_QUERY, PAGE_BY_SLUG_QUERY } from "./queries/page-builder"
 import { GET_SITE_SETTINGS } from "./queries/singleton"
 
 export async function getUpcomingEvents(): Promise<SanityEvent[]> {
-    const today = new Date().toISOString().slice(0, 10)
-    const events = await client.fetch<SanityEvent[]>(UPCOMING_EVENTS_QUERY, { today })
-    return events
+	const today = new Date().toISOString().slice(0, 10)
+	const { data } = await sanityFetch({ query: UPCOMING_EVENTS_QUERY, params: { today } })
+	return data as SanityEvent[]
 }
 
 export async function getPastEvents(): Promise<SanityEvent[]> {
-    const today = new Date().toISOString().slice(0, 10)
-    const events = await client.fetch<SanityEvent[]>(PAST_EVENTS_QUERY, { today })
-    return events
+	const today = new Date().toISOString().slice(0, 10)
+	const { data } = await sanityFetch({ query: PAST_EVENTS_QUERY, params: { today } })
+	return data as SanityEvent[]
 }
 
 export async function getNearestEvent(): Promise<SanityEvent | null> {
-    const today = new Date().toISOString().slice(0, 10)
-    const event = await client.fetch<SanityEvent | null>(NEAREST_EVENT_QUERY, { today })
-    return event
+	const today = new Date().toISOString().slice(0, 10)
+	const { data } = await sanityFetch({ query: NEAREST_EVENT_QUERY, params: { today } })
+	return data as SanityEvent | null
 }
 
-export async function getAllPageSlugs(): Promise<Array<{ slug: string }>> {
-    const slugs = await client.fetch<Array<{ slug: string}>>(ALL_PAGE_SLUGS_QUERY)
-    return slugs
+export async function getAllPageSlugs(options?: { perspective?: 'published' | 'drafts', stega?: boolean }): Promise<Array<{ slug: string }>> {
+	const { data } = await sanityFetch({ query: ALL_PAGE_SLUGS_QUERY, perspective: options?.perspective, stega: options?.stega })
+	return data as Array<{ slug: string }>
 }
 
-export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
-    const params: QueryParams = { slug}
-    const page = await client.fetch<SanityPage | null>(PAGE_BY_SLUG_QUERY, params)
-    return page
+export async function getPageBySlug(slug: string, options?: { stega?: boolean }): Promise<SanityPage | null> {
+	const { data } = await sanityFetch({ query: PAGE_BY_SLUG_QUERY, params: { slug }, stega: options?.stega })
+	return data as SanityPage | null
 }
 
 export async function getSiteSettings(): Promise<SanitySiteSettings | null> {
-    const settings = await client.fetch<SanitySiteSettings | null>(GET_SITE_SETTINGS)
-    return settings
+	const { data } = await sanityFetch({ query: GET_SITE_SETTINGS })
+	return data as SanitySiteSettings | null
 }
