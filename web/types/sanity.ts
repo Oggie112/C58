@@ -54,7 +54,7 @@ export interface PortableTextBlock {
 export interface BgMedia {
 	mediaType: 'image' | 'video'
 	image?: SanityImage
-	videoUrl?: string
+	video?: { asset?: { url: string } }
 }
 
 export interface SanityPageSeo {
@@ -176,6 +176,11 @@ export interface SanityNavLink {
 	href: string
 }
 
+export interface SanitySocialLink {
+	platform: string
+	url: string
+}
+
 export interface SanitySiteSettings {
 	_id: "siteSettings"
 	_type: 'siteSettings'
@@ -183,4 +188,6 @@ export interface SanitySiteSettings {
 	email?: string
 	address?: string
 	navLinks?: SanityNavLink[]
+	socialLinks?: SanitySocialLink[]
+	privacyPolicySlug?: string | null
 }

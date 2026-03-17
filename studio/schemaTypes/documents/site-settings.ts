@@ -22,6 +22,44 @@ export const siteSettings = defineType({
 			rows: 3,
 		}),
 		defineField({
+			name: 'socialLinks',
+			title: 'Social Links',
+			type: 'array',
+			of: [
+				defineArrayMember({
+					type: 'object',
+					name: 'socialLink',
+					fields: [
+						defineField({
+							name: 'platform',
+							title: 'Platform',
+							type: 'string',
+							validation: (rule) => rule.required(),
+						}),
+						defineField({
+							name: 'url',
+							title: 'URL',
+							type: 'url',
+							validation: (rule) => rule.required(),
+						}),
+					],
+					preview: {
+						select: {platform: 'platform', url: 'url'},
+						prepare: ({platform, url}: {platform: string; url?: string}) => ({
+							title: platform,
+							subtitle: url,
+						}),
+					},
+				}),
+			],
+		}),
+		defineField({
+			name: 'privacyPolicyPage',
+			title: 'Privacy Policy Page',
+			type: 'reference',
+			to: [{type: 'page'}],
+		}),
+		defineField({
 			name: 'navLinks',
 			title: 'Navigation Links',
 			type: 'array',

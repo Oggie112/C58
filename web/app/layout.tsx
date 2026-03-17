@@ -4,6 +4,7 @@ import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
 import "./globals.css";
 import Nav from "./components/Nav";
+import Footer from "./components/Footer";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "./components/DisableDraftMode";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({
 			<body className={`${barlowCondensed.variable} ${dmMono.variable}`}>
 				<Nav />
 				{children}
+				<Footer />
 				<SanityLive />
 				{isDraftMode && (
 					<>

@@ -11,5 +11,10 @@ export const GET_SITE_SETTINGS = defineQuery(/* groq */ `
         "navLinks": navLinks[]{
             label,
             "href": select(page->slug.current == "home" => "/", "/" + page->slug.current)
-        }
+        },
+        "socialLinks": socialLinks[]{
+            platform,
+            url
+        },
+        "privacyPolicySlug": privacyPolicyPage->slug.current
     }`)
