@@ -10,8 +10,6 @@ export default async function ContactBlock({ block }: { block: ContactBlockType 
 		return null
 	}
 
-	console.log('[ContactBlock] settings:', JSON.stringify(settings, null, 2))
-
 	if (!settings) return null
 
 	return (
@@ -67,7 +65,7 @@ export default async function ContactBlock({ block }: { block: ContactBlockType 
 							<span className="block font-body text-micro text-c58-muted uppercase tracking-[0.15em] mb-2">
 								LOCATION
 							</span>
-							<p className="font-body text-body text-c58-white">
+							<p className="font-body text-body text-c58-white whitespace-pre-line">
 								{settings.address}
 							</p>
 						</div>
