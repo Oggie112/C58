@@ -118,13 +118,13 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m4-doing"><h4>In Progress (Milestone 4)</h4></a>
 
 - [ ] 4DX.2. Deployment to Vercel — deployed, testing + custom domain pending
+- [ ] 4DX.4. Next.js Draft Mode — secret token, route handler, authenticated Sanity client — **push goal**
+- [ ] 4CMS.2. Sanity Presentation Tool (`@sanity/presentation`) — live in-Studio preview panel — **push goal, depends on 4DX.4**
 
 <a name="m4-todo"><h4>To Do (Milestone 4)</h4></a>
 
 - [ ] 4DX.3. Client CMS usage documentation
 - [ ] 4CMS.1. `@sanity/orderable-document-list` plugin for team member drag-and-drop reordering — **push goal**
-- [ ] 4DX.4. Next.js Draft Mode — secret token, route handler, authenticated Sanity client — **push goal**
-- [ ] 4CMS.2. Sanity Presentation Tool (`@sanity/presentation`) — live in-Studio preview panel — **push goal, depends on 4DX.4**
 
 <a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
 

@@ -3,16 +3,11 @@ import { getAllPageSlugs, getPageBySlug } from "@/sanity/fetch";
 import PageBuilder from "@/app/components/PageBuilder";
 import { urlFor } from "@/sanity/image";
 
-// generateMetadata and the Page component both call getPageBySlug with the
-// same slug. Next.js deduplicates identical fetch() calls within a single
-// request, so no double network call occurs. If the site scales and response
-// times become a concern, consider adding { next: { revalidate: 3600 } } to
-// the Sanity client fetch calls to enable ISR-style caching.
 export async function generateMetadata(
     { params }: { params: { slug: string } }
 ): Promise<Metadata> {
     const { slug } = await params
-    const page = await getPageBySlug(slug)
+    const page = await getPageBySlug(slug, { stega: false })
     if (!page) return {}
 
     const seoImage = page.seo?.image
@@ -31,8 +26,7 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-    const slugs = await getAllPageSlugs();
-    return slugs
+    return await getAllPageSlugs({ perspective: 'published', stega: false })
 }
 
 export default async function Page({ params }: { params: { slug: string }}) {

@@ -1,29 +1,29 @@
 import { getUpcomingEvents, getPastEvents, getNearestEvent, getAllPageSlugs, getPageBySlug, getSiteSettings } from './fetch'
-import { client } from './client'
+import { sanityFetch } from './live'
 
-jest.mock('./client', () => ({
-	client: { fetch: jest.fn() },
+jest.mock('./live', () => ({
+	sanityFetch: jest.fn(),
 }))
 
-const mockFetch = client.fetch as jest.Mock
+const mockSanityFetch = sanityFetch as jest.Mock
 
 beforeEach(() => {
-	mockFetch.mockReset()
+	mockSanityFetch.mockReset()
 })
 
 describe('getUpcomingEvents', () => {
 	it('returns an array of events', async () => {
 		const mockEvents = [{ _id: '1', title: 'Test Event', date: '2025-06-01' }]
-		mockFetch.mockResolvedValue(mockEvents)
+		mockSanityFetch.mockResolvedValue({ data: mockEvents, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getUpcomingEvents()
 
 		expect(result).toEqual(mockEvents)
-		expect(mockFetch).toHaveBeenCalledTimes(1)
+		expect(mockSanityFetch).toHaveBeenCalledTimes(1)
 	})
 
 	it('returns an empty array when no events exist', async () => {
-		mockFetch.mockResolvedValue([])
+		mockSanityFetch.mockResolvedValue({ data: [], sourceMap: null, tags: ['sanity'] })
 
 		const result = await getUpcomingEvents()
 
@@ -34,7 +34,7 @@ describe('getUpcomingEvents', () => {
 describe('getPastEvents', () => {
 	it('returns an array of past events', async () => {
 		const mockEvents = [{ _id: '2', title: 'Past Event', date: '2024-01-01' }]
-		mockFetch.mockResolvedValue(mockEvents)
+		mockSanityFetch.mockResolvedValue({ data: mockEvents, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getPastEvents()
 
@@ -45,7 +45,7 @@ describe('getPastEvents', () => {
 describe('getNearestEvent', () => {
 	it('returns a single event when one exists', async () => {
 		const mockEvent = { _id: '3', title: 'Next Event', date: '2025-07-01' }
-		mockFetch.mockResolvedValue(mockEvent)
+		mockSanityFetch.mockResolvedValue({ data: mockEvent, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getNearestEvent()
 
@@ -53,7 +53,7 @@ describe('getNearestEvent', () => {
 	})
 
 	it('returns null when no upcoming event exists', async () => {
-		mockFetch.mockResolvedValue(null)
+		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getNearestEvent()
 
@@ -64,7 +64,7 @@ describe('getNearestEvent', () => {
 describe('getAllPageSlugs', () => {
 	it('returns an array of slug objects', async () => {
 		const mockSlugs = [{ slug: 'home' }, { slug: 'about' }]
-		mockFetch.mockResolvedValue(mockSlugs)
+		mockSanityFetch.mockResolvedValue({ data: mockSlugs, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getAllPageSlugs()
 
@@ -75,19 +75,18 @@ describe('getAllPageSlugs', () => {
 describe('getPageBySlug', () => {
 	it('returns a page when the slug matches', async () => {
 		const mockPage = { _id: '4', title: 'About', slug: { current: 'about' } }
-		mockFetch.mockResolvedValue(mockPage)
+		mockSanityFetch.mockResolvedValue({ data: mockPage, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getPageBySlug('about')
 
 		expect(result).toEqual(mockPage)
-		expect(mockFetch).toHaveBeenCalledWith(
-			expect.anything(),
-			{ slug: 'about' },
+		expect(mockSanityFetch).toHaveBeenCalledWith(
+			expect.objectContaining({ params: { slug: 'about' } }),
 		)
 	})
 
 	it('returns null when no page matches the slug', async () => {
-		mockFetch.mockResolvedValue(null)
+		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getPageBySlug('nonexistent')
 
@@ -103,7 +102,7 @@ describe('getSiteSettings', () => {
 			phone: '01234 567890',
 			email: 'hello@c58.co.uk',
 		}
-		mockFetch.mockResolvedValue(mockSettings)
+		mockSanityFetch.mockResolvedValue({ data: mockSettings, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getSiteSettings()
 
@@ -111,7 +110,7 @@ describe('getSiteSettings', () => {
 	})
 
 	it('returns null when no settings document exists', async () => {
-		mockFetch.mockResolvedValue(null)
+		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getSiteSettings()
 

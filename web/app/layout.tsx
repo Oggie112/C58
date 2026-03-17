@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, DM_Mono } from "next/font/google";
+import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity/visual-editing";
 import "./globals.css";
 import Nav from "./components/Nav";
+import { SanityLive } from "@/sanity/live";
+import { DisableDraftMode } from "./components/DisableDraftMode";
 
 const barlowCondensed = Barlow_Condensed({
 	subsets: ["latin"],
@@ -36,16 +40,25 @@ export const metadata: Metadata = {
 	},
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const { isEnabled: isDraftMode } = await draftMode()
+
 	return (
 		<html lang="en">
 			<body className={`${barlowCondensed.variable} ${dmMono.variable}`}>
 				<Nav />
 				{children}
+				<SanityLive />
+				{isDraftMode && (
+					<>
+						<VisualEditing />
+						<DisableDraftMode />
+					</>
+				)}
 			</body>
 		</html>
 	);
