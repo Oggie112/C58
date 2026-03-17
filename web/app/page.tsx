@@ -6,7 +6,7 @@ import { urlFor } from "@/sanity/image"
 const HOME_SLUG = "home"
 
 export async function generateMetadata(): Promise<Metadata> {
-	const page = await getPageBySlug(HOME_SLUG)
+	const page = await getPageBySlug(HOME_SLUG, { stega: false })
 	if (!page) return {}
 
 	const seoImage = page.seo?.image
