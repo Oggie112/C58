@@ -7,6 +7,7 @@ import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "./components/DisableDraftMode";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const barlowCondensed = Barlow_Condensed({
 	subsets: ["latin"],
@@ -55,6 +56,7 @@ export default async function RootLayout({
 				{children}
 				<Footer />
 				<SanityLive />
+				<SpeedInsights />
 				{isDraftMode && (
 					<>
 						<VisualEditing />
