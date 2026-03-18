@@ -214,7 +214,35 @@ A standalone full-width image.
 
 ### Ordering
 
-Team members appear on the site in the order they were published. If the team is small, the simplest way to reorder is to delete the existing members and re-add them in the desired order. For larger teams, get in touch and a developer can sort it.
+Team members appear on the site in the order set in the Studio list view. To reorder:
+
+1. Click **Team Members** in the sidebar
+2. Drag members up or down using the handle on the left of each row
+3. The site reflects the new order automatically — no publish step needed for ordering changes
+
+---
+
+## Previewing Changes
+
+> The Studio includes a live preview panel so you can see how your changes will look on the site before publishing.
+
+### Using the Presentation Tool
+
+Click **Presentation** in the top bar (Between structure and vision). The site loads on the left-hand side, reflecting your current drafts in real time — including unpublished changes.
+
+You can click on a part of the site to see more information on that part, including its contents. You can then also change the contents of that part via the side panel on the right. 
+
+As you edit content in the Studio, the preview updates automatically. You do not need to save or publish first.
+
+### What to expect
+
+- The preview shows **draft content** — exactly what will go live when you publish.
+- It is only visible inside the Studio. Visitors to the site always see the published version.
+- If the preview shows a blank page or fails to load, try refreshing the preview panel. If the issue persists, the published site is unaffected.
+
+### When to use it
+
+Use it any time you want to check layout, spacing, or how new content fits before committing. It is particularly useful when reordering page builder blocks or updating the Hero image.
 
 ---
 

@@ -10,7 +10,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks done | — | —                                |
 | **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout done | —          | Featured post (deferred with posts) |
 | **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
-| **DX**   | ✅ Env vars, SEO, Draft Mode done              | CMS docs                       | Custom domain (pending client)   |
+| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs done    | —                              | Custom domain (pending client)   |
 
 ---
 
@@ -122,8 +122,8 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m4-todo"><h4>To Do (Milestone 4)</h4></a>
 
-- [ ] 4DX.3. Client CMS usage documentation
-- [ ] 4CMS.1. `@sanity/orderable-document-list` plugin for team member drag-and-drop reordering — **push goal**
+- [x] 4DX.3. Client CMS usage documentation
+- [x] 4CMS.1. `@sanity/orderable-document-list` plugin for team member drag-and-drop reordering — switched team block to query-based (auto-fetches all members by orderRank)
 
 <a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
 

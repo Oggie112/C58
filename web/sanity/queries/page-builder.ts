@@ -30,7 +30,7 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 				}
 			},
 			_type == "teamBlock" => {
-				"members": members[]-> {
+				"members": *[_type == "teamMember"] | order(orderRank) {
 					_id, _type, name, role, bio, photo
 				}
 			}
