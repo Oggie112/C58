@@ -1,25 +1,20 @@
 import {defineField, defineType} from 'sanity'
 
-export const heroBlock = defineType({
-	name: 'heroBlock',
-	title: 'Hero',
+export const featuredUpdateBlock = defineType({
+	name: 'featuredUpdateBlock',
+	title: 'Featured Update',
 	type: 'object',
 	fields: [
 		defineField({
-			name: 'bgMedia',
-			title: 'Background Media',
-			type: 'bgMedia',
-		}),
-		defineField({
-			name: 'overlayText',
-			title: 'Overlay Text',
+			name: 'heading',
+			title: 'Heading',
 			type: 'string',
+			placeholder: 'e.g. NEXT EVENT, LATEST NEWS',
 		}),
 		defineField({
 			name: 'contentType',
-			title: 'CTA Content',
+			title: 'Content Type',
 			type: 'string',
-			description: 'What the hero button opens. Leave blank to hide the button.',
 			options: {
 				list: [
 					{title: 'Next Event', value: 'nextEvent'},
@@ -27,6 +22,8 @@ export const heroBlock = defineType({
 				],
 				layout: 'radio',
 			},
+			initialValue: 'nextEvent',
+			validation: (Rule) => Rule.required(),
 		}),
 		defineField({
 			name: 'post',
@@ -38,14 +35,25 @@ export const heroBlock = defineType({
 				Rule.custom((value, context) => {
 					const parent = context.parent as {contentType?: string}
 					if (parent?.contentType === 'featuredPost' && !value) {
-						return 'A post is required when CTA Content is set to Featured Post'
+						return 'A post is required when Content Type is set to Featured Post'
 					}
 					return true
 				}),
 		}),
 	],
 	preview: {
-		select: {title: 'overlayText'},
-		prepare: ({title}) => ({title: 'Hero', subtitle: title}),
+		select: {
+			contentType: 'contentType',
+			postTitle: 'post.title',
+			heading: 'heading',
+		},
+		prepare: ({contentType, postTitle, heading}) => ({
+			title: 'Featured Update',
+			subtitle: heading
+				? heading
+				: contentType === 'nextEvent'
+					? 'Next Event'
+					: postTitle ?? 'Featured Post',
+		}),
 	},
 })

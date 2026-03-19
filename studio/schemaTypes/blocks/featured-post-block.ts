@@ -6,6 +6,12 @@ export const featuredPostBlock = defineType({
 	type: 'object',
 	fields: [
 		defineField({
+			name: 'heading',
+			title: 'Heading',
+			type: 'string',
+			placeholder: 'e.g. FEATURED POST',
+		}),
+		defineField({
 			name: 'post',
 			title: 'Post',
 			type: 'reference',

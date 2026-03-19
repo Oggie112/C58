@@ -72,6 +72,8 @@ export interface HeroBlock {
 	_key: string
 	bgMedia?: BgMedia
 	overlayText?: string
+	contentType?: 'nextEvent' | 'featuredPost'
+	post?: SanityPost
 }
 
 export interface NextEventBlock {
@@ -79,10 +81,19 @@ export interface NextEventBlock {
 	_key: string
 }
 
+export interface FeaturedUpdateBlock {
+	_type: 'featuredUpdateBlock'
+	_key: string
+	heading?: string
+	contentType: 'nextEvent' | 'featuredPost'
+	post?: SanityPost
+}
+
 export interface FeaturedPostBlock {
 	_type: 'featuredPostBlock'
 	_key: string
-	post: SanityReference
+	heading?: string
+	post: SanityPost
 }
 
 export interface EventListBlock {
@@ -100,6 +111,7 @@ export interface RichTextBlock {
 export interface TeamBlock {
 	_type: 'teamBlock'
 	_key: string
+	heading?: string
 	members?: SanityTeamMember[]
 }
 
@@ -116,11 +128,19 @@ export interface ImageBlock {
 	caption?: string
 }
 
+export interface BlogListBlock {
+	_type: 'blogListBlock'
+	_key: string
+	heading?: string
+}
+
 export type PageBuilderBlock =
 	| HeroBlock
 	| NextEventBlock
+	| FeaturedUpdateBlock
 	| FeaturedPostBlock
 	| EventListBlock
+	| BlogListBlock
 	| RichTextBlock
 	| TeamBlock
 	| ContactBlock

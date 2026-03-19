@@ -50,8 +50,8 @@ export const page = defineType({
 			type: 'array',
 			of: [
 				{type: 'heroBlock'},
-				{type: 'nextEventBlock'},
-				{type: 'featuredPostBlock'},
+				{type: 'featuredUpdateBlock'},
+				{type: 'blogListBlock'},
 				{type: 'eventListBlock'},
 				{type: 'richTextBlock'},
 				{type: 'teamBlock'},
