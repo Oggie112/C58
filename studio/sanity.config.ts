@@ -2,10 +2,12 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {presentationTool} from 'sanity/presentation'
 import {visionTool} from '@sanity/vision'
+import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {schemaTypes} from './schemaTypes'
 import {resolve} from './presentation/resolve'
 
 const SINGLETON_TYPES = new Set(['siteSettings'])
+const ORDERABLE_TYPES = new Set(['teamMember'])
 
 export default defineConfig({
 	name: 'default',
@@ -16,13 +18,14 @@ export default defineConfig({
 
 	plugins: [
 		structureTool({
-			structure: (S) =>
+			structure: (S, context) =>
 				S.list()
 					.title('Content')
 					.items([
 						...S.documentTypeListItems().filter(
-							(item) => !SINGLETON_TYPES.has(item.getId() ?? ''),
+							(item) => !SINGLETON_TYPES.has(item.getId() ?? '') && !ORDERABLE_TYPES.has(item.getId() ?? ''),
 						),
+						orderableDocumentListDeskItem({S, context, type: 'teamMember', title: 'Team Members'}),
 						S.divider(),
 						S.listItem()
 							.title('Site Settings')

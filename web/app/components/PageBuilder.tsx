@@ -1,6 +1,7 @@
 import { PageBuilderBlock } from "@/types/sanity";
 import HeroBlock from "@/app/components/HeroBlock";
-import NextEventBlock from "@/app/components/NextEventBlock";
+import FeaturedUpdateBlock from "@/app/components/FeaturedUpdateBlock";
+import BlogListBlock from "@/app/components/BlogListBlock";
 import EventListBlock from "@/app/components/EventListBlock";
 import RichTextBlock from "@/app/components/RichTextBlock";
 import ContactBlock from "@/app/components/ContactBlock";
@@ -14,8 +15,8 @@ export default function PageBuilder({blocks}: { blocks: PageBuilderBlock[]}) {
             blocks.map(block => {
                 switch (block._type) {
                     case "heroBlock": return <HeroBlock key={block._key} block={block}/>;
-                    case "nextEventBlock": return <NextEventBlock key={block._key}/>;
-                    case "featuredPostBlock": return <div key={block._key}>Featured Post Block Content</div>;
+                    case "featuredUpdateBlock": return <FeaturedUpdateBlock key={block._key} block={block}/>;
+                    case "blogListBlock": return <BlogListBlock key={block._key} block={block}/>;
                     case "eventListBlock": return <EventListBlock key={block._key} block={block}/>;
                     case "richTextBlock": return <RichTextBlock key={block._key} block={block}/>;
                     case "teamBlock": return <TeamBlock key={block._key} block={block}/>;

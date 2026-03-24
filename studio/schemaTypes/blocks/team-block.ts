@@ -6,10 +6,9 @@ export const teamBlock = defineType({
 	type: 'object',
 	fields: [
 		defineField({
-			name: 'members',
-			title: 'Members',
-			type: 'array',
-			of: [{type: 'reference', to: [{type: 'teamMember'}]}],
+			name: 'heading',
+			title: 'Heading',
+			type: 'string',
 		}),
 	],
 	preview: {

@@ -1,7 +1,7 @@
 import { defineQuery } from 'next-sanity'
 
 // Fetch a single page by slug with all page builder blocks expanded.
-// References inside featuredPostBlock and teamBlock are resolved inline.
+// References inside heroBlock, featuredUpdateBlock, featuredPostBlock, and teamBlock are resolved inline.
 export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 	*[_type == "page" && slug.current == $slug][0] {
 		_id,
@@ -22,15 +22,26 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 					video {
 						asset-> { url }
 					}
+				},
+				"post": post-> {
+					_id, _type, title, slug, date, image, body
+				}
+			},
+			_type == "featuredUpdateBlock" => {
+				heading,
+				contentType,
+				"post": post-> {
+					_id, _type, title, slug, date, image, body
 				}
 			},
 			_type == "featuredPostBlock" => {
+				heading,
 				"post": post-> {
 					_id, _type, title, slug, date, image, body
 				}
 			},
 			_type == "teamBlock" => {
-				"members": members[]-> {
+				"members": *[_type == "teamMember"] | order(orderRank) {
 					_id, _type, name, role, bio, photo
 				}
 			}

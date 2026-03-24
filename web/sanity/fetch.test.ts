@@ -1,4 +1,4 @@
-import { getUpcomingEvents, getPastEvents, getNearestEvent, getAllPageSlugs, getPageBySlug, getSiteSettings } from './fetch'
+import { getUpcomingEvents, getPastEvents, getNearestEvent, getAllPageSlugs, getPageBySlug, getSiteSettings, getAllPosts, getPostBySlug } from './fetch'
 import { sanityFetch } from './live'
 
 jest.mock('./live', () => ({
@@ -89,6 +89,48 @@ describe('getPageBySlug', () => {
 		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
 		const result = await getPageBySlug('nonexistent')
+
+		expect(result).toBeNull()
+	})
+})
+
+describe('getAllPosts', () => {
+	it('returns an array of posts', async () => {
+		const mockPosts = [{ _id: '1', title: 'Test Post', date: '2025-06-01' }]
+		mockSanityFetch.mockResolvedValue({ data: mockPosts, sourceMap: null, tags: ['sanity'] })
+
+		const result = await getAllPosts()
+
+		expect(result).toEqual(mockPosts)
+		expect(mockSanityFetch).toHaveBeenCalledTimes(1)
+	})
+
+	it('returns an empty array when no posts exist', async () => {
+		mockSanityFetch.mockResolvedValue({ data: [], sourceMap: null, tags: ['sanity'] })
+
+		const result = await getAllPosts()
+
+		expect(result).toEqual([])
+	})
+})
+
+describe('getPostBySlug', () => {
+	it('returns a post when the slug matches', async () => {
+		const mockPost = { _id: '2', title: 'Test Post', slug: { current: 'test-post' }, date: '2025-06-01' }
+		mockSanityFetch.mockResolvedValue({ data: mockPost, sourceMap: null, tags: ['sanity'] })
+
+		const result = await getPostBySlug('test-post')
+
+		expect(result).toEqual(mockPost)
+		expect(mockSanityFetch).toHaveBeenCalledWith(
+			expect.objectContaining({ params: { slug: 'test-post' } }),
+		)
+	})
+
+	it('returns null when no post matches the slug', async () => {
+		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
+
+		const result = await getPostBySlug('nonexistent')
 
 		expect(result).toBeNull()
 	})

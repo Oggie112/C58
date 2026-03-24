@@ -1,20 +1,23 @@
 'use client'
 
-import { HeroBlock as HeroBlockType, SanityEvent } from '@/types/sanity'
+import { HeroBlock as HeroBlockType, SanityEvent, SanityPost } from '@/types/sanity'
 import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import EventCard from './EventCard'
+import PostCard from './PostCard'
 
 interface HeroClientProps {
 	block: HeroBlockType
-	nextEvent: SanityEvent | null
+	update: SanityEvent | SanityPost | null
 }
 
-export default function HeroClient({ block, nextEvent }: HeroClientProps) {
+export default function HeroClient({ block, update }: HeroClientProps) {
 	const [modalOpen, setModalOpen] = useState(false)
 	const mediaType = block.bgMedia?.mediaType
+
+	const buttonLabel = update?._type === 'post' ? 'SEE UPDATE →' : 'NEXT EVENT →'
 
 	return (
 		<>
@@ -46,12 +49,12 @@ export default function HeroClient({ block, nextEvent }: HeroClientProps) {
 							{block.overlayText}
 						</p>
 					)}
-					{nextEvent && (
+					{update && (
 						<button
 							onClick={() => setModalOpen(true)}
 							className="font-body text-label uppercase tracking-[0.15em] border border-c58-ice-border text-c58-ice px-8 py-3.5 hover:bg-c58-ice-glow hover:border-c58-ice transition-[background-color,border-color] duration-200"
 						>
-							NEXT EVENT →
+							{buttonLabel}
 						</button>
 					)}
 				</div>
@@ -65,9 +68,9 @@ export default function HeroClient({ block, nextEvent }: HeroClientProps) {
 				</div>
 			</section>
 
-			{/* Next event modal */}
+			{/* Update modal */}
 			<AnimatePresence>
-				{modalOpen && (
+				{modalOpen && update && (
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
@@ -90,7 +93,10 @@ export default function HeroClient({ block, nextEvent }: HeroClientProps) {
 							>
 								CLOSE ×
 							</button>
-							<EventCard event={nextEvent!} featured />
+							{update._type === 'post'
+								? <PostCard post={update as SanityPost} featured />
+								: <EventCard event={update as SanityEvent} featured />
+							}
 						</motion.div>
 					</motion.div>
 				)}

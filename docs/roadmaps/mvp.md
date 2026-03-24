@@ -7,10 +7,10 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
-| **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks done | — | —                                |
-| **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout done | —          | Featured post (deferred with posts) |
-| **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
-| **DX**   | ✅ Env vars, SEO, Draft Mode done              | CMS docs                       | Custom domain (pending client)   |
+| **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks, posts, featuredUpdate, blogList done | — | —                                |
+| **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout, featuredUpdate, blogList, PostCard, post detail pages done | — | —                                |
+| **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | Component tests, error UI      | —                                |
+| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs done    | README                         | Custom domain (pending client)   |
 
 ---
 
@@ -21,6 +21,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
   - [Milestone 2: CMS Integration](#m2)
   - [Milestone 3: UI / Components](#m3)
   - [Milestone 4: Launch Ready](#m4)
+  - [Milestone 5: Polish & Completeness](#m5)
 - [Progress Map](#map)
 - [Out of Scope](#out-of-scope)
 
@@ -53,6 +54,8 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 1CMS.2. Sanity schema: page builder block types (hero, nextEvent, featuredPost, eventList, richText, team, contact, image)
 - [x] 1CMS.3. Sanity schema: shared objects (bgMedia) + siteSettings singleton wiring
 - [x] 1DX.1. Set up environment variables and confirm local dev working (web + studio)
+- [x] 1CMS.4. Sanity schema: featuredUpdateBlock (heading, contentType radio, conditional post reference)
+- [x] 1CMS.5. Sanity schema: blogListBlock (heading)
 
 ---
 
@@ -65,8 +68,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
-- [ ] 2CMS.4. GROQ queries for posts collection — **push goal, deferred post-MVP**
-
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
@@ -77,7 +78,9 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 2CMS.3. GROQ queries for events collection
 - [x] 2CMS.5. GROQ query for site settings singleton
 - [x] 2CMS.6. next-sanity-based data-fetching utilities
-- [x] 2QA.1. Jest tests for data-fetching logic (dateFormat + all fetch utilities, 15/15 passing)
+- [x] 2QA.1. Jest tests for data-fetching logic (dateFormat + all fetch utilities, 19/19 passing)
+- [x] 2CMS.4. GROQ queries for posts collection (ALL_POSTS_QUERY, POST_BY_SLUG_QUERY) + getAllPosts, getPostBySlug fetch utilities
+- [x] 2CMS.8. GROQ page-builder projection for featuredUpdateBlock (contentType + post reference resolution)
 
 ---
 
@@ -90,7 +93,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m3-todo"><h4>To Do (Milestone 3)</h4></a>
 
-- [ ] 3UI.4. Featured post block component — **depends on 2CMS.4 (deferred with posts)**
+- [ ] 3UI.17. BlockSection component — extract shared section wrapper + heading pattern (used across NextEventBlock, FeaturedUpdateBlock, BlogListBlock, and others) into a single reusable component
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
@@ -108,6 +111,10 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 3UI.12. Global navigation component (Sanity-managed navLinks with page references)
 - [x] 3UI.10. Responsive layout and global styling (design tokens, fonts, mobile breakpoints, touch targets, Framer Motion)
 - [x] 3UI.13. Footer component (social links, privacy policy)
+- [x] 3UI.4. Featured post block component — superseded by FeaturedUpdateBlock
+- [x] 3UI.14. FeaturedUpdateBlock component (editor chooses next event or featured post, replaces nextEventBlock + featuredPostBlock in page builder)
+- [x] 3UI.15. BlogListBlock component (auto-fetches all posts, responsive 1/2/3-col grid)
+- [x] 3UI.16. PostCard component (extracted, reusable — mirrors EventCard pattern)
 
 ---
 
@@ -122,9 +129,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m4-todo"><h4>To Do (Milestone 4)</h4></a>
 
-- [ ] 4DX.3. Client CMS usage documentation
-- [ ] 4CMS.1. `@sanity/orderable-document-list` plugin for team member drag-and-drop reordering — **push goal**
-
 <a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
 
 <a name="m4-done"><h4>Completed (Milestone 4)</h4></a>
@@ -134,6 +138,32 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 4DX.1. SEO basics — dynamic generateMetadata(), per-page OG tags, fallback chain, metadataBase
 - [x] 4DX.4. Next.js Draft Mode — secret token, route handler, authenticated Sanity client
 - [x] 4CMS.2. Sanity Presentation Tool (`@sanity/presentation`) — live in-Studio preview panel
+- [x] 4DX.3. Client CMS usage documentation
+- [x] 4CMS.1. `@sanity/orderable-document-list` plugin for team member drag-and-drop reordering — switched team block to query-based (auto-fetches all members by orderRank)
+
+---
+
+---
+
+<a name="m5"><h3>Milestone 5: Polish & Completeness</h3></a>
+
+> [!IMPORTANT]
+> **Goal:** Close the gaps identified post-handover — complete content routing, improve test coverage, surface errors to users, and finalise developer documentation.
+
+<a name="m5-doing"><h4>In Progress (Milestone 5)</h4></a>
+
+<a name="m5-todo"><h4>To Do (Milestone 5)</h4></a>
+
+- [ ] 5QA.1. Component tests — Jest + React Testing Library for at least `EventCard`, `PostCard`, and `PageBuilder`
+- [ ] 5QA.2. Error UI — replace console-only error handling with fallback components (e.g. empty state cards) in `BlogListBlock`, `FeaturedUpdateBlock`, and `NextEventBlock`
+- [ ] 5DX.1. Root README — setup instructions, environment variables, local dev commands, deployment notes
+
+<a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
+
+<a name="m5-done"><h4>Completed (Milestone 5)</h4></a>
+
+- [x] 5UI.1. Post detail page — `app/posts/[slug]/page.tsx` with `generateStaticParams`, `getPostBySlug` fetch, and portable text renderer; PortableText components extracted to `lib/portableTextComponents.tsx`
+- [x] 5UI.2. PostCard links — `PostCard` wrapped with `Link` to `/posts/[slug]`; applies to BlogListBlock, FeaturedUpdateBlock, and hero modal
 
 ---
 
@@ -150,17 +180,10 @@ m2["`**Milestone 2**<br/>CMS Integration`"]:::mile
 m3["`**Milestone 3**<br/>UI / Components`"]:::mile
 m4["`**Milestone 4**<br/>Launch Ready`"]:::mile
 
-m1 --> m2 --> m3 --> m4
-
-2CMS.4["`*2CMS.4*<br/>**CMS**<br/>Posts queries`"]:::open
-
-3UI.4["`*3UI.4*<br/>**UI**<br/>Featured post block`"]
+m1 --> m2 --> m3 --> m4 --> m5
 
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]:::open
-4DX.3["`*4DX.3*<br/>**DX**<br/>Client CMS docs`"]:::open
-4CMS.1["`*4CMS.1*<br/>**CMS**<br/>Team reordering plugin`"]:::open
-
-2CMS.4 --> 3UI.4
+m5["`**Milestone 5**<br/>Polish & Completeness`"]:::mile
 
 classDef default fill:#f9f
 classDef open fill:#ff9
@@ -178,4 +201,3 @@ classDef mile fill:#9ff
 - Email notifications
 - Analytics
 - Event detail page
-- Blog / Editorial

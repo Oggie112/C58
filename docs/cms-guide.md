@@ -9,6 +9,7 @@ Your website content is managed through **Sanity Studio**, a simple editing inte
 - [Accessing the Studio](#accessing-the-studio)
 - [Site Settings](#site-settings)
 - [Events](#events)
+- [Posts](#posts)
 - [Pages](#pages)
   - [Page Builder Blocks](#page-builder-blocks)
 - [Team Members](#team-members)
@@ -19,7 +20,7 @@ Your website content is managed through **Sanity Studio**, a simple editing inte
 
 The Studio is available at your Sanity project URL (provided separately). Log in with your Sanity account. You'll land on the Studio dashboard.
 
-The left-hand sidebar lists the main content types: **Pages**, **Events**, **Team Members**, and **Site Settings**.
+The left-hand sidebar lists the main content types: **Pages**, **Events**, **Posts**, **Team Members**, and **Site Settings**.
 
 ---
 
@@ -52,7 +53,7 @@ To remove: click the item, then the bin icon.
 
 ## Events
 
-> Each event appears in the **Event List** section of any page that includes one. The **Next Event** section automatically picks up whichever event is nearest in the future.
+> Each event appears in the **Event List** section of any page that includes one. The **Featured Update** block can be set to automatically display whichever event is nearest in the future.
 
 ### Creating an event
 
@@ -81,6 +82,33 @@ Click the event in the list, make your changes, then click **Publish**. Changes 
 ### Past events
 
 Events with a past date remain in the system and appear in the **Past** tab of the Event List. You don't need to delete them.
+
+---
+
+## Posts
+
+> Posts are news updates, blog articles, or any written content you want to publish on the site. They appear in the **Blog List** block on any page that includes one, and can be spotlighted individually via the **Featured Update** block.
+
+### Creating a post
+
+1. Click **Posts** in the sidebar
+2. Click **New post** (top right)
+3. Fill in the fields (see below)
+4. Click **Publish** when ready
+
+### Fields
+
+| Field | Required | Notes |
+|---|---|---|
+| **Title** | Yes | The post headline |
+| **Slug** | Yes | The web address for this post — click **Generate** and it's created from the title automatically |
+| **Date** | Yes | Used to order posts newest-first in the Blog List |
+| **Image** | No | Shown in the post card. Use the hotspot tool to control the crop focus |
+| **Body** | No | Rich text — supports headings, bold, lists, links |
+
+### Editing an existing post
+
+Click the post in the list, make your changes, then click **Publish**. Changes only go live once published.
 
 ---
 
@@ -135,17 +163,35 @@ A full-width banner at the top of a page, with optional background image or vide
 
 ---
 
-#### Next Event
+#### Featured Update
 
-Automatically displays the nearest upcoming event — no configuration needed. Just add the block and it pulls the next event from your Events list.
+Displays a single spotlight item — either the next upcoming event, or a specific post you choose. Use this as the main "what's happening" section on your homepage.
 
-If there are no upcoming events, this block displays nothing.
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default heading (e.g. `NEXT EVENT` or `FEATURED POST`) |
+| **Content Type** | Choose **Next Event** to automatically show the nearest upcoming event, or **Featured Post** to manually pin a specific post |
+| **Post** | Only shown when **Featured Post** is selected — pick the post you want to spotlight |
+
+> When set to **Next Event**, the block updates automatically as events are added and pass. You do not need to edit the page.
+>
+> When set to **Featured Post**, remember to update the selection when you want to spotlight something new.
 
 ---
 
 #### Event List
 
 Displays all events with **Upcoming** and **Past** tabs. No configuration — it pulls everything from your Events list automatically.
+
+---
+
+#### Blog List
+
+Displays all published posts in a grid, ordered newest first. No configuration needed — it pulls from your Posts list automatically.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default `LATEST POSTS` heading |
 
 ---
 
@@ -214,7 +260,35 @@ A standalone full-width image.
 
 ### Ordering
 
-Team members appear on the site in the order they were published. If the team is small, the simplest way to reorder is to delete the existing members and re-add them in the desired order. For larger teams, get in touch and a developer can sort it.
+Team members appear on the site in the order set in the Studio list view. To reorder:
+
+1. Click **Team Members** in the sidebar
+2. Drag members up or down using the handle on the left of each row
+3. The site reflects the new order automatically — no publish step needed for ordering changes
+
+---
+
+## Previewing Changes
+
+> The Studio includes a live preview panel so you can see how your changes will look on the site before publishing.
+
+### Using the Presentation Tool
+
+Click **Presentation** in the top bar (Between structure and vision). The site loads on the left-hand side, reflecting your current drafts in real time — including unpublished changes.
+
+You can click on a part of the site to see more information on that part, including its contents. You can then also change the contents of that part via the side panel on the right. 
+
+As you edit content in the Studio, the preview updates automatically. You do not need to save or publish first.
+
+### What to expect
+
+- The preview shows **draft content** — exactly what will go live when you publish.
+- It is only visible inside the Studio. Visitors to the site always see the published version.
+- If the preview shows a blank page or fails to load, try refreshing the preview panel. If the issue persists, the published site is unaffected.
+
+### When to use it
+
+Use it any time you want to check layout, spacing, or how new content fits before committing. It is particularly useful when reordering page builder blocks or updating the Hero image.
 
 ---
 
