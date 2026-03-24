@@ -8,9 +8,9 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | -------- | ----------------------------------------------- | ------------------------------ | -------------------------------- |
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks, posts, featuredUpdate, blogList done | — | —                                |
-| **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout, featuredUpdate, blogList, PostCard done | — | —                                |
-| **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | —                  | —                                |
-| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs done    | —                              | Custom domain (pending client)   |
+| **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout, featuredUpdate, blogList, PostCard, post detail pages done | — | —                                |
+| **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | Component tests, error UI      | —                                |
+| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs done    | README                         | Custom domain (pending client)   |
 
 ---
 
@@ -21,6 +21,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
   - [Milestone 2: CMS Integration](#m2)
   - [Milestone 3: UI / Components](#m3)
   - [Milestone 4: Launch Ready](#m4)
+  - [Milestone 5: Polish & Completeness](#m5)
 - [Progress Map](#map)
 - [Out of Scope](#out-of-scope)
 
@@ -142,6 +143,30 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 ---
 
+---
+
+<a name="m5"><h3>Milestone 5: Polish & Completeness</h3></a>
+
+> [!IMPORTANT]
+> **Goal:** Close the gaps identified post-handover — complete content routing, improve test coverage, surface errors to users, and finalise developer documentation.
+
+<a name="m5-doing"><h4>In Progress (Milestone 5)</h4></a>
+
+<a name="m5-todo"><h4>To Do (Milestone 5)</h4></a>
+
+- [ ] 5QA.1. Component tests — Jest + React Testing Library for at least `EventCard`, `PostCard`, and `PageBuilder`
+- [ ] 5QA.2. Error UI — replace console-only error handling with fallback components (e.g. empty state cards) in `BlogListBlock`, `FeaturedUpdateBlock`, and `NextEventBlock`
+- [ ] 5DX.1. Root README — setup instructions, environment variables, local dev commands, deployment notes
+
+<a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
+
+<a name="m5-done"><h4>Completed (Milestone 5)</h4></a>
+
+- [x] 5UI.1. Post detail page — `app/posts/[slug]/page.tsx` with `generateStaticParams`, `getPostBySlug` fetch, and portable text renderer; PortableText components extracted to `lib/portableTextComponents.tsx`
+- [x] 5UI.2. PostCard links — `PostCard` wrapped with `Link` to `/posts/[slug]`; applies to BlogListBlock, FeaturedUpdateBlock, and hero modal
+
+---
+
 <a name="map"><h3>Progress Map</h3></a>
 
 ```mermaid
@@ -155,9 +180,10 @@ m2["`**Milestone 2**<br/>CMS Integration`"]:::mile
 m3["`**Milestone 3**<br/>UI / Components`"]:::mile
 m4["`**Milestone 4**<br/>Launch Ready`"]:::mile
 
-m1 --> m2 --> m3 --> m4
+m1 --> m2 --> m3 --> m4 --> m5
 
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]:::open
+m5["`**Milestone 5**<br/>Polish & Completeness`"]:::mile
 
 classDef default fill:#f9f
 classDef open fill:#ff9

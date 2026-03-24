@@ -89,13 +89,6 @@ export interface FeaturedUpdateBlock {
 	post?: SanityPost
 }
 
-export interface FeaturedPostBlock {
-	_type: 'featuredPostBlock'
-	_key: string
-	heading?: string
-	post: SanityPost
-}
-
 export interface EventListBlock {
 	_type: 'eventListBlock'
 	_key: string
@@ -138,7 +131,6 @@ export type PageBuilderBlock =
 	| HeroBlock
 	| NextEventBlock
 	| FeaturedUpdateBlock
-	| FeaturedPostBlock
 	| EventListBlock
 	| BlogListBlock
 	| RichTextBlock

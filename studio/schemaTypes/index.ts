@@ -8,7 +8,6 @@ import {siteSettings} from './documents/site-settings'
 // Blocks
 import {heroBlock} from './blocks/hero-block'
 import {nextEventBlock} from './blocks/next-event-block'
-import {featuredPostBlock} from './blocks/featured-post-block'
 import {featuredUpdateBlock} from './blocks/featured-update-block'
 import {blogListBlock} from './blocks/blog-list-block'
 import {eventListBlock} from './blocks/event-list-block'
@@ -30,7 +29,6 @@ export const schemaTypes = [
 	// Blocks
 	heroBlock,
 	nextEventBlock,
-	featuredPostBlock,
 	featuredUpdateBlock,
 	blogListBlock,
 	eventListBlock,
