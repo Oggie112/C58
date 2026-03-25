@@ -3,8 +3,10 @@ import {structureTool} from 'sanity/structure'
 import {presentationTool} from 'sanity/presentation'
 import {visionTool} from '@sanity/vision'
 import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
+import {BookIcon} from '@sanity/icons'
 import {schemaTypes} from './schemaTypes'
 import {resolve} from './presentation/resolve'
+import {CmsGuide} from './tools/CmsGuide'
 
 const SINGLETON_TYPES = new Set(['siteSettings'])
 const ORDERABLE_TYPES = new Set(['teamMember'])
@@ -47,6 +49,12 @@ export default defineConfig({
 			},
 		}),
 		visionTool(),
+		{
+			name: 'cms-guide',
+			title: 'Guide',
+			icon: BookIcon,
+			component: CmsGuide,
+		},
 	],
 
 	schema: {

@@ -110,6 +110,10 @@ Events with a past date remain in the system and appear in the **Past** tab of t
 
 Click the post in the list, make your changes, then click **Publish**. Changes only go live once published.
 
+### Public post pages
+
+Each published post gets its own page on the site at `/posts/[slug]` — e.g. a post with the slug `summer-update` will be live at `yoursite.com/posts/summer-update`. Post cards in the Blog List and Featured Update blocks link directly to this page.
+
 ---
 
 ## Pages
@@ -187,7 +191,7 @@ Displays all events with **Upcoming** and **Past** tabs. No configuration — it
 
 #### Blog List
 
-Displays all published posts in a grid, ordered newest first. No configuration needed — it pulls from your Posts list automatically.
+Displays all published posts in a grid, ordered newest first. No configuration needed — it pulls from your Posts list automatically. Each post card links through to the full post page.
 
 | Field | Notes |
 |---|---|
