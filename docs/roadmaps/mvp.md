@@ -10,7 +10,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks, posts, featuredUpdate, blogList done | — | —                                |
 | **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout, featuredUpdate, blogList, PostCard, post detail pages done | — | —                                |
 | **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | Component tests, error UI      | —                                |
-| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs done    | README                         | Custom domain (pending client)   |
+| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs, README done | —                         | Custom domain (pending client)   |
 
 ---
 
@@ -155,8 +155,6 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 <a name="m5-todo"><h4>To Do (Milestone 5)</h4></a>
 
 - [ ] 5QA.1. Component tests — Jest + React Testing Library for at least `EventCard`, `PostCard`, and `PageBuilder`
-- [ ] 5QA.2. Error UI — replace console-only error handling with fallback components (e.g. empty state cards) in `BlogListBlock`, `FeaturedUpdateBlock`, and `NextEventBlock`
-- [ ] 5DX.1. Root README — setup instructions, environment variables, local dev commands, deployment notes
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
@@ -164,6 +162,8 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 - [x] 5UI.1. Post detail page — `app/posts/[slug]/page.tsx` with `generateStaticParams`, `getPostBySlug` fetch, and portable text renderer; PortableText components extracted to `lib/portableTextComponents.tsx`
 - [x] 5UI.2. PostCard links — `PostCard` wrapped with `Link` to `/posts/[slug]`; applies to BlogListBlock, FeaturedUpdateBlock, and hero modal
+- [x] 5DX.1. Root README — setup instructions, environment variables, local dev commands, deployment notes
+- [x] 5QA.2. Error UI — `BlogListBlock` shows inline fallback for fetch errors and empty state; `NextEventBlock` and `FeaturedUpdateBlock` silent-null intentionally (hero button gates on data)
 
 ---
 
