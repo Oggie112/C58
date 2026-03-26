@@ -164,6 +164,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 5UI.2. PostCard links — `PostCard` wrapped with `Link` to `/posts/[slug]`; applies to BlogListBlock, FeaturedUpdateBlock, and hero modal
 - [x] 5DX.1. Root README — setup instructions, environment variables, local dev commands, deployment notes
 - [x] 5QA.2. Error UI — `BlogListBlock` shows inline fallback for fetch errors and empty state; `NextEventBlock` and `FeaturedUpdateBlock` silent-null intentionally (hero button gates on data)
+- [x] 5DX.2. CMS Guide Studio tool fixes — installed `remark-gfm` for table/list rendering, moved `CmsGuide` from `plugins` to `tools` array, added `ul`/`ol`/`li` component overrides; expanded guide content to cover social links and privacy policy page fields
 
 ---
 
@@ -184,6 +185,9 @@ m1 --> m2 --> m3 --> m4 --> m5
 
 4DX.2["`*4DX.2*<br/>**DX**<br/>Vercel deployment`"]:::open
 m5["`**Milestone 5**<br/>Polish & Completeness`"]:::mile
+5QA.1["`*5QA.1*<br/>**QA**<br/>Component & page tests`"]:::open
+
+m5 --> 5QA.1
 
 classDef default fill:#f9f
 classDef open fill:#ff9
