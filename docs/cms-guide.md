@@ -7,11 +7,11 @@ Your website content is managed through **Sanity Studio**, a simple editing inte
 ## Contents
 
 - [Accessing the Studio](#accessing-the-studio)
-- [Site Settings](#site-settings)
+- [Site Settings](#site-settings) — contact details, social links, privacy policy, navigation
 - [Events](#events)
 - [Posts](#posts)
 - [Pages](#pages)
-  - [Page Builder Blocks](#page-builder-blocks)
+- [Page Builder Blocks](#page-builder-blocks)
 - [Team Members](#team-members)
 
 ---
@@ -33,11 +33,21 @@ To open it: click **Site Settings** in the sidebar.
 ### Fields
 
 | Field | What it controls |
-|---|---|
-| **Phone** | Phone number shown in the Contact section |
-| **Email** | Email address shown in the Contact section |
-| **Address** | Address shown in the Contact section |
+|-------|------------------|
+| **Phone** | Phone number shown in the Contact section and footer |
+| **Email** | Email address shown in the Contact section and footer |
+| **Address** | Address shown in the Contact section and footer |
+| **Social Links** | Social media links shown in the footer |
+| **Privacy Policy Page** | The page linked in the footer as the privacy policy |
 | **Navigation Links** | The links in the site's top navigation bar |
+
+### Managing social links
+
+To add a social link: click **Add item** under Social Links, enter the **Platform** name (e.g. "Instagram", "Facebook", "SoundCloud"), then paste in the full **URL**.
+
+To reorder: drag items by the handle on the left.
+
+To remove: click the item, then the bin icon.
 
 ### Managing navigation links
 
@@ -69,9 +79,9 @@ To remove: click the item, then the bin icon.
 | **Title** | Yes | The event name |
 | **Slug** | Yes | The web address for this event — click **Generate** and it's created from the title automatically |
 | **Date** | Yes | Used to determine upcoming vs. past events |
-| **Time** | No | Free text, e.g. `9pm – late` |
+| **Time** | No | Free text, e.g. "9pm – late" |
 | **Location** | No | Venue name or address |
-| **Cost** | No | Free text, e.g. `£10 advance / £15 on the door` |
+| **Cost** | No | Free text, e.g. "£10 advance / £15 on the door" |
 | **Image** | No | Shown in event listings. Use the hotspot tool to control the crop focus |
 | **Description** | No | Rich text — supports headings, bold, links |
 
@@ -112,7 +122,7 @@ Click the post in the list, make your changes, then click **Publish**. Changes o
 
 ### Public post pages
 
-Each published post gets its own page on the site at `/posts/[slug]` — e.g. a post with the slug `summer-update` will be live at `yoursite.com/posts/summer-update`. Post cards in the Blog List and Featured Update blocks link directly to this page.
+Each published post gets its own page on the site at /posts/[slug] — e.g. a post with the slug "summer-update" will be live at yoursite.com/posts/summer-update. Post cards in the Blog List and Featured Update blocks link directly to this page.
 
 ---
 
@@ -132,7 +142,7 @@ Each published post gets its own page on the site at `/posts/[slug]` — e.g. a 
 | Field | Notes |
 |---|---|
 | **Title** | The page name — also used in the browser tab |
-| **Slug** | The web address for this page — click **Generate** and it's created from the title automatically. e.g. a page titled `About` gets the address `/about` |
+| **Slug** | The web address for this page — click **Generate** and it's created from the title automatically. e.g. a page titled "About" gets the address /about |
 | **SEO** | Optional — controls how the page appears in Google and when shared on social media (see below) |
 | **Page Builder** | The blocks that make up the page content |
 
@@ -142,8 +152,8 @@ Expand the **SEO** section to control search and social appearance:
 
 | Field | Ideal length | Notes |
 |---|---|---|
-| **Meta Title** | 50–60 characters | Overrides the page title in Google results. Useful when the page title alone isn't descriptive enough — e.g. a page titled `Home` could have a meta title of `C58 — St Neots Underground Nights` |
-| **Meta Description** | 150–160 characters | The description shown under the link in Google. e.g. `C58 brings underground dance music to St Neots. Check our upcoming events, meet the team, and find out how to get involved.` |
+| **Meta Title** | 50–60 characters | Overrides the page title in Google results. Useful when the page title alone isn't descriptive enough — e.g. a page titled "Home" could have a meta title of "C58 — St Neots Underground Nights" |
+| **Meta Description** | 150–160 characters | The description shown under the link in Google. e.g. "C58 brings underground dance music to St Neots. Check our upcoming events, meet the team, and find out how to get involved." |
 | **Social Share Image** | 1200×630px | Shown when the page is shared on social media |
 
 If left blank, the site falls back to the page title and sensible defaults.
@@ -173,7 +183,7 @@ Displays a single spotlight item — either the next upcoming event, or a specif
 
 | Field | Notes |
 |---|---|
-| **Heading** | Optional. Overrides the default heading (e.g. `NEXT EVENT` or `FEATURED POST`) |
+| **Heading** | Optional. Overrides the default heading (e.g. "NEXT EVENT" or "FEATURED POST") |
 | **Content Type** | Choose **Next Event** to automatically show the nearest upcoming event, or **Featured Post** to manually pin a specific post |
 | **Post** | Only shown when **Featured Post** is selected — pick the post you want to spotlight |
 
@@ -195,7 +205,7 @@ Displays all published posts in a grid, ordered newest first. No configuration n
 
 | Field | Notes |
 |---|---|
-| **Heading** | Optional. Overrides the default `LATEST POSTS` heading |
+| **Heading** | Optional. Overrides the default "LATEST POSTS" heading |
 
 ---
 
@@ -237,7 +247,7 @@ A standalone full-width image.
 | Field | Notes |
 |---|---|
 | **Image** | Upload an image. Hotspot is enabled — drag the circle to set the crop focus |
-| **Alt Text** | Describe the image for accessibility and SEO. e.g. `DJ performing at C58 night, crowd visible in the background` — used by screen readers and search engines |
+| **Alt Text** | Describe the image for accessibility and SEO. e.g. "DJ performing at C58 night, crowd visible in the background" — used by screen readers and search engines |
 | **Caption** | Optional caption displayed below the image |
 
 ---
@@ -258,7 +268,7 @@ A standalone full-width image.
 | Field | Notes |
 |---|---|
 | **Name** | Required |
-| **Role** | e.g. `Resident DJ`, `Events Director` |
+| **Role** | e.g. "Resident DJ", "Events Director" |
 | **Bio** | Short description — plain text |
 | **Photo** | Use the hotspot tool to control how the image is cropped |
 

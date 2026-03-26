@@ -154,7 +154,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m5-todo"><h4>To Do (Milestone 5)</h4></a>
 
-- [ ] 5QA.1. Component tests — Jest + React Testing Library for at least `EventCard`, `PostCard`, and `PageBuilder`
+- [ ] 5QA.1. Component and page-level tests — add Playwright alongside Jest; cover at least `EventCard`, `PostCard`, and post/page routing. Jest remains for data-fetching logic.
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
