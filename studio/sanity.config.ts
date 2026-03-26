@@ -49,14 +49,15 @@ export default defineConfig({
 			},
 		}),
 		visionTool(),
-		{
+	],
+	tools: [
+				{
 			name: 'cms-guide',
 			title: 'Guide',
 			icon: BookIcon,
 			component: CmsGuide,
 		},
 	],
-
 	schema: {
 		types: schemaTypes,
 	},

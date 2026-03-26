@@ -1,13 +1,13 @@
 import {Box, Card, Code, Text} from '@sanity/ui'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import guideContent from '../../docs/cms-guide.md?raw'
 
 export function CmsGuide() {
 	return (
 		<Card height="fill" overflow="auto">
 			<Box paddingX={5} paddingY={6} style={{maxWidth: 760, margin: '0 auto'}}>
-				<ReactMarkdown
-					components={{
+				<ReactMarkdown remarkPlugins={[remarkGfm]} components={{
 						h1: ({children}) => (
 							<Box marginBottom={4}>
 								<Text size={4} weight="bold">{children}</Text>
@@ -33,10 +33,20 @@ export function CmsGuide() {
 								<Text size={1} muted>{children}</Text>
 							</Box>
 						),
+						ul: ({children}) => (
+							<ul style={{paddingLeft: '1.5rem', listStyleType: 'disc', marginBottom: '1rem'}}>
+								{children}
+							</ul>
+						),
+						ol: ({children}) => (
+							<ol style={{paddingLeft: '1.5rem', listStyleType: 'decimal', marginBottom: '1rem'}}>
+								{children}
+							</ol>
+						),
 						li: ({children}) => (
-							<Box as="li" marginBottom={1}>
-								<Text size={1} muted>{children}</Text>
-							</Box>
+							<li style={{marginBottom: '0.25rem', fontSize: '0.8125rem', color: 'var(--card-muted-fg-color)', lineHeight: 1.5}}>
+								{children}
+							</li>
 						),
 						code: ({children, className}) => {
 							const isBlock = !!className
