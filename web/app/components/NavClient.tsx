@@ -16,51 +16,58 @@ export default function NavClient({ navLinks }: NavClientProps) {
 		const handleScroll = () => setScrolled(window.scrollY > 20)
 		window.addEventListener('scroll', handleScroll, { passive: true })
 		return () => window.removeEventListener('scroll', handleScroll)
-	}, []) 
+	}, [])
+
+	useEffect(() => {
+		document.body.style.overflow = menuOpen ? 'hidden' : ''
+		return () => { document.body.style.overflow = '' }
+	}, [menuOpen])
 /* Active link highlighting */
 	return (
-		<header
-			className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-				scrolled ? 'bg-[rgba(10,10,10,0.92)] backdrop-blur-md' : 'bg-transparent'
-			}`}
-		>
-			<div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+		<>
+			<header
+				className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+					scrolled ? 'bg-[rgba(10,10,10,0.92)] backdrop-blur-md' : 'bg-transparent'
+				}`}
+			>
+				<div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
 
-				{/* Logo */}
-				<Link
-					href="/"
-					className="font-display font-bold text-[28px] text-c58-white uppercase tracking-[0.04em] hover:text-c58-ice transition-colors duration-200"
-				>
-					C58
-				</Link>
+					{/* Logo */}
+					<Link
+						href="/"
+						className="font-display font-bold text-[28px] text-c58-white uppercase tracking-[0.04em] hover:text-c58-ice transition-colors duration-200"
+					>
+						C58
+					</Link>
 
-				{/* Desktop nav */}
-				<nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-					{navLinks.map((link) => (
-						<Link
-							key={link.href}
-							href={link.href}
-							className="font-body text-label uppercase tracking-[0.15em] text-c58-white hover:text-c58-ice transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4 py-3"
-						>
-							{link.label}
-						</Link>
-					))}
-				</nav>
+					{/* Desktop nav */}
+					<nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								className="font-body text-label uppercase tracking-[0.15em] text-c58-white hover:text-c58-ice transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4 py-3"
+							>
+								{link.label}
+							</Link>
+						))}
+					</nav>
 
-				{/* Hamburger - Needs to close on nav link click? */}
-				<button
-					className="md:hidden flex flex-col justify-center gap-[6px] w-11 h-11 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
-					onClick={() => setMenuOpen(!menuOpen)}
-					aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-					aria-expanded={menuOpen}
-				>
-					<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px rotate-45 translate-y-[7px]' : 'h-px'}`} /> {/*verify this animation*/}
-					<span className={`block w-full h-px bg-c58-white transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-					<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px -rotate-45 -translate-y-[7px]' : 'h-px'}`} />
-				</button>
-			</div>
+					{/* Hamburger - Needs to close on nav link click? */}
+					<button
+						className="md:hidden flex flex-col justify-center gap-[6px] w-11 h-11 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
+						onClick={() => setMenuOpen(!menuOpen)}
+						aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+						aria-expanded={menuOpen}
+					>
+						<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px rotate-45 translate-y-[7px]' : 'h-px'}`} /> {/*verify this animation*/}
+						<span className={`block w-full h-px bg-c58-white transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+						<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px -rotate-45 -translate-y-[7px]' : 'h-px'}`} />
+					</button>
+				</div>
+			</header>
 
-			{/* Mobile overlay */}
+			{/* Mobile overlay — sibling of header to avoid backdrop-filter containing block issue */}
 			{menuOpen && (
 				<div className="md:hidden fixed inset-0 bg-c58-black z-40 flex flex-col items-center justify-center gap-12">
 					{navLinks.map((link) => (
@@ -75,6 +82,6 @@ export default function NavClient({ navLinks }: NavClientProps) {
 					))}
 				</div>
 			)}
-		</header>
+		</>
 	)
 }

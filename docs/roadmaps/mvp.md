@@ -9,7 +9,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | **FN**   | ✅ Scaffold, Tailwind, env vars done            | —                              | —                                |
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks, posts, featuredUpdate, blogList done | — | —                                |
 | **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout, featuredUpdate, blogList, PostCard, post detail pages done | — | —                                |
-| **QA**   | ✅ Error handling, edge cases, Jest fetch tests done | Component tests, error UI      | —                                |
+| **QA**   | ✅ Error handling, edge cases, Jest fetch tests, component tests done | — | —                                |
 | **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs, README done | —                         | Custom domain (pending client)   |
 
 ---
@@ -154,7 +154,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 
 <a name="m5-todo"><h4>To Do (Milestone 5)</h4></a>
 
-- [ ] 5QA.1. Component and page-level tests — add Playwright alongside Jest; cover at least `EventCard`, `PostCard`, and post/page routing. Jest remains for data-fetching logic.
+- [x] 5QA.1. Component tests — Jest + React Testing Library for `EventCard` and `PostCard`; className assertions cover conditional rendering, animation triggers, and link routing. Playwright deferred; Jest sufficient for MVP coverage.
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
