@@ -42,6 +42,12 @@ export const event = defineType({
 			description: 'e.g. £10 advance / £15 on the door',
 		}),
 		defineField({
+			name: 'ticketUrl',
+			title: 'Ticket URL',
+			type: 'url',
+			description: 'Link to purchase tickets (Skiddle, SumUp, etc.)',
+		}),
+		defineField({
 			name: 'image',
 			title: 'Image',
 			type: 'image',

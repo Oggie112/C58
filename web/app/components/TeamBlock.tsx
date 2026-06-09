@@ -14,7 +14,7 @@ export default function TeamBlock({ block }: { block: TeamBlockType }) {
 
 				<div className="w-15 h-px bg-c58-ice mb-6" />
 				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-16">
-					THE PEOPLE
+					{block.heading ?? 'THE PEOPLE'}
 				</h2>
 
 				<ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

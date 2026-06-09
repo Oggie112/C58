@@ -127,12 +127,26 @@ export interface BlogListBlock {
 	heading?: string
 }
 
+export interface TalentListBlock {
+	_type: 'talentListBlock'
+	_key: string
+	heading?: string
+}
+
+export interface PartnersBlock {
+	_type: 'partnersBlock'
+	_key: string
+	heading?: string
+}
+
 export type PageBuilderBlock =
 	| HeroBlock
 	| NextEventBlock
 	| FeaturedUpdateBlock
 	| EventListBlock
 	| BlogListBlock
+	| TalentListBlock
+	| PartnersBlock
 	| RichTextBlock
 	| TeamBlock
 	| ContactBlock
@@ -160,6 +174,7 @@ export interface SanityEvent {
 	time?: string
 	location?: string
 	cost?: string
+	ticketUrl?: string
 	image?: SanityImage
 	description?: PortableTextBlock[]
 }
@@ -181,6 +196,26 @@ export interface SanityTeamMember {
 	role?: string
 	bio?: string
 	photo?: SanityImage
+}
+
+export interface SanityTalent {
+	_id: string
+	_type: 'talent'
+	name: string
+	slug: SanitySlug
+	role?: string
+	bio?: string
+	photo?: SanityImage
+	socialLinks?: Array<{ platform: string; url: string }>
+}
+
+export interface SanityPartner {
+	_id: string
+	_type: 'partner'
+	name: string
+	logo?: SanityImage
+	website?: string
+	description?: string
 }
 
 export interface SanityNavLink {
