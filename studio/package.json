@@ -16,12 +16,12 @@
   ],
   "dependencies": {
     "@sanity/orderable-document-list": "^1.5.1",
-    "@sanity/vision": "^5.18.0",
+    "@sanity/vision": "^5.30.0",
     "react": "^19.1",
     "react-dom": "^19.1",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "sanity": "^5.18.0",
+    "sanity": "^5.30.0",
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
