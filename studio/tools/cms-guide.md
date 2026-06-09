@@ -1,0 +1,389 @@
+# C58 — CMS Guide
+
+Your website content is managed through **Sanity Studio**, a simple editing interface. This guide covers everything you need to keep the site up to date.
+
+---
+
+## Contents
+
+- [Accessing the Studio](#accessing-the-studio)
+- [Site Settings](#site-settings) — contact details, social links, privacy policy, navigation
+- [Events](#events)
+- [Posts](#posts)
+- [Pages](#pages)
+- [Page Builder Blocks](#page-builder-blocks)
+- [Team Members](#team-members)
+
+---
+
+## Accessing the Studio
+
+The Studio is available at your Sanity project URL (provided separately). Log in with your Sanity account. You'll land on the Studio dashboard.
+
+The left-hand sidebar lists the main content types: **Pages**, **Events**, **Posts**, **Team Members**, and **Site Settings**.
+
+---
+
+## Site Settings
+
+> **Site Settings** contains global information that appears across the whole site. There is only one — you edit it, you do not create new ones.
+
+To open it: click **Site Settings** in the sidebar.
+
+### Fields
+
+| Field | What it controls |
+|-------|------------------|
+| **Phone** | Phone number shown in the Contact section and footer |
+| **Email** | Email address shown in the Contact section and footer |
+| **Address** | Address shown in the Contact section and footer |
+| **Social Links** | Social media links shown in the footer |
+| **Privacy Policy Page** | The page linked in the footer as the privacy policy |
+| **Navigation Links** | The links in the site's top navigation bar |
+
+### Managing social links
+
+To add a social link: click **Add item** under Social Links, enter the **Platform** name (e.g. "Instagram", "Facebook", "SoundCloud"), then paste in the full **URL**.
+
+To reorder: drag items by the handle on the left.
+
+To remove: click the item, then the bin icon.
+
+### Managing navigation links
+
+To add a link: click **Add item** under Navigation Links, enter a **Label** (the text that appears in the nav), then select the **Page** it should link to.
+
+To reorder: drag items by the handle on the left.
+
+To remove: click the item, then the bin icon.
+
+> The navigation only supports links to pages within the site. External links are not currently supported.
+
+---
+
+## Events
+
+> Each event appears in the **Event List** section of any page that includes one. The **Featured Update** block can be set to automatically display whichever event is nearest in the future.
+
+### Creating an event
+
+1. Click **Events** in the sidebar
+2. Click **New event** (top right)
+3. Fill in the fields (see below)
+4. Click **Publish** when ready
+
+### Fields
+
+| Field | Required | Notes |
+|---|---|---|
+| **Title** | Yes | The event name |
+| **Slug** | Yes | The web address for this event — click **Generate** and it's created from the title automatically |
+| **Date** | Yes | Used to determine upcoming vs. past events |
+| **Time** | No | Free text, e.g. "9pm – late" |
+| **Location** | No | Venue name or address |
+| **Cost** | No | Free text, e.g. "£10 advance / £15 on the door" |
+| **Ticket URL** | No | Link to purchase tickets (e.g. Skiddle, SumUp). When set, the event card shows a live ticket button |
+| **Image** | No | Shown in event listings. Use the hotspot tool to control the crop focus |
+| **Description** | No | Rich text — supports headings, bold, links |
+
+### Editing an existing event
+
+Click the event in the list, make your changes, then click **Publish**. Changes only go live once published.
+
+### Past events
+
+Events with a past date remain in the system and appear in the **Past** tab of the Event List. You don't need to delete them.
+
+---
+
+## Posts
+
+> Posts are news updates, blog articles, or any written content you want to publish on the site. They appear in the **Blog List** block on any page that includes one, and can be spotlighted individually via the **Featured Update** block.
+
+### Creating a post
+
+1. Click **Posts** in the sidebar
+2. Click **New post** (top right)
+3. Fill in the fields (see below)
+4. Click **Publish** when ready
+
+### Fields
+
+| Field | Required | Notes |
+|---|---|---|
+| **Title** | Yes | The post headline |
+| **Slug** | Yes | The web address for this post — click **Generate** and it's created from the title automatically |
+| **Date** | Yes | Used to order posts newest-first in the Blog List |
+| **Image** | No | Shown in the post card. Use the hotspot tool to control the crop focus |
+| **Body** | No | Rich text — supports headings, bold, lists, links |
+
+### Editing an existing post
+
+Click the post in the list, make your changes, then click **Publish**. Changes only go live once published.
+
+### Public post pages
+
+Each published post gets its own page on the site at /posts/[slug] — e.g. a post with the slug "summer-update" will be live at yoursite.com/posts/summer-update. Post cards in the Blog List and Featured Update blocks link directly to this page.
+
+---
+
+## Pages
+
+> Pages are the individual sections of the site (e.g. Home, About). Each page is built from **blocks** — reusable content sections stacked in order.
+
+### Editing a page
+
+1. Click **Pages** in the sidebar
+2. Click the page you want to edit
+3. Scroll to **Page Builder** to add, remove, or reorder blocks
+4. Click **Publish** to push changes live
+
+### Page fields
+
+| Field | Notes |
+|---|---|
+| **Title** | The page name — also used in the browser tab |
+| **Slug** | The web address for this page — click **Generate** and it's created from the title automatically. e.g. a page titled "About" gets the address /about |
+| **SEO** | Optional — controls how the page appears in Google and when shared on social media (see below) |
+| **Page Builder** | The blocks that make up the page content |
+
+### SEO fields
+
+Expand the **SEO** section to control search and social appearance:
+
+| Field | Ideal length | Notes |
+|---|---|---|
+| **Meta Title** | 50–60 characters | Overrides the page title in Google results. Useful when the page title alone isn't descriptive enough — e.g. a page titled "Home" could have a meta title of "C58 — St Neots Underground Nights" |
+| **Meta Description** | 150–160 characters | The description shown under the link in Google. e.g. "C58 brings underground dance music to St Neots. Check our upcoming events, meet the team, and find out how to get involved." |
+| **Social Share Image** | 1200×630px | Shown when the page is shared on social media |
+
+If left blank, the site falls back to the page title and sensible defaults.
+
+---
+
+### Page Builder Blocks
+
+Blocks are the building units of each page. You can add as many as you need, in any order. Click **Add block** at the bottom of the Page Builder to choose one.
+
+---
+
+#### Hero
+
+A full-width banner at the top of a page, with optional background image or video and overlaid text.
+
+| Field | Notes |
+|---|---|
+| **Background Media** | Choose **Image** or **Video**. For image, upload and set a hotspot. For video, paste in a URL |
+| **Overlay Text** | Short text displayed over the background |
+
+---
+
+#### Featured Update
+
+Displays a single spotlight item — either the next upcoming event, or a specific post you choose. Use this as the main "what's happening" section on your homepage.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default heading (e.g. "NEXT EVENT" or "FEATURED POST") |
+| **Content Type** | Choose **Next Event** to automatically show the nearest upcoming event, or **Featured Post** to manually pin a specific post |
+| **Post** | Only shown when **Featured Post** is selected — pick the post you want to spotlight |
+
+> When set to **Next Event**, the block updates automatically as events are added and pass. You do not need to edit the page.
+>
+> When set to **Featured Post**, remember to update the selection when you want to spotlight something new.
+
+---
+
+#### Event List
+
+Displays all events with **Upcoming** and **Past** tabs. No configuration — it pulls everything from your Events list automatically.
+
+---
+
+#### Blog List
+
+Displays all published posts in a grid, ordered newest first. No configuration needed — it pulls from your Posts list automatically. Each post card links through to the full post page.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default "LATEST POSTS" heading |
+
+---
+
+#### Talent List
+
+Displays all published **Talent** in a filterable grid. Visitors can filter by role (DJ, Live Act, Photographer, etc.). Each card links to the talent's individual page.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default "OUR TALENT" heading |
+
+---
+
+#### Partners
+
+Displays all published **Partners** in a logo grid. No configuration needed beyond an optional heading.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default "OUR PARTNERS" heading |
+
+---
+
+#### Rich Text
+
+A free-form text area. Supports:
+
+- Headings (H2, H3)
+- Bold
+- Bullet and numbered lists
+- Hyperlinks
+
+Use this for any body copy, announcements, or general information.
+
+---
+
+#### Team
+
+Displays all published **Team Members** in a grid. No configuration — it pulls from the Team Members list automatically.
+
+---
+
+#### Contact
+
+Displays the contact details from **Site Settings** (phone, email, address).
+
+| Field | Notes |
+|---|---|
+| **Show Map Embed** | Toggle on to include a Google Maps embed of the address |
+
+> Make sure Site Settings has up-to-date contact details before using this block.
+
+---
+
+#### Image
+
+A standalone full-width image.
+
+| Field | Notes |
+|---|---|
+| **Image** | Upload an image. Hotspot is enabled — drag the circle to set the crop focus |
+| **Alt Text** | Describe the image for accessibility and SEO. e.g. "DJ performing at C58 night, crowd visible in the background" — used by screen readers and search engines |
+| **Caption** | Optional caption displayed below the image |
+
+---
+
+## Team Members
+
+> Team Members are displayed by the **Team** block on any page that includes one.
+
+### Adding a team member
+
+1. Click **Team Members** in the sidebar
+2. Click **New Team Member**
+3. Fill in the fields
+4. Click **Publish**
+
+### Fields
+
+| Field | Notes |
+|---|---|
+| **Name** | Required |
+| **Role** | e.g. "Resident DJ", "Events Director" |
+| **Bio** | Short description — plain text |
+| **Photo** | Use the hotspot tool to control how the image is cropped |
+
+### Ordering
+
+Team members appear on the site in the order set in the Studio list view. To reorder:
+
+1. Click **Team Members** in the sidebar
+2. Drag members up or down using the handle on the left of each row
+3. The site reflects the new order automatically — no publish step needed for ordering changes
+
+---
+
+## Talent
+
+> Talent are displayed by the **Talent List** block. Each talent gets their own page on the site at /talents/[slug].
+
+### Adding talent
+
+1. Click **Talent** in the sidebar
+2. Click **New Talent**
+3. Fill in the fields
+4. Click **Publish**
+
+### Fields
+
+| Field | Notes |
+|---|---|
+| **Name** | Required |
+| **Slug** | Click **Generate** — created from the name automatically |
+| **Role** | Select from: DJ, Live Act, Producer, Visual Artist, Photographer, Promoter |
+| **Bio** | Longer description — plain text |
+| **Photo** | Portrait orientation works best. Use the hotspot tool to control cropping |
+| **Social Links** | Add links to Instagram, SoundCloud, Spotify, etc. Each link has a Platform name and URL |
+
+### Ordering
+
+Drag talent up or down in the sidebar list to control the order they appear on the site.
+
+---
+
+## Partners
+
+> Partners are displayed by the **Partners** block on any page that includes one.
+
+### Adding a partner
+
+1. Click **Partners** in the sidebar
+2. Click **New Partner**
+3. Fill in the fields
+4. Click **Publish**
+
+### Fields
+
+| Field | Notes |
+|---|---|
+| **Name** | Required |
+| **Logo** | Square logos work best. Use the hotspot tool if needed |
+| **Website** | Optional — if set, the partner card links to this URL |
+| **Description** | Short description shown below the logo |
+
+### Ordering
+
+Drag partners up or down in the sidebar list to control display order.
+
+---
+
+## Previewing Changes
+
+> The Studio includes a live preview panel so you can see how your changes will look on the site before publishing.
+
+### Using the Presentation Tool
+
+Click **Presentation** in the top bar (Between structure and vision). The site loads on the left-hand side, reflecting your current drafts in real time — including unpublished changes.
+
+You can click on a part of the site to see more information on that part, including its contents. You can then also change the contents of that part via the side panel on the right. 
+
+As you edit content in the Studio, the preview updates automatically. You do not need to save or publish first.
+
+### What to expect
+
+- The preview shows **draft content** — exactly what will go live when you publish.
+- It is only visible inside the Studio. Visitors to the site always see the published version.
+- If the preview shows a blank page or fails to load, try refreshing the preview panel. If the issue persists, the published site is unaffected.
+
+### When to use it
+
+Use it any time you want to check layout, spacing, or how new content fits before committing. It is particularly useful when reordering page builder blocks or updating the Hero image.
+
+---
+
+## Tips
+
+- **Draft vs Published** — changes are saved automatically as drafts. Nothing goes live until you click **Publish**.
+- **Unpublishing** — to temporarily hide content without deleting it, click the menu next to Publish and choose **Unpublish**.
+- **Deleting** — avoid deleting events or pages unless you are certain. Unpublishing is usually safer.
+- **Images** — use the **hotspot** tool (the circle you can drag around the image) to tell the site which part of the image is most important, so it crops correctly on different screen sizes.
