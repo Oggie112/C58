@@ -1,7 +1,7 @@
 import {Box, Card, Code, Text} from '@sanity/ui'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import guideContent from '../../docs/cms-guide.md?raw'
+import guideContent from './cms-guide.md?raw'
 
 export function CmsGuide() {
 	return (

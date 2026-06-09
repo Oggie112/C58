@@ -108,5 +108,5 @@ The Sanity Studio is deployed at [c58.sanity.studio](https://c58.sanity.studio).
 
 ## Docs
 
-- [`docs/cms-guide.md`](docs/cms-guide.md) — editor guide for the client
+- **CMS Guide** — accessible via the Guide tab inside Sanity Studio
 - [`docs/roadmaps/mvp.md`](docs/roadmaps/mvp.md) — project roadmap

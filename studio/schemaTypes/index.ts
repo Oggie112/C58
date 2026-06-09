@@ -3,6 +3,7 @@ import {page} from './documents/page'
 import {event} from './documents/event'
 import {post} from './documents/post'
 import {teamMember} from './documents/team-member'
+import {volunteer} from './documents/volunteer'
 import {talent} from './documents/talent'
 import {partner} from './documents/partner'
 import {siteSettings} from './documents/site-settings'
@@ -17,6 +18,7 @@ import {partnersBlock} from './blocks/partners-block'
 import {eventListBlock} from './blocks/event-list-block'
 import {richTextBlock} from './blocks/rich-text-block'
 import {teamBlock} from './blocks/team-block'
+import {volunteerBlock} from './blocks/volunteer-block'
 import {contactBlock} from './blocks/contact-block'
 import {imageBlock} from './blocks/image-block'
 
@@ -29,6 +31,7 @@ export const schemaTypes = [
 	event,
 	post,
 	teamMember,
+	volunteer,
 	talent,
 	partner,
 	siteSettings,
@@ -42,6 +45,7 @@ export const schemaTypes = [
 	eventListBlock,
 	richTextBlock,
 	teamBlock,
+	volunteerBlock,
 	contactBlock,
 	imageBlock,
 	// Objects

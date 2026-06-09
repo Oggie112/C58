@@ -57,6 +57,7 @@ export const page = defineType({
 				{type: 'eventListBlock'},
 				{type: 'richTextBlock'},
 				{type: 'teamBlock'},
+				{type: 'volunteerBlock'},
 				{type: 'contactBlock'},
 				{type: 'imageBlock'},
 			],

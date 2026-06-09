@@ -82,6 +82,7 @@ To remove: click the item, then the bin icon.
 | **Time** | No | Free text, e.g. "9pm – late" |
 | **Location** | No | Venue name or address |
 | **Cost** | No | Free text, e.g. "£10 advance / £15 on the door" |
+| **Ticket URL** | No | Link to purchase tickets (e.g. Skiddle, SumUp). When set, the event card shows a live ticket button |
 | **Image** | No | Shown in event listings. Use the hotspot tool to control the crop focus |
 | **Description** | No | Rich text — supports headings, bold, links |
 
@@ -209,6 +210,26 @@ Displays all published posts in a grid, ordered newest first. No configuration n
 
 ---
 
+#### Talent List
+
+Displays all published **Talent** in a filterable grid. Visitors can filter by role (DJ, Live Act, Photographer, etc.). Each card links to the talent's individual page.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default "OUR TALENT" heading |
+
+---
+
+#### Partners
+
+Displays all published **Partners** in a logo grid. No configuration needed beyond an optional heading.
+
+| Field | Notes |
+|---|---|
+| **Heading** | Optional. Overrides the default "OUR PARTNERS" heading |
+
+---
+
 #### Rich Text
 
 A free-form text area. Supports:
@@ -279,6 +300,60 @@ Team members appear on the site in the order set in the Studio list view. To reo
 1. Click **Team Members** in the sidebar
 2. Drag members up or down using the handle on the left of each row
 3. The site reflects the new order automatically — no publish step needed for ordering changes
+
+---
+
+## Talent
+
+> Talent are displayed by the **Talent List** block. Each talent gets their own page on the site at /talents/[slug].
+
+### Adding talent
+
+1. Click **Talent** in the sidebar
+2. Click **New Talent**
+3. Fill in the fields
+4. Click **Publish**
+
+### Fields
+
+| Field | Notes |
+|---|---|
+| **Name** | Required |
+| **Slug** | Click **Generate** — created from the name automatically |
+| **Role** | Select from: DJ, Live Act, Producer, Visual Artist, Photographer, Promoter |
+| **Bio** | Longer description — plain text |
+| **Photo** | Portrait orientation works best. Use the hotspot tool to control cropping |
+| **Social Links** | Add links to Instagram, SoundCloud, Spotify, etc. Each link has a Platform name and URL |
+
+### Ordering
+
+Drag talent up or down in the sidebar list to control the order they appear on the site.
+
+---
+
+## Partners
+
+> Partners are displayed by the **Partners** block on any page that includes one.
+
+### Adding a partner
+
+1. Click **Partners** in the sidebar
+2. Click **New Partner**
+3. Fill in the fields
+4. Click **Publish**
+
+### Fields
+
+| Field | Notes |
+|---|---|
+| **Name** | Required |
+| **Logo** | Square logos work best. Use the hotspot tool if needed |
+| **Website** | Optional — if set, the partner card links to this URL |
+| **Description** | Short description shown below the logo |
+
+### Ordering
+
+Drag partners up or down in the sidebar list to control display order.
 
 ---
 
