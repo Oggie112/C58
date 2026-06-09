@@ -2,16 +2,13 @@ import { SanityEvent } from '@/types/sanity'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface EventCardProps {
 	event: SanityEvent
 	featured?: boolean
 	past?: boolean
 }
-
-// NOTE: Design specifies a TICKETS → CTA linking to a ticket URL.
-// SanityEvent has no ticketUrl field — only cost (string).
-// The button is rendered as a visual placeholder until ticketUrl is added to the schema.
 
 export default function EventCard({ event, featured = false, past = false }: EventCardProps) {
 	const imageUrl = event.image
@@ -76,9 +73,18 @@ export default function EventCard({ event, featured = false, past = false }: Eve
 						<span className="font-body text-label text-c58-muted uppercase tracking-[0.15em]">
 							PAST
 						</span>
+					) : event.ticketUrl ? (
+						<Link
+							href={event.ticketUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 inline-block hover:bg-white transition-colors duration-200"
+						>
+							TICKETS →
+						</Link>
 					) : (
-						<span className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 inline-block">
-							{event.cost ? event.cost : 'TICKETS →'}
+						<span className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice/30 text-c58-muted px-8 py-3.5 inline-block">
+							{event.cost ?? 'TICKETS →'}
 						</span>
 					)}
 					{event.time && (

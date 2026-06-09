@@ -52,6 +52,8 @@ export const page = defineType({
 				{type: 'heroBlock'},
 				{type: 'featuredUpdateBlock'},
 				{type: 'blogListBlock'},
+				{type: 'talentListBlock'},
+				{type: 'partnersBlock'},
 				{type: 'eventListBlock'},
 				{type: 'richTextBlock'},
 				{type: 'teamBlock'},

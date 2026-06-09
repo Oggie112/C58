@@ -11,6 +11,7 @@ export const UPCOMING_EVENTS_QUERY = defineQuery(/* groq */ `
         time,
         location,
         cost,
+        ticketUrl,
         image,
         description
     }
@@ -28,6 +29,7 @@ export const PAST_EVENTS_QUERY = defineQuery(/* groq */ `
         time,
         location,
         cost,
+        ticketUrl,
         image,
         description
     }
@@ -44,6 +46,7 @@ export const NEAREST_EVENT_QUERY = defineQuery(/* groq */ `
         time,
         location,
         cost,
+        ticketUrl,
         image,
         description
     }`)
