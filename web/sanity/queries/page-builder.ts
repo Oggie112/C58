@@ -45,6 +45,12 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 				"members": *[_type == "teamMember"] | order(orderRank) {
 					_id, _type, name, role, bio, photo
 				}
+			},
+			_type == "volunteerBlock" => {
+				...,
+				"volunteers": *[_type == "volunteer"] | order(orderRank) {
+					_id, _type, name, bio, photo
+				}
 			}
 		}
 	}

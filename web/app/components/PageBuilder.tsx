@@ -9,6 +9,7 @@ import RichTextBlock from "@/app/components/RichTextBlock";
 import ContactBlock from "@/app/components/ContactBlock";
 import ImageBlock from "@/app/components/ImageBlock";
 import TeamBlock from "@/app/components/TeamBlock";
+import VolunteerBlock from "@/app/components/VolunteerBlock";
 
 export default function PageBuilder({blocks}: { blocks: PageBuilderBlock[]}) {
     return (
@@ -24,6 +25,7 @@ export default function PageBuilder({blocks}: { blocks: PageBuilderBlock[]}) {
                     case "eventListBlock": return <EventListBlock key={block._key} block={block}/>;
                     case "richTextBlock": return <RichTextBlock key={block._key} block={block}/>;
                     case "teamBlock": return <TeamBlock key={block._key} block={block}/>;
+                    case "volunteerBlock": return <VolunteerBlock key={block._key} block={block}/>;
                     case "contactBlock": return <ContactBlock key={block._key} block={block}/>;
                     case "imageBlock": return <ImageBlock key={block._key} block={block}/>;
                     default:

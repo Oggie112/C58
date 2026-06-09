@@ -9,7 +9,7 @@ import {resolve} from './presentation/resolve'
 import {CmsGuide} from './tools/CmsGuide'
 
 const SINGLETON_TYPES = new Set(['siteSettings'])
-const ORDERABLE_TYPES = new Set(['teamMember', 'talent', 'partner'])
+const ORDERABLE_TYPES = new Set(['teamMember', 'volunteer', 'talent', 'partner'])
 
 export default defineConfig({
 	name: 'default',
@@ -28,6 +28,7 @@ export default defineConfig({
 							(item) => !SINGLETON_TYPES.has(item.getId() ?? '') && !ORDERABLE_TYPES.has(item.getId() ?? ''),
 						),
 						orderableDocumentListDeskItem({S, context, type: 'teamMember', title: 'Team Members'}),
+						orderableDocumentListDeskItem({S, context, type: 'volunteer', title: 'Volunteers'}),
 						orderableDocumentListDeskItem({S, context, type: 'talent', title: 'Talent'}),
 						orderableDocumentListDeskItem({S, context, type: 'partner', title: 'Partners'}),
 						S.divider(),

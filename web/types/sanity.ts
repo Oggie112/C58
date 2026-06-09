@@ -108,6 +108,13 @@ export interface TeamBlock {
 	members?: SanityTeamMember[]
 }
 
+export interface VolunteerBlock {
+	_type: 'volunteerBlock'
+	_key: string
+	heading?: string
+	volunteers?: SanityVolunteer[]
+}
+
 export interface ContactBlock {
 	_type: 'contactBlock'
 	_key: string
@@ -149,6 +156,7 @@ export type PageBuilderBlock =
 	| PartnersBlock
 	| RichTextBlock
 	| TeamBlock
+	| VolunteerBlock
 	| ContactBlock
 	| ImageBlock
 
@@ -194,6 +202,14 @@ export interface SanityTeamMember {
 	_type: 'teamMember'
 	name: string
 	role?: string
+	bio?: string
+	photo?: SanityImage
+}
+
+export interface SanityVolunteer {
+	_id: string
+	_type: 'volunteer'
+	name: string
 	bio?: string
 	photo?: SanityImage
 }
