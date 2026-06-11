@@ -121,6 +121,13 @@ export interface ContactBlock {
 	showMap?: boolean
 }
 
+export interface InstagramBlock {
+	_type: 'instagramBlock'
+	_key: string
+	heading?: string
+	instagramUrl?: string
+}
+
 export interface ImageBlock {
 	_type: 'imageBlock'
 	_key: string
@@ -159,6 +166,7 @@ export type PageBuilderBlock =
 	| VolunteerBlock
 	| ContactBlock
 	| ImageBlock
+	| InstagramBlock
 
 // ---------------------------------------------------------------------------
 // Documents

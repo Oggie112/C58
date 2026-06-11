@@ -60,6 +60,7 @@ export const page = defineType({
 				{type: 'volunteerBlock'},
 				{type: 'contactBlock'},
 				{type: 'imageBlock'},
+				{type: 'instagramBlock'},
 			],
 		}),
 	],

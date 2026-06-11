@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@behold/react": "^0.1.11",
     "@sanity/image-url": "^2.0.3",
     "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.13.5",
