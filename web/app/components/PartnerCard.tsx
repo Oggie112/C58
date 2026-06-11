@@ -16,12 +16,14 @@ function CardContent({ partner }: PartnerCardProps) {
 		<>
 			<div className="relative w-full aspect-square overflow-hidden bg-c58-void border-b border-c58-border">
 				{logoUrl ? (
-					<Image
-						src={logoUrl}
-						alt={`${partner.name} logo`}
-						fill
-						className="object-contain p-6 grayscale group-hover:grayscale-0 transition-[filter] duration-500"
-					/>
+					<div className="absolute inset-6">
+						<Image
+							src={logoUrl}
+							alt={`${partner.name} logo`}
+							fill
+							className="object-contain grayscale group-hover:grayscale-0 transition-[filter] duration-500"
+						/>
+					</div>
 				) : (
 					<div className="w-full h-full flex items-center justify-center p-6">
 						<span className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-ghost text-center">
