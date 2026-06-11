@@ -9,21 +9,19 @@ interface PartnerCardProps {
 
 function CardContent({ partner }: PartnerCardProps) {
 	const logoUrl = partner.logo
-		? urlFor(partner.logo).width(400).height(400).url()
+		? urlFor(partner.logo).width(400).url()
 		: null
 
 	return (
 		<>
 			<div className="relative w-full aspect-square overflow-hidden bg-c58-void border-b border-c58-border">
 				{logoUrl ? (
-					<div className="absolute inset-6">
-						<Image
-							src={logoUrl}
-							alt={`${partner.name} logo`}
-							fill
-							className="object-contain grayscale group-hover:grayscale-0 transition-[filter] duration-500"
-						/>
-					</div>
+					<Image
+						src={logoUrl}
+						alt={`${partner.name} logo`}
+						fill
+						className="object-contain p-6 grayscale group-hover:grayscale-0 transition-[filter] duration-500"
+					/>
 				) : (
 					<div className="w-full h-full flex items-center justify-center p-6">
 						<span className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-ghost text-center">
