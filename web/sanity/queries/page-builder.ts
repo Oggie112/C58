@@ -51,6 +51,10 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 				"volunteers": *[_type == "volunteer"] | order(orderRank) {
 					_id, _type, name, bio, photo
 				}
+			},
+			_type == "instagramBlock" => {
+				...,
+				"instagramUrl": *[_type == "siteSettings"][0].socialLinks[lower(platform) == "instagram"][0].url
 			}
 		}
 	}

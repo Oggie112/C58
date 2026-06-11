@@ -21,6 +21,7 @@ import {teamBlock} from './blocks/team-block'
 import {volunteerBlock} from './blocks/volunteer-block'
 import {contactBlock} from './blocks/contact-block'
 import {imageBlock} from './blocks/image-block'
+import {instagramBlock} from './blocks/instagram-block'
 
 // Objects
 import {bgMedia} from './objects/bg-media'
@@ -48,6 +49,7 @@ export const schemaTypes = [
 	volunteerBlock,
 	contactBlock,
 	imageBlock,
+	instagramBlock,
 	// Objects
 	bgMedia,
 ]

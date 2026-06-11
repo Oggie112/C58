@@ -3,6 +3,7 @@ import {structureTool} from 'sanity/structure'
 import {presentationTool} from 'sanity/presentation'
 import {visionTool} from '@sanity/vision'
 import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
+import {media} from 'sanity-plugin-media'
 import {BookIcon} from '@sanity/icons'
 import {schemaTypes} from './schemaTypes'
 import {resolve} from './presentation/resolve'
@@ -52,6 +53,7 @@ export default defineConfig({
 			},
 		}),
 		visionTool(),
+		media(),
 	],
 	tools: [
 				{
