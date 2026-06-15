@@ -28,7 +28,7 @@ export default function EventCard({ event, featured = false, past = false }: Eve
 						src={imageUrl}
 						alt={`Event image for ${event.title}`}
 						fill
-						className={`object-cover transition-[filter] duration-300 ${
+						className={`object-contain transition-[filter] duration-300 ${
 							past
 								? 'grayscale-[60%] brightness-[60%]'
 								: 'grayscale-[30%] brightness-[85%] group-hover:grayscale-0 group-hover:brightness-100'
