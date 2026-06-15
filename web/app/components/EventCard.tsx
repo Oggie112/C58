@@ -12,7 +12,7 @@ interface EventCardProps {
 
 export default function EventCard({ event, featured = false, past = false }: EventCardProps) {
 	const imageUrl = event.image
-		? urlFor(event.image).width(featured ? 1200 : 800).height(featured ? 675 : 450).url()
+		? urlFor(event.image).width(featured ? 1200 : 800).url()
 		: null
 
 	return (
