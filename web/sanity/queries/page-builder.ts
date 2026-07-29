@@ -55,6 +55,16 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 			_type == "instagramBlock" => {
 				...,
 				"instagramUrl": *[_type == "siteSettings"][0].socialLinks[lower(platform) == "instagram"][0].url
+			},
+			_type == "imageBlock" => {
+				...,
+				image {
+					...,
+					asset->{
+						...,
+						metadata { dimensions }
+					}
+				}
 			}
 		}
 	}

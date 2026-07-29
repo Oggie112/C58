@@ -17,6 +17,13 @@ export interface SanityReference {
 export interface SanityImageAsset {
 	_ref: string
 	_type: 'reference'
+	metadata?: {
+		dimensions: {
+			width: number
+			height: number
+			aspectRatio: number
+		}
+	}
 }
 
 export interface SanityImageHotspot {
