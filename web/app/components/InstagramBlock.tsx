@@ -34,7 +34,7 @@ export default function InstagramBlock({ block }: { block: InstagramBlockType })
 					href={block.instagramUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="inline-block border border-c58-ice text-c58-ice font-body text-label uppercase tracking-[0.15em] px-8 py-3 hover:bg-c58-ice hover:text-c58-void transition-colors duration-300"
+					className="inline-block border border-c58-ice text-c58-ice font-body text-label uppercase tracking-[0.15em] px-8 py-3 hover:bg-c58-ice hover:text-c58-void active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[background-color,color,transform] duration-300"
 				>
 					Follow Us
 				</a>

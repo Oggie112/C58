@@ -52,7 +52,7 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 					{update && (
 						<button
 							onClick={() => setModalOpen(true)}
-							className="font-body text-label uppercase tracking-[0.15em] border border-c58-ice-border text-c58-ice px-8 py-3.5 hover:bg-c58-ice-glow hover:border-c58-ice transition-[background-color,border-color] duration-200"
+							className="font-body text-label uppercase tracking-[0.15em] border border-c58-ice-border text-c58-ice px-8 py-3.5 hover:bg-c58-ice-glow hover:border-c58-ice active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[background-color,border-color,transform] duration-200"
 						>
 							{buttonLabel}
 						</button>

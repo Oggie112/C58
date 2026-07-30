@@ -78,7 +78,7 @@ export default function EventCard({ event, featured = false, past = false }: Eve
 							href={event.ticketUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 inline-block hover:bg-white transition-colors duration-200"
+							className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 inline-block hover:bg-white active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[background-color,transform] duration-200"
 						>
 							TICKETS →
 						</Link>
