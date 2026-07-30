@@ -4,11 +4,14 @@ import { SanityEvent } from '@/types/sanity'
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import EventCard from './EventCard'
+import PageTitle from './PageTitle'
 
 interface EventListClientProps {
 	upcoming: SanityEvent[]
 	past: SanityEvent[]
 	defaultTab: 'upcoming' | 'past'
+	heading: string
+	subheading?: string
 }
 
 const EASING = [0.16, 1, 0.3, 1] as const
@@ -22,7 +25,7 @@ const CARD_VARIANTS = {
 	}),
 }
 
-export default function EventListClient({ upcoming, past, defaultTab }: EventListClientProps) {
+export default function EventListClient({ upcoming, past, defaultTab, heading, subheading }: EventListClientProps) {
 	const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>(defaultTab)
 
 	const events = activeTab === 'upcoming' ? upcoming : past
@@ -35,10 +38,7 @@ export default function EventListClient({ upcoming, past, defaultTab }: EventLis
 
 				{/* Section header */}
 				<div className="mb-16">
-					<div className="w-15 h-px bg-c58-ice mb-6" />
-					<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
-						EVENTS
-					</h2>
+					<PageTitle title={heading} subtitle={subheading} className="mb-10" />
 
 					{/* Tab switcher */}
 					<div className="flex items-center gap-8">

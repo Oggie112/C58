@@ -4,20 +4,32 @@ import { VolunteerBlock as VolunteerBlockType } from '@/types/sanity'
 import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
 import { motion } from 'motion/react'
+import { PortableText } from 'next-sanity'
+import portableTextComponents from '@/lib/portableTextComponents'
+import SectionMarker from './SectionMarker'
 
-export default function VolunteerBlock({ block }: { block: VolunteerBlockType }) {
+export default function VolunteerBlock({ block, sectionNumber }: { block: VolunteerBlockType; sectionNumber?: string }) {
 	if (!block.volunteers || block.volunteers.length === 0) return null
 
 	return (
 		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
 
-				<div className="w-15 h-px bg-c58-ice mb-6" />
-				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-16">
+				<SectionMarker number={sectionNumber} />
+				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
 					{block.heading ?? 'VOLUNTEERS'}
 				</h2>
 
-				<ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+				{block.intro && (
+					<div className="max-w-[680px] mb-16">
+						<PortableText value={block.intro} components={portableTextComponents} />
+					</div>
+				)}
+
+				<ul
+					className="grid gap-6"
+					style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}
+				>
 					{block.volunteers.map((volunteer, i) => (
 						<motion.li
 							key={volunteer._id}
@@ -31,7 +43,7 @@ export default function VolunteerBlock({ block }: { block: VolunteerBlockType })
 							<div className="relative w-full aspect-square overflow-hidden bg-c58-void mb-4">
 								{volunteer.photo ? (
 									<Image
-										src={urlFor(volunteer.photo).width(400).height(400).url()}
+										src={urlFor(volunteer.photo).width(400).url()}
 										alt={`Photo of ${volunteer.name}`}
 										fill
 										className="object-cover grayscale group-hover:grayscale-0 transition-[filter] duration-500"
@@ -46,16 +58,9 @@ export default function VolunteerBlock({ block }: { block: VolunteerBlockType })
 							</div>
 
 							{/* Name */}
-							<h3 className="font-display font-bold text-label uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-2">
+							<h3 className="font-display font-bold text-volunteer-name uppercase leading-[0.9] tracking-[0.04em] text-c58-white">
 								{volunteer.name}
 							</h3>
-
-							{/* Bio */}
-							{volunteer.bio && (
-								<p className="font-body text-sm text-c58-muted leading-[1.7]">
-									{volunteer.bio}
-								</p>
-							)}
 						</motion.li>
 					))}
 				</ul>

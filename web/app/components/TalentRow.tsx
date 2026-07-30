@@ -3,21 +3,21 @@ import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
 import Link from 'next/link'
 
-interface TalentCardProps {
+interface TalentRowProps {
 	talent: SanityTalent
 }
 
-export default function TalentCard({ talent }: TalentCardProps) {
+export default function TalentRow({ talent }: TalentRowProps) {
 	const imageUrl = talent.photo
-		? urlFor(talent.photo).width(600).height(800).url()
+		? urlFor(talent.photo).width(440).url()
 		: null
 
 	return (
 		<Link
 			href={`/talents/${talent.slug.current}`}
-			className="group block bg-c58-void border border-c58-border hover:border-c58-ice-border hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(125,212,252,0.08)] transition-[transform,border-color,box-shadow] duration-300 [transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)]"
+			className="group flex flex-wrap gap-12 border-t border-c58-border py-12 md:py-14 items-start"
 		>
-			<div className="relative w-full aspect-[3/4] overflow-hidden bg-c58-void">
+			<div className="relative w-[220px] h-[220px] shrink-0 overflow-hidden bg-c58-void">
 				{imageUrl ? (
 					<Image
 						src={imageUrl}
@@ -34,15 +34,20 @@ export default function TalentCard({ talent }: TalentCardProps) {
 				)}
 			</div>
 
-			<div className="p-4 md:p-5">
+			<div className="max-w-[680px]">
 				{talent.role && (
 					<p className="font-body text-label text-c58-ice uppercase tracking-[0.15em] mb-2">
 						{talent.role}
 					</p>
 				)}
-				<h3 className="font-display font-bold text-headline uppercase leading-[0.9] tracking-[0.04em] text-c58-white">
+				<h3 className="font-display font-bold text-row-name uppercase leading-[0.9] tracking-[0.04em] text-c58-white group-hover:text-c58-ice transition-colors duration-200 mb-3">
 					{talent.name}
 				</h3>
+				{talent.bio && (
+					<p className="font-body text-body text-c58-muted leading-[1.7]">
+						{talent.bio}
+					</p>
+				)}
 			</div>
 		</Link>
 	)

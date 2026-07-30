@@ -43,13 +43,13 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 			_type == "teamBlock" => {
 				...,
 				"members": *[_type == "teamMember"] | order(orderRank) {
-					_id, _type, name, role, bio, photo
+					_id, _type, name, role, photo
 				}
 			},
 			_type == "volunteerBlock" => {
 				...,
 				"volunteers": *[_type == "volunteer"] | order(orderRank) {
-					_id, _type, name, bio, photo
+					_id, _type, name, photo
 				}
 			},
 			_type == "instagramBlock" => {

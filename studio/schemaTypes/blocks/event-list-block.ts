@@ -6,6 +6,19 @@ export const eventListBlock = defineType({
 	type: 'object',
 	fields: [
 		defineField({
+			name: 'heading',
+			title: 'Heading',
+			type: 'string',
+			placeholder: 'e.g. EVENTS',
+		}),
+		defineField({
+			name: 'subheading',
+			title: 'Subheading',
+			description: 'Optional short muted subtext shown under the heading.',
+			type: 'text',
+			rows: 2,
+		}),
+		defineField({
 			name: 'showPast',
 			title: 'Show Past Events',
 			type: 'boolean',

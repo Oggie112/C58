@@ -3,14 +3,16 @@
 import { useState, useMemo } from 'react'
 import { SanityTalent } from '@/types/sanity'
 import { motion, AnimatePresence } from 'motion/react'
-import TalentCard from './TalentCard'
+import PageTitle from './PageTitle'
+import TalentRow from './TalentRow'
 
 interface TalentListClientProps {
 	talents: SanityTalent[]
 	heading: string
+	subheading?: string
 }
 
-export default function TalentListClient({ talents, heading }: TalentListClientProps) {
+export default function TalentListClient({ talents, heading, subheading }: TalentListClientProps) {
 	const [activeRole, setActiveRole] = useState<string | null>(null)
 
 	const roles = useMemo(
@@ -23,10 +25,7 @@ export default function TalentListClient({ talents, heading }: TalentListClientP
 	return (
 		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
-				<div className="w-15 h-px bg-c58-ice mb-6" />
-				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
-					{heading}
-				</h2>
+				<PageTitle title={heading} subtitle={subheading} className="mb-10" />
 
 				{roles.length > 1 && (
 					<div className="flex flex-wrap gap-2 mb-12">
@@ -56,10 +55,7 @@ export default function TalentListClient({ talents, heading }: TalentListClientP
 					</div>
 				)}
 
-				<motion.ul
-					layout
-					className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
-				>
+				<motion.ul layout>
 					<AnimatePresence mode="popLayout">
 						{filtered.map((talent, i) => (
 							<motion.li
@@ -70,7 +66,7 @@ export default function TalentListClient({ talents, heading }: TalentListClientP
 								exit={{ opacity: 0, scale: 0.95 }}
 								transition={{ duration: 0.35, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
 							>
-								<TalentCard talent={talent} />
+								<TalentRow talent={talent} />
 							</motion.li>
 						))}
 					</AnimatePresence>

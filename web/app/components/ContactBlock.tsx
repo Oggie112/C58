@@ -1,7 +1,8 @@
 import { ContactBlock as ContactBlockType } from '@/types/sanity'
 import { getSiteSettings } from '@/sanity/fetch'
+import SectionMarker from './SectionMarker'
 
-export default async function ContactBlock({ block }: { block: ContactBlockType }) {
+export default async function ContactBlock({ block, sectionNumber }: { block: ContactBlockType; sectionNumber?: string }) {
 	let settings
 	try {
 		settings = await getSiteSettings()
@@ -16,7 +17,7 @@ export default async function ContactBlock({ block }: { block: ContactBlockType 
 		<section className="py-16 md:py-32 px-4 md:px-6 border-t border-c58-border">
 			<div className="max-w-[1200px] mx-auto">
 
-				<div className="w-15 h-px bg-c58-ice mb-6" />
+				<SectionMarker number={sectionNumber} />
 
 				<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10 mb-16">
 					<h2 className="font-display font-bold text-subhead md:text-headline uppercase leading-[0.9] tracking-[0.04em] text-c58-white">

@@ -13,5 +13,13 @@ export default async function EventListBlock({ block }: { block: EventListBlockT
 		return null
 	}
 
-	return <EventListClient upcoming={upcoming} past={past} defaultTab={block.showPast ? 'past' : 'upcoming'} />
+	return (
+		<EventListClient
+			upcoming={upcoming}
+			past={past}
+			defaultTab={block.showPast ? 'past' : 'upcoming'}
+			heading={block.heading ?? 'EVENTS'}
+			subheading={block.subheading}
+		/>
+	)
 }

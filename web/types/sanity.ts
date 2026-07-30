@@ -99,6 +99,8 @@ export interface FeaturedUpdateBlock {
 export interface EventListBlock {
 	_type: 'eventListBlock'
 	_key: string
+	heading?: string
+	subheading?: string
 	showPast?: boolean
 }
 
@@ -112,6 +114,7 @@ export interface TeamBlock {
 	_type: 'teamBlock'
 	_key: string
 	heading?: string
+	intro?: PortableTextBlock[]
 	members?: SanityTeamMember[]
 }
 
@@ -119,6 +122,7 @@ export interface VolunteerBlock {
 	_type: 'volunteerBlock'
 	_key: string
 	heading?: string
+	intro?: PortableTextBlock[]
 	volunteers?: SanityVolunteer[]
 }
 
@@ -152,12 +156,14 @@ export interface TalentListBlock {
 	_type: 'talentListBlock'
 	_key: string
 	heading?: string
+	subheading?: string
 }
 
 export interface PartnersBlock {
 	_type: 'partnersBlock'
 	_key: string
 	heading?: string
+	subheading?: string
 }
 
 export type PageBuilderBlock =

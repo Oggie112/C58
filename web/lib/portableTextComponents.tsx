@@ -8,12 +8,12 @@ const portableTextComponents: PortableTextComponents = {
 			</p>
 		),
 		h1: ({ children }) => (
-			<h1 className="font-display font-bold text-headline uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-6">
+			<h1 className="font-display font-bold text-about-intro uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-6">
 				{children}
 			</h1>
 		),
 		h2: ({ children }) => (
-			<h2 className="font-display font-bold text-subhead uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-4">
+			<h2 className="font-display font-bold text-headline uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-4">
 				{children}
 			</h2>
 		),
