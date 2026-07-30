@@ -55,6 +55,18 @@ c58/
 
 > Add coding conventions, naming patterns, and architectural decisions here as the project evolves.
 
+### Worktree executor agents (e.g. `improve-animations execute`)
+
+When dispatching an agent with `isolation: "worktree"` into this repo, symlink `node_modules` from the main checkout instead of running `npm install` — dependencies don't change between plans, so a fresh install is wasted time. Windows (no admin needed, directory junction):
+
+```
+cmd //c mklink /J web\node_modules ..\..\..\web\node_modules
+```
+
+(adjust the relative path to the main checkout's `web/node_modules` based on the worktree's actual location, e.g. `.claude/worktrees/agent-<id>/web/node_modules`).
+
+`web/.env.local` is gitignored and won't exist in a fresh worktree either — but prefer avoiding the copy where possible: for plans that only touch className/motion-prop values (no data-fetching/SSR changes), `npx tsc --noEmit` + `npm run lint` inside `web/` is sufficient verification and needs no Sanity credentials. Only copy `.env.local` in when a plan specifically requires a full `next build` (e.g. it touches page data-fetching).
+
 ---
 
 ## Active Hooks
