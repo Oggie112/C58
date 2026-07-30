@@ -26,7 +26,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 	return (
 		<>
 			<header
-				className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+				className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter] duration-300 ${
 					scrolled ? 'bg-[rgba(10,10,10,0.92)] backdrop-blur-md' : 'bg-transparent'
 				}`}
 			>
@@ -60,9 +60,9 @@ export default function NavClient({ navLinks }: NavClientProps) {
 						aria-label={menuOpen ? 'Close menu' : 'Open menu'}
 						aria-expanded={menuOpen}
 					>
-						<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px rotate-45 translate-y-[7px]' : 'h-px'}`} /> {/*verify this animation*/}
-						<span className={`block w-full h-px bg-c58-white transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-						<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px -rotate-45 -translate-y-[7px]' : 'h-px'}`} />
+						<span className={`block w-full bg-c58-white transition-transform duration-300 ${menuOpen ? 'h-px rotate-45 translate-y-[7px]' : 'h-px'}`} />
+						<span className={`block w-full h-px bg-c58-white transition-opacity duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+						<span className={`block w-full bg-c58-white transition-transform duration-300 ${menuOpen ? 'h-px -rotate-45 -translate-y-[7px]' : 'h-px'}`} />
 					</button>
 				</div>
 			</header>

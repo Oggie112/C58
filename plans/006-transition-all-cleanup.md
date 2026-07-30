@@ -1,6 +1,6 @@
 # 006 — Scope NavClient's transition-all to actual changing properties
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: LOW
 - **Category**: Performance
