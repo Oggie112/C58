@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { SanityTalent } from '@/types/sanity'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import PageTitle from './PageTitle'
 import TalentRow from './TalentRow'
 import { EASE_OUT_EXPO } from '@/lib/motion'
@@ -15,6 +15,7 @@ interface TalentListClientProps {
 
 export default function TalentListClient({ talents, heading, subheading }: TalentListClientProps) {
 	const [activeRole, setActiveRole] = useState<string | null>(null)
+	const shouldReduceMotion = useReducedMotion()
 
 	const roles = useMemo(
 		() => [...new Set(talents.map((t) => t.role).filter((r): r is string => Boolean(r)))],
@@ -62,9 +63,9 @@ export default function TalentListClient({ talents, heading, subheading }: Talen
 							<motion.li
 								key={talent._id}
 								layout
-								initial={{ opacity: 0, y: 20 }}
+								initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
 								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, scale: 0.95 }}
+								exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.95 }}
 								transition={{ duration: 0.35, delay: i * 0.04, ease: EASE_OUT_EXPO }}
 							>
 								<TalentRow talent={talent} />

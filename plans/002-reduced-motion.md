@@ -1,6 +1,6 @@
 # 002 — Respect prefers-reduced-motion on all scroll/modal reveals
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: MEDIUM
 - **Category**: Accessibility

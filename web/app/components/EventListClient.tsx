@@ -2,7 +2,7 @@
 
 import { SanityEvent } from '@/types/sanity'
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import EventCard from './EventCard'
 import PageTitle from './PageTitle'
 import { EASE_OUT_EXPO } from '@/lib/motion'
@@ -15,17 +15,18 @@ interface EventListClientProps {
 	subheading?: string
 }
 
-const CARD_VARIANTS = {
-	hidden: { opacity: 0, y: 40 },
-	visible: (i: number) => ({
-		opacity: 1,
-		y: 0,
-		transition: { duration: 0.6, delay: i * 0.1, ease: EASE_OUT_EXPO },
-	}),
-}
-
 export default function EventListClient({ upcoming, past, defaultTab, heading, subheading }: EventListClientProps) {
 	const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>(defaultTab)
+	const shouldReduceMotion = useReducedMotion()
+
+	const cardVariants = {
+		hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 40 },
+		visible: (i: number) => ({
+			opacity: 1,
+			y: 0,
+			transition: { duration: 0.6, delay: i * 0.1, ease: EASE_OUT_EXPO },
+		}),
+	}
 
 	const events = activeTab === 'upcoming' ? upcoming : past
 	const isPast = activeTab === 'past'
@@ -68,7 +69,7 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 				{featured && (
 					<motion.div
 						key={`${activeTab}-featured`}
-						variants={CARD_VARIANTS}
+						variants={cardVariants}
 						initial="hidden"
 						whileInView="visible"
 						viewport={{ once: true, amount: 0.15 }}
@@ -85,7 +86,7 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 						{rest.map((event, i) => (
 							<motion.div
 								key={event._id}
-								variants={CARD_VARIANTS}
+								variants={cardVariants}
 								initial="hidden"
 								whileInView="visible"
 								viewport={{ once: true, amount: 0.15 }}

@@ -4,7 +4,7 @@ import { HeroBlock as HeroBlockType, SanityEvent, SanityPost } from '@/types/san
 import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import EventCard from './EventCard'
 import PostCard from './PostCard'
 import { EASE_OUT_EXPO } from '@/lib/motion'
@@ -16,6 +16,7 @@ interface HeroClientProps {
 
 export default function HeroClient({ block, update }: HeroClientProps) {
 	const [modalOpen, setModalOpen] = useState(false)
+	const shouldReduceMotion = useReducedMotion()
 	const mediaType = block.bgMedia?.mediaType
 
 	const buttonLabel = update?._type === 'post' ? 'SEE UPDATE →' : 'NEXT EVENT →'
@@ -81,9 +82,9 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 						onClick={() => setModalOpen(false)}
 					>
 						<motion.div
-							initial={{ opacity: 0, y: 20 }}
+							initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: 20 }}
+							exit={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
 							transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
 							className="w-full max-w-xl"
 							onClick={(e) => e.stopPropagation()}

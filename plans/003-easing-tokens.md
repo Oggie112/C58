@@ -1,6 +1,6 @@
 # 003 — Consolidate duplicated easing curves into shared tokens
 
-- **Status**: DONE (note: NavClient.tsx:79 gained a 6th literal `[0.16, 1, 0.3, 1]` from plan 007, which ran after this plan was written — not in this plan's original file list, left for a follow-up)
+- **Status**: DONE (NavClient.tsx:79's 6th literal, from plan 007 which ran after this plan was written, was folded in as a follow-up — now imports EASE_OUT_EXPO like the other 5 files)
 - **Commit**: ddef808
 - **Severity**: MEDIUM
 - **Category**: Cohesion & tokens

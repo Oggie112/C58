@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { SanityNavLink } from '@/types/sanity'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 interface NavClientProps {
 	navLinks: SanityNavLink[]
@@ -76,7 +77,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 						initial={{ opacity: 0, transform: shouldReduceMotion ? 'scale(1)' : 'scale(0.98)' }}
 						animate={{ opacity: 1, transform: 'scale(1)' }}
 						exit={{ opacity: 0, transform: shouldReduceMotion ? 'scale(1)' : 'scale(0.98)' }}
-						transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+						transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
 						className="md:hidden fixed inset-0 bg-c58-black z-40 flex flex-col items-center justify-center gap-12"
 					>
 						{navLinks.map((link) => (
