@@ -82,9 +82,9 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 						onClick={() => setModalOpen(false)}
 					>
 						<motion.div
-							initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+							initial={{ opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(20px)' }}
+							animate={{ opacity: 1, transform: 'translateY(0px)' }}
+							exit={{ opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(20px)' }}
 							transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
 							className="w-full max-w-xl"
 							onClick={(e) => e.stopPropagation()}

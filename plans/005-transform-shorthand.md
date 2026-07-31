@@ -1,6 +1,6 @@
 # 005 — Replace Motion y-shorthand with hardware-accelerated transform strings
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: MEDIUM
 - **Category**: Performance

@@ -35,8 +35,8 @@ export default function VolunteerBlock({ block, sectionNumber }: { block: Volunt
 					{block.volunteers.map((volunteer, i) => (
 						<motion.li
 							key={volunteer._id}
-							initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 40 }}
-							whileInView={{ opacity: 1, y: 0 }}
+							initial={{ opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(40px)' }}
+							whileInView={{ opacity: 1, transform: 'translateY(0px)' }}
 							viewport={{ once: true, amount: 0.15 }}
 							transition={{ duration: 0.6, delay: Math.min(i, 8) * 0.05, ease: EASE_OUT_EXPO }}
 							className="group"

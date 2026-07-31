@@ -20,10 +20,10 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 	const shouldReduceMotion = useReducedMotion()
 
 	const cardVariants = {
-		hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 40 },
+		hidden: { opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(40px)' },
 		visible: (i: number) => ({
 			opacity: 1,
-			y: 0,
+			transform: 'translateY(0px)',
 			transition: { duration: 0.6, delay: Math.min(i, 8) * 0.05, ease: EASE_OUT_EXPO },
 		}),
 	}
