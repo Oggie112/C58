@@ -1,6 +1,6 @@
 # 004 — Cap and tighten unbounded grid-reveal stagger
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: MEDIUM
 - **Category**: Easing & duration / Cohesion & tokens

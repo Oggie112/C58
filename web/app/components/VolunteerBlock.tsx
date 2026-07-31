@@ -38,7 +38,7 @@ export default function VolunteerBlock({ block, sectionNumber }: { block: Volunt
 							initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 40 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true, amount: 0.15 }}
-							transition={{ duration: 0.6, delay: i * 0.1, ease: EASE_OUT_EXPO }}
+							transition={{ duration: 0.6, delay: Math.min(i, 8) * 0.05, ease: EASE_OUT_EXPO }}
 							className="group"
 						>
 							{/* Photo */}

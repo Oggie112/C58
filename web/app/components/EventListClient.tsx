@@ -24,7 +24,7 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 		visible: (i: number) => ({
 			opacity: 1,
 			y: 0,
-			transition: { duration: 0.6, delay: i * 0.1, ease: EASE_OUT_EXPO },
+			transition: { duration: 0.6, delay: Math.min(i, 8) * 0.05, ease: EASE_OUT_EXPO },
 		}),
 	}
 
