@@ -1,6 +1,6 @@
 # 007 — Animate mobile nav overlay entrance/exit
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: MEDIUM
 - **Category**: Missed opportunity (preventing a jarring change / spatial consistency)

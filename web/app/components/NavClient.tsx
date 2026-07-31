@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { SanityNavLink } from '@/types/sanity'
 
 interface NavClientProps {
@@ -11,6 +12,7 @@ interface NavClientProps {
 export default function NavClient({ navLinks }: NavClientProps) {
 	const [scrolled, setScrolled] = useState(false)
 	const [menuOpen, setMenuOpen] = useState(false)
+	const shouldReduceMotion = useReducedMotion()
 
 	useEffect(() => {
 		const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -68,20 +70,28 @@ export default function NavClient({ navLinks }: NavClientProps) {
 			</header>
 
 			{/* Mobile overlay — sibling of header to avoid backdrop-filter containing block issue */}
-			{menuOpen && (
-				<div className="md:hidden fixed inset-0 bg-c58-black z-40 flex flex-col items-center justify-center gap-12">
-					{navLinks.map((link) => (
-						<Link
-							key={link.href}
-							href={link.href}
-							onClick={() => setMenuOpen(false)}
-							className="font-display font-bold text-[clamp(2.25rem,8vw,4rem)] uppercase tracking-[0.04em] text-c58-white hover:text-c58-ice transition-colors duration-200"
-						>
-							{link.label}
-						</Link>
-					))}
-				</div>
-			)}
+			<AnimatePresence>
+				{menuOpen && (
+					<motion.div
+						initial={{ opacity: 0, transform: shouldReduceMotion ? 'scale(1)' : 'scale(0.98)' }}
+						animate={{ opacity: 1, transform: 'scale(1)' }}
+						exit={{ opacity: 0, transform: shouldReduceMotion ? 'scale(1)' : 'scale(0.98)' }}
+						transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+						className="md:hidden fixed inset-0 bg-c58-black z-40 flex flex-col items-center justify-center gap-12"
+					>
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								onClick={() => setMenuOpen(false)}
+								className="font-display font-bold text-[clamp(2.25rem,8vw,4rem)] uppercase tracking-[0.04em] text-c58-white hover:text-c58-ice transition-colors duration-200"
+							>
+								{link.label}
+							</Link>
+						))}
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</>
 	)
 }
