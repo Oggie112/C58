@@ -1,6 +1,6 @@
 # 008 — Slide the event list tab indicator instead of snapping it
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: LOW
 - **Category**: Missed opportunity (state indication / spatial consistency)

@@ -15,6 +15,8 @@ interface EventListClientProps {
 	subheading?: string
 }
 
+const TAB_EASE = [0.77, 0, 0.175, 1] as const
+
 export default function EventListClient({ upcoming, past, defaultTab, heading, subheading }: EventListClientProps) {
 	const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>(defaultTab)
 	const shouldReduceMotion = useReducedMotion()
@@ -46,13 +48,18 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 							<button
 								key={tab}
 								onClick={() => setActiveTab(tab)}
-								className={`font-body text-label uppercase tracking-[0.15em] py-3 transition-colors duration-200 ${
-									activeTab === tab
-										? 'text-c58-white border-b border-c58-ice'
-										: 'text-c58-muted hover:text-c58-white'
+								className={`relative font-body text-label uppercase tracking-[0.15em] py-3 transition-colors duration-200 ${
+									activeTab === tab ? 'text-c58-white' : 'text-c58-muted hover:text-c58-white'
 								}`}
 							>
 								{tab}
+								{activeTab === tab && (
+									<motion.span
+										layoutId="event-tab-indicator"
+										className="absolute inset-x-0 -bottom-px h-px bg-c58-ice"
+										transition={{ duration: 0.2, ease: TAB_EASE }}
+									/>
+								)}
 							</button>
 						))}
 					</div>
