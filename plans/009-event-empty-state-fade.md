@@ -1,6 +1,6 @@
 # 009 — Fade in the event list empty state on tab switch
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: ddef808
 - **Severity**: LOW
 - **Category**: Missed opportunity (preventing a jarring change)

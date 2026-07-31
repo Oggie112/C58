@@ -67,9 +67,15 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 
 				{/* Empty state */}
 				{events.length === 0 && (
-					<p className="font-body text-body text-c58-muted">
+					<motion.p
+						key={activeTab}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+						className="font-body text-body text-c58-muted"
+					>
 						{isPast ? 'No past events.' : 'No upcoming events.'}
-					</p>
+					</motion.p>
 				)}
 
 				{/* Featured card — full width */}
