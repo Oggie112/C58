@@ -5,6 +5,7 @@ import { SanityTalent } from '@/types/sanity'
 import { motion, AnimatePresence } from 'motion/react'
 import PageTitle from './PageTitle'
 import TalentRow from './TalentRow'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 interface TalentListClientProps {
 	talents: SanityTalent[]
@@ -64,7 +65,7 @@ export default function TalentListClient({ talents, heading, subheading }: Talen
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, scale: 0.95 }}
-								transition={{ duration: 0.35, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
+								transition={{ duration: 0.35, delay: i * 0.04, ease: EASE_OUT_EXPO }}
 							>
 								<TalentRow talent={talent} />
 							</motion.li>

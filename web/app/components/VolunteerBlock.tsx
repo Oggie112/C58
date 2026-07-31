@@ -7,6 +7,7 @@ import { motion } from 'motion/react'
 import { PortableText } from 'next-sanity'
 import portableTextComponents from '@/lib/portableTextComponents'
 import SectionMarker from './SectionMarker'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 export default function VolunteerBlock({ block, sectionNumber }: { block: VolunteerBlockType; sectionNumber?: string }) {
 	if (!block.volunteers || block.volunteers.length === 0) return null
@@ -36,7 +37,7 @@ export default function VolunteerBlock({ block, sectionNumber }: { block: Volunt
 							initial={{ opacity: 0, y: 40 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true, amount: 0.15 }}
-							transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+							transition={{ duration: 0.6, delay: i * 0.1, ease: EASE_OUT_EXPO }}
 							className="group"
 						>
 							{/* Photo */}

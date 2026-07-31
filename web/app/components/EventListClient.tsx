@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import EventCard from './EventCard'
 import PageTitle from './PageTitle'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 interface EventListClientProps {
 	upcoming: SanityEvent[]
@@ -14,14 +15,12 @@ interface EventListClientProps {
 	subheading?: string
 }
 
-const EASING = [0.16, 1, 0.3, 1] as const
-
 const CARD_VARIANTS = {
 	hidden: { opacity: 0, y: 40 },
 	visible: (i: number) => ({
 		opacity: 1,
 		y: 0,
-		transition: { duration: 0.6, delay: i * 0.1, ease: EASING },
+		transition: { duration: 0.6, delay: i * 0.1, ease: EASE_OUT_EXPO },
 	}),
 }
 

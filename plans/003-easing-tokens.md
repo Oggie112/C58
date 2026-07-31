@@ -1,6 +1,6 @@
 # 003 — Consolidate duplicated easing curves into shared tokens
 
-- **Status**: TODO
+- **Status**: DONE (note: NavClient.tsx:79 gained a 6th literal `[0.16, 1, 0.3, 1]` from plan 007, which ran after this plan was written — not in this plan's original file list, left for a follow-up)
 - **Commit**: ddef808
 - **Severity**: MEDIUM
 - **Category**: Cohesion & tokens
