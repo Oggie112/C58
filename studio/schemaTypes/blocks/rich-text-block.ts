@@ -11,6 +11,20 @@ export const richTextBlock = defineType({
 			type: 'array',
 			of: [{type: 'block'}],
 		}),
+		defineField({
+			name: 'alignment',
+			title: 'Alignment',
+			type: 'string',
+			options: {
+				list: [
+					{title: 'Left', value: 'left'},
+					{title: 'Center', value: 'center'},
+					{title: 'Right', value: 'right'},
+				],
+				layout: 'radio',
+			},
+			initialValue: 'left',
+		}),
 	],
 	preview: {
 		prepare: () => ({title: 'Rich Text'}),
