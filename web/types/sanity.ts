@@ -108,6 +108,7 @@ export interface RichTextBlock {
 	_type: 'richTextBlock'
 	_key: string
 	body?: PortableTextBlock[]
+	alignment?: 'left' | 'center' | 'right'
 }
 
 export interface TeamBlock {
