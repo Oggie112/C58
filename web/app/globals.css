@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@layer base {
+	html {
+		scrollbar-gutter: stable;
+	}
+}
+
 @theme inline {
 	/* Colours */
 	--color-c58-black:      #0A0A0A;
