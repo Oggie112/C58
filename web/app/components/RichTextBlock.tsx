@@ -14,9 +14,11 @@ export default function RichTextBlock({ block, sectionNumber }: { block: RichTex
 
 	return (
 		<section className="py-16 md:py-32 px-4 md:px-6">
-			<div className={`max-w-[560px] ${ALIGNMENT_CLASS[block.alignment ?? 'left']}`}>
-				{sectionNumber && <SectionMarker number={sectionNumber} />}
-				<PortableText value={block.body} components={portableTextComponents} />
+			<div className="max-w-[1200px] mx-auto">
+				<div className={`max-w-[560px] ${ALIGNMENT_CLASS[block.alignment ?? 'left']}`}>
+					{sectionNumber && <SectionMarker number={sectionNumber} />}
+					<PortableText value={block.body} components={portableTextComponents} />
+				</div>
 			</div>
 		</section>
 	)
