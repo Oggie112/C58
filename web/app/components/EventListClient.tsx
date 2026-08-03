@@ -2,9 +2,10 @@
 
 import { SanityEvent } from '@/types/sanity'
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import EventCard from './EventCard'
 import PageTitle from './PageTitle'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 interface EventListClientProps {
 	upcoming: SanityEvent[]
@@ -14,19 +15,20 @@ interface EventListClientProps {
 	subheading?: string
 }
 
-const EASING = [0.16, 1, 0.3, 1] as const
-
-const CARD_VARIANTS = {
-	hidden: { opacity: 0, y: 40 },
-	visible: (i: number) => ({
-		opacity: 1,
-		y: 0,
-		transition: { duration: 0.6, delay: i * 0.1, ease: EASING },
-	}),
-}
+const TAB_EASE = [0.77, 0, 0.175, 1] as const
 
 export default function EventListClient({ upcoming, past, defaultTab, heading, subheading }: EventListClientProps) {
 	const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>(defaultTab)
+	const shouldReduceMotion = useReducedMotion()
+
+	const cardVariants = {
+		hidden: { opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(40px)' },
+		visible: (i: number) => ({
+			opacity: 1,
+			transform: 'translateY(0px)',
+			transition: { duration: 0.6, delay: Math.min(i, 8) * 0.05, ease: EASE_OUT_EXPO },
+		}),
+	}
 
 	const events = activeTab === 'upcoming' ? upcoming : past
 	const isPast = activeTab === 'past'
@@ -46,13 +48,18 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 							<button
 								key={tab}
 								onClick={() => setActiveTab(tab)}
-								className={`font-body text-label uppercase tracking-[0.15em] py-3 transition-colors duration-200 ${
-									activeTab === tab
-										? 'text-c58-white border-b border-c58-ice'
-										: 'text-c58-muted hover:text-c58-white'
+								className={`relative font-body text-label uppercase tracking-[0.15em] py-3 transition-colors duration-200 ${
+									activeTab === tab ? 'text-c58-white' : 'text-c58-muted hover:text-c58-white'
 								}`}
 							>
 								{tab}
+								{activeTab === tab && (
+									<motion.span
+										layoutId="event-tab-indicator"
+										className="absolute inset-x-0 -bottom-px h-px bg-c58-ice"
+										transition={{ duration: 0.2, ease: TAB_EASE }}
+									/>
+								)}
 							</button>
 						))}
 					</div>
@@ -60,16 +67,22 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 
 				{/* Empty state */}
 				{events.length === 0 && (
-					<p className="font-body text-body text-c58-muted">
+					<motion.p
+						key={activeTab}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+						className="font-body text-body text-c58-muted"
+					>
 						{isPast ? 'No past events.' : 'No upcoming events.'}
-					</p>
+					</motion.p>
 				)}
 
 				{/* Featured card — full width */}
 				{featured && (
 					<motion.div
 						key={`${activeTab}-featured`}
-						variants={CARD_VARIANTS}
+						variants={cardVariants}
 						initial="hidden"
 						whileInView="visible"
 						viewport={{ once: true, amount: 0.15 }}
@@ -86,7 +99,7 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 						{rest.map((event, i) => (
 							<motion.div
 								key={event._id}
-								variants={CARD_VARIANTS}
+								variants={cardVariants}
 								initial="hidden"
 								whileInView="visible"
 								viewport={{ once: true, amount: 0.15 }}

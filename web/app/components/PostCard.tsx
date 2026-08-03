@@ -15,7 +15,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
 		: null
 
 	return (
-		<Link href={`/posts/${post.slug.current}`} className="group relative bg-c58-void border border-c58-border hover:border-c58-ice-border hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(125,212,252,0.08)] transition-[transform,border-color,box-shadow] duration-300 [transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] block">
+		<Link href={`/posts/${post.slug.current}`} className="group relative bg-c58-void border border-c58-border hover:border-c58-ice-border hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(125,212,252,0.08)] transition-[transform,border-color,box-shadow] duration-300 [transition-timing-function:var(--ease-out-cubic)] block">
 			<div className="relative w-full aspect-video overflow-hidden">
 				{imageUrl ? (
 					<Image

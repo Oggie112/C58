@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { SanityNavLink } from '@/types/sanity'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 interface NavClientProps {
 	navLinks: SanityNavLink[]
@@ -11,6 +13,7 @@ interface NavClientProps {
 export default function NavClient({ navLinks }: NavClientProps) {
 	const [scrolled, setScrolled] = useState(false)
 	const [menuOpen, setMenuOpen] = useState(false)
+	const shouldReduceMotion = useReducedMotion()
 
 	useEffect(() => {
 		const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -26,7 +29,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 	return (
 		<>
 			<header
-				className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+				className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter] duration-300 ${
 					scrolled ? 'bg-[rgba(10,10,10,0.92)] backdrop-blur-md' : 'bg-transparent'
 				}`}
 			>
@@ -60,28 +63,36 @@ export default function NavClient({ navLinks }: NavClientProps) {
 						aria-label={menuOpen ? 'Close menu' : 'Open menu'}
 						aria-expanded={menuOpen}
 					>
-						<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px rotate-45 translate-y-[7px]' : 'h-px'}`} /> {/*verify this animation*/}
-						<span className={`block w-full h-px bg-c58-white transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-						<span className={`block w-full bg-c58-white transition-all duration-300 ${menuOpen ? 'h-px -rotate-45 -translate-y-[7px]' : 'h-px'}`} />
+						<span className={`block w-full bg-c58-white transition-transform duration-300 ${menuOpen ? 'h-px rotate-45 translate-y-[7px]' : 'h-px'}`} />
+						<span className={`block w-full h-px bg-c58-white transition-opacity duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
+						<span className={`block w-full bg-c58-white transition-transform duration-300 ${menuOpen ? 'h-px -rotate-45 -translate-y-[7px]' : 'h-px'}`} />
 					</button>
 				</div>
 			</header>
 
 			{/* Mobile overlay — sibling of header to avoid backdrop-filter containing block issue */}
-			{menuOpen && (
-				<div className="md:hidden fixed inset-0 bg-c58-black z-40 flex flex-col items-center justify-center gap-12">
-					{navLinks.map((link) => (
-						<Link
-							key={link.href}
-							href={link.href}
-							onClick={() => setMenuOpen(false)}
-							className="font-display font-bold text-[clamp(2.25rem,8vw,4rem)] uppercase tracking-[0.04em] text-c58-white hover:text-c58-ice transition-colors duration-200"
-						>
-							{link.label}
-						</Link>
-					))}
-				</div>
-			)}
+			<AnimatePresence>
+				{menuOpen && (
+					<motion.div
+						initial={{ opacity: 0, transform: shouldReduceMotion ? 'scale(1)' : 'scale(0.98)' }}
+						animate={{ opacity: 1, transform: 'scale(1)' }}
+						exit={{ opacity: 0, transform: shouldReduceMotion ? 'scale(1)' : 'scale(0.98)' }}
+						transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+						className="md:hidden fixed inset-0 bg-c58-black z-40 flex flex-col items-center justify-center gap-12"
+					>
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								onClick={() => setMenuOpen(false)}
+								className="font-display font-bold text-[clamp(2.25rem,8vw,4rem)] uppercase tracking-[0.04em] text-c58-white hover:text-c58-ice transition-colors duration-200"
+							>
+								{link.label}
+							</Link>
+						))}
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</>
 	)
 }

@@ -26,7 +26,7 @@ export default async function ContactBlock({ block, sectionNumber }: { block: Co
 					{settings.email && (
 						<a
 							href={`mailto:${settings.email}`}
-							className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 hover:-translate-y-0.5 hover:bg-c58-ice-light transition-[transform,background-color] duration-200 self-start md:self-auto"
+							className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 hover:-translate-y-0.5 hover:bg-c58-ice-light active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[transform,background-color] duration-200 self-start md:self-auto"
 						>
 							GET IN TOUCH →
 						</a>

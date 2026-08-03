@@ -4,9 +4,10 @@ import { HeroBlock as HeroBlockType, SanityEvent, SanityPost } from '@/types/san
 import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import EventCard from './EventCard'
 import PostCard from './PostCard'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 interface HeroClientProps {
 	block: HeroBlockType
@@ -15,6 +16,7 @@ interface HeroClientProps {
 
 export default function HeroClient({ block, update }: HeroClientProps) {
 	const [modalOpen, setModalOpen] = useState(false)
+	const shouldReduceMotion = useReducedMotion()
 	const mediaType = block.bgMedia?.mediaType
 
 	const buttonLabel = update?._type === 'post' ? 'SEE UPDATE →' : 'NEXT EVENT →'
@@ -52,7 +54,7 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 					{update && (
 						<button
 							onClick={() => setModalOpen(true)}
-							className="font-body text-label uppercase tracking-[0.15em] border border-c58-ice-border text-c58-ice px-8 py-3.5 hover:bg-c58-ice-glow hover:border-c58-ice transition-[background-color,border-color] duration-200"
+							className="font-body text-label uppercase tracking-[0.15em] border border-c58-ice-border text-c58-ice px-8 py-3.5 hover:bg-c58-ice-glow hover:border-c58-ice active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[background-color,border-color,transform] duration-200"
 						>
 							{buttonLabel}
 						</button>
@@ -80,10 +82,10 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 						onClick={() => setModalOpen(false)}
 					>
 						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: 20 }}
-							transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+							initial={{ opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(20px)' }}
+							animate={{ opacity: 1, transform: 'translateY(0px)' }}
+							exit={{ opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(20px)' }}
+							transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
 							className="w-full max-w-xl"
 							onClick={(e) => e.stopPropagation()}
 						>

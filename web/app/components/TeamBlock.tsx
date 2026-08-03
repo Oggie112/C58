@@ -3,12 +3,14 @@
 import { TeamBlock as TeamBlockType } from '@/types/sanity'
 import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { PortableText } from 'next-sanity'
 import portableTextComponents from '@/lib/portableTextComponents'
 import SectionMarker from './SectionMarker'
+import { EASE_OUT_EXPO } from '@/lib/motion'
 
 export default function TeamBlock({ block, sectionNumber }: { block: TeamBlockType; sectionNumber?: string }) {
+	const shouldReduceMotion = useReducedMotion()
 	if (!block.members || block.members.length === 0) return null
 
 	return (
@@ -33,10 +35,10 @@ export default function TeamBlock({ block, sectionNumber }: { block: TeamBlockTy
 					{block.members.map((member, i) => (
 						<motion.li
 							key={member._id}
-							initial={{ opacity: 0, y: 40 }}
-							whileInView={{ opacity: 1, y: 0 }}
+							initial={{ opacity: 0, transform: shouldReduceMotion ? 'translateY(0px)' : 'translateY(40px)' }}
+							whileInView={{ opacity: 1, transform: 'translateY(0px)' }}
 							viewport={{ once: true, amount: 0.15 }}
-							transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+							transition={{ duration: 0.6, delay: Math.min(i, 8) * 0.05, ease: EASE_OUT_EXPO }}
 							className="group"
 						>
 							{/* Photo */}

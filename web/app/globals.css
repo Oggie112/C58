@@ -30,6 +30,9 @@
 	--text-body:        0.875rem;
 	--text-label:       0.6875rem;
 	--text-micro:       0.625rem;
+
+	/* Easing */
+	--ease-out-cubic: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @keyframes glowPulse {
