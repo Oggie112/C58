@@ -7,5 +7,6 @@
 	},
 	"search.exclude": {
 		"**/.claude/worktrees": true
-	}
+	},
+	"css.lint.unknownAtRules": "ignore"
 }
