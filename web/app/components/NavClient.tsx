@@ -38,6 +38,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 					{/* Logo */}
 					<Link
 						href="/"
+						onClick={() => setMenuOpen(false)}
 						className="font-display font-bold text-[28px] text-c58-white uppercase tracking-[0.04em] hover:text-c58-ice transition-colors duration-200"
 					>
 						C58
@@ -56,7 +57,7 @@ export default function NavClient({ navLinks }: NavClientProps) {
 						))}
 					</nav>
 
-					{/* Hamburger - Needs to close on nav link click? */}
+					{/* Hamburger */}
 					<button
 						className="md:hidden flex flex-col justify-center gap-[6px] w-11 h-11 focus-visible:outline-2 focus-visible:outline-c58-ice focus-visible:outline-offset-4"
 						onClick={() => setMenuOpen(!menuOpen)}
