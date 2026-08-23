@@ -12,6 +12,7 @@
   "dependencies": {
     "@behold/react": "^0.1.11",
     "@sanity/image-url": "^2.0.3",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.13.5",
     "motion": "^12.35.2",
