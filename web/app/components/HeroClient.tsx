@@ -3,7 +3,7 @@
 import { HeroBlock as HeroBlockType, SanityEvent, SanityPost } from '@/types/sanity'
 import { urlFor } from '@/sanity/image'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import EventCard from './EventCard'
 import PostCard from './PostCard'
@@ -16,8 +16,21 @@ interface HeroClientProps {
 
 export default function HeroClient({ block, update }: HeroClientProps) {
 	const [modalOpen, setModalOpen] = useState(false)
+	// Video mounts only after the first paint commits, so FCP/LCP resolve on
+	// the poster image rather than waiting on the video fetch (see HeroClient
+	// background media block below).
+	const [videoReady, setVideoReady] = useState(false)
+	const [videoLoaded, setVideoLoaded] = useState(false)
 	const shouldReduceMotion = useReducedMotion()
 	const mediaType = block.bgMedia?.mediaType
+	const videoUrl = block.bgMedia?.video?.asset?.url
+	const posterUrl = block.bgMedia?.poster ? urlFor(block.bgMedia.poster).width(1600).url() : undefined
+
+	useEffect(() => {
+		if (mediaType !== 'video' || !videoUrl) return
+		const frame = requestAnimationFrame(() => setVideoReady(true))
+		return () => cancelAnimationFrame(frame)
+	}, [mediaType, videoUrl])
 
 	const buttonLabel = update?._type === 'post' ? 'SEE UPDATE →' : 'NEXT EVENT →'
 
@@ -35,13 +48,30 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 						className="object-cover opacity-35 grayscale-[20%]"
 					/>
 				)}
-				{mediaType === 'video' && block.bgMedia?.video?.asset?.url && (
-					<video
-						autoPlay loop muted playsInline
-						className="absolute inset-0 w-full h-full object-cover opacity-35 grayscale-[20%]"
-					>
-						<source src={block.bgMedia.video.asset.url} type="video/mp4" />
-					</video>
+				{mediaType === 'video' && videoUrl && (
+					<>
+						{posterUrl && (
+							<Image
+								src={posterUrl}
+								alt="Hero background"
+								fill
+								priority
+								className={`object-cover grayscale-[20%] transition-opacity duration-500 ${videoLoaded ? 'opacity-0' : 'opacity-35'}`}
+							/>
+						)}
+						{videoReady && (
+							<video
+								autoPlay loop muted playsInline
+								preload="none"
+								poster={posterUrl}
+
+								onPlaying={() => setVideoLoaded(true)}
+								className={`absolute inset-0 w-full h-full object-cover grayscale-[20%] transition-opacity duration-500 ${videoLoaded ? 'opacity-35' : 'opacity-0'}`}
+							>
+								<source src={videoUrl} type="video/mp4" />
+							</video>
+						)}
+					</>
 				)}
 
 				{/* Content */}

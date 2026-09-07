@@ -32,5 +32,16 @@ export const bgMedia = defineType({
 			options: {accept: 'video/mp4,video/webm'},
 			hidden: ({parent}) => parent?.mediaType !== 'video',
 		}),
+		defineField({
+			name: 'poster',
+			title: 'Video Poster',
+			description:
+				'Shown immediately while the video loads (and as a fallback if it fails). Strongly recommended — without it the hero is blank until the video arrives.',
+			type: 'image',
+			options: {hotspot: true},
+			hidden: ({parent}) => parent?.mediaType !== 'video',
+			validation: (rule) =>
+				rule.warning('Add a poster image so the hero has something to show before the video loads.'),
+		}),
 	],
 })

@@ -62,6 +62,7 @@ export interface BgMedia {
 	mediaType: 'image' | 'video'
 	image?: SanityImage
 	video?: { asset?: { url: string } }
+	poster?: SanityImage
 }
 
 export interface SanityPageSeo {
