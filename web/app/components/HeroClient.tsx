@@ -64,7 +64,8 @@ export default function HeroClient({ block, update }: HeroClientProps) {
 								autoPlay loop muted playsInline
 								preload="none"
 								poster={posterUrl}
-								onLoadedData={() => setVideoLoaded(true)}
+
+								onPlaying={() => setVideoLoaded(true)}
 								className={`absolute inset-0 w-full h-full object-cover grayscale-[20%] transition-opacity duration-500 ${videoLoaded ? 'opacity-35' : 'opacity-0'}`}
 							>
 								<source src={videoUrl} type="video/mp4" />
