@@ -38,4 +38,5 @@ NEXT_PUBLIC_SANITY_API_VERSION=2025-02-26
 ## Documentation
 
 - [MVP Roadmap](roadmaps/mvp.md)
+- [Ticketing Roadmap](roadmaps/ticketing.md)
 - [Architecture Decisions](adrs/)
