@@ -1,6 +1,7 @@
 // Documents
 import {page} from './documents/page'
 import {event} from './documents/event'
+import {eventDetails} from './documents/event-details'
 import {post} from './documents/post'
 import {teamMember} from './documents/team-member'
 import {volunteer} from './documents/volunteer'
@@ -30,6 +31,7 @@ export const schemaTypes = [
 	// Documents
 	page,
 	event,
+	eventDetails,
 	post,
 	teamMember,
 	volunteer,
