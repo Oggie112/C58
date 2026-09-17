@@ -219,6 +219,59 @@ export const eventDetails = defineType({
 				},
 			],
 		}),
+		defineField({
+			name: 'faq',
+			title: 'FAQ',
+			type: 'array',
+			of: [
+				{
+					type: 'object',
+					name: 'faqEntry',
+					fields: [
+						defineField({
+							name: 'question',
+							title: 'Question',
+							type: 'string',
+							validation: (Rule) => Rule.required(),
+						}),
+						defineField({
+							name: 'answer',
+							title: 'Answer',
+							type: 'array',
+							description: 'Bold and links only — no headings/lists, to keep answers short and consistent',
+							of: [
+								{
+									type: 'block',
+									styles: [{title: 'Normal', value: 'normal'}],
+									lists: [],
+									marks: {
+										decorators: [{title: 'Bold', value: 'strong'}],
+										annotations: [
+											{
+												name: 'link',
+												type: 'object',
+												title: 'Link',
+												fields: [{name: 'href', title: 'URL', type: 'url'}],
+											},
+										],
+									},
+								},
+							],
+							validation: (Rule) => Rule.required(),
+						}),
+					],
+					preview: {
+						select: {title: 'question', answer: 'answer'},
+						prepare: ({title, answer}) => ({
+							title,
+							subtitle: (answer?.[0]?.children ?? [])
+								.map((child: {text?: string}) => child.text ?? '')
+								.join(''),
+						}),
+					},
+				},
+			],
+		}),
 	],
 	preview: {
 		select: {title: 'event.title', media: 'event.image', tiers: 'tiers', status: 'ticketingStatus'},
