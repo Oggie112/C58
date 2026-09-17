@@ -10,7 +10,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
-| **CMS**  | In progress                                        | `lineup` field (6CMS.4)           | — |
+| **CMS**  | In progress                                        | `faq` field (6CMS.5)              | — |
 | **DB**   | Not started                                       | Provision Supabase + schema     | — |
 | **API**  | Not started                                       | —                                | CMS + DB |
 | **UI**   | Not started                                       | —                                | CMS + DB |
@@ -60,7 +60,6 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 <a name="m6-todo"><h4>To Do (Milestone 6)</h4></a>
 
-- [ ] 6CMS.4. Sanity schema: `lineup` field on `eventDetails` (array — name at minimum, room for role/image/set time)
 - [ ] 6CMS.5. Sanity schema: `faq` field on `eventDetails` (array of question/answer objects)
 - [ ] 6CMS.6. Studio structure: surface `eventDetails` inline under its `event` (desk structure) so the reference relationship isn't easy to lose track of — per [ADR 004](../adrs/004-event-detail-content-model.md) consequences
 - [ ] 6DB.1. Provision Supabase project
@@ -80,6 +79,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 - [x] 6DB.5. ADR: database — [ADR 003](../adrs/003-database-supabase.md)
 - [x] 6CMS.2. Sanity schema: `eventDetails` document — `event` reference (required, unique via hardened draft/published exclusion), `tiers` array (`name`, `price` in pounds — converted to pence once at the fetch boundary in Milestone 7, not stored as pence — `capacity`, `releaseTrigger` for a scheduled date vs. "opens when previous tier sells out", `saleStart`/`saleEnd` with ordering validation, `description`)
 - [x] 6CMS.3. Sanity schema: `ticketingStatus` field on `eventDetails` (`not_open` / `on_sale` / `sold_out` / `closed`, manual override, surfaced in the document preview subtitle)
+- [x] 6CMS.4. Sanity schema: `lineup` field on `eventDetails` — each entry is either a reference to the existing `talent` roster document or a one-off guest (name + free-text role), plus an optional free-text `setTime`; guests never appear on the general Talent roster page
 
 ---
 

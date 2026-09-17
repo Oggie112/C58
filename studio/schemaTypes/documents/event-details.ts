@@ -136,6 +136,89 @@ export const eventDetails = defineType({
 				},
 			],
 		}),
+		defineField({
+			name: 'lineup',
+			title: 'Line-up',
+			type: 'array',
+			of: [
+				{
+					type: 'object',
+					name: 'lineupEntry',
+					fields: [
+						defineField({
+							name: 'entryType',
+							title: 'Entry Type',
+							type: 'string',
+							options: {
+								list: [
+									{title: 'Roster talent', value: 'talent'},
+									{title: 'Guest (one-off)', value: 'guest'},
+								],
+								layout: 'radio',
+							},
+							initialValue: 'talent',
+							validation: (Rule) => Rule.required(),
+						}),
+						defineField({
+							name: 'talent',
+							title: 'Talent',
+							type: 'reference',
+							to: [{type: 'talent'}],
+							hidden: ({parent}) => (parent as {entryType?: string})?.entryType !== 'talent',
+							validation: (Rule) =>
+								Rule.custom((value, context) => {
+									const parent = context.parent as {entryType?: string}
+									if (parent?.entryType === 'talent' && !value) {
+										return 'Select a talent, or switch to "Guest" for a one-off name'
+									}
+									return true
+								}),
+						}),
+						defineField({
+							name: 'guestName',
+							title: 'Name',
+							type: 'string',
+							hidden: ({parent}) => (parent as {entryType?: string})?.entryType !== 'guest',
+							validation: (Rule) =>
+								Rule.custom((value, context) => {
+									const parent = context.parent as {entryType?: string}
+									if (parent?.entryType === 'guest' && !value) {
+										return 'Enter a name, or switch to "Roster talent" to reference an existing profile'
+									}
+									return true
+								}),
+						}),
+						defineField({
+							name: 'guestRole',
+							title: 'Role',
+							type: 'string',
+							description: "e.g. DJ, Live Act — free text since guests aren't on the talent roster",
+							hidden: ({parent}) => (parent as {entryType?: string})?.entryType !== 'guest',
+						}),
+						defineField({
+							name: 'setTime',
+							title: 'Set Time',
+							type: 'string',
+							description: 'e.g. "10pm – 11:30pm" — optional, can stay vague or unset',
+						}),
+					],
+					preview: {
+						select: {
+							entryType: 'entryType',
+							talentName: 'talent.name',
+							talentPhoto: 'talent.photo',
+							guestName: 'guestName',
+							setTime: 'setTime',
+						},
+						prepare: ({entryType, talentName, talentPhoto, guestName, setTime}) => ({
+							title: (entryType === 'talent' ? talentName : guestName) ?? 'Untitled',
+							subtitle: setTime,
+							media: talentPhoto,
+						}),
+					},
+				},
+			],
+		}),
 	],
 	preview: {
 		select: {title: 'event.title', media: 'event.image', tiers: 'tiers', status: 'ticketingStatus'},
