@@ -33,6 +33,24 @@ export const eventDetails = defineType({
 				}),
 		}),
 		defineField({
+			name: 'ticketingStatus',
+			title: 'Ticketing Status',
+			type: 'string',
+			description:
+				'Manual override, independent of tier dates/capacity — e.g. force "Sold out" for a door-only overflow night even if a tier isn\'t technically exhausted.',
+			options: {
+				list: [
+					{title: 'Not open', value: 'not_open'},
+					{title: 'On sale', value: 'on_sale'},
+					{title: 'Sold out', value: 'sold_out'},
+					{title: 'Closed', value: 'closed'},
+				],
+				layout: 'radio',
+			},
+			initialValue: 'not_open',
+			validation: (Rule) => Rule.required(),
+		}),
+		defineField({
 			name: 'tiers',
 			title: 'Ticket Tiers',
 			type: 'array',
@@ -120,10 +138,10 @@ export const eventDetails = defineType({
 		}),
 	],
 	preview: {
-		select: {title: 'event.title', media: 'event.image', tiers: 'tiers'},
-		prepare: ({title, media, tiers}) => ({
+		select: {title: 'event.title', media: 'event.image', tiers: 'tiers', status: 'ticketingStatus'},
+		prepare: ({title, media, tiers, status}) => ({
 			title: title ?? 'Untitled event',
-			subtitle: `${tiers?.length ?? 0} tier${tiers?.length === 1 ? '' : 's'}`,
+			subtitle: `${tiers?.length ?? 0} tier${tiers?.length === 1 ? '' : 's'} · ${status ?? 'not open'}`,
 			media,
 		}),
 	},
