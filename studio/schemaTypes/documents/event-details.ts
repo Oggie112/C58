@@ -1,5 +1,8 @@
 import {defineField, defineType} from 'sanity'
 
+const tierReleaseTrigger = (parent: unknown) => (parent as {releaseTrigger?: string})?.releaseTrigger
+const lineupEntryType = (parent: unknown) => (parent as {entryType?: string})?.entryType
+
 export const eventDetails = defineType({
 	name: 'eventDetails',
 	title: 'Event Details',
@@ -103,8 +106,14 @@ export const eventDetails = defineType({
 							name: 'saleStart',
 							title: 'Sale Start',
 							type: 'datetime',
-							hidden: ({parent}) =>
-								(parent as {releaseTrigger?: string})?.releaseTrigger === 'previousSoldOut',
+							hidden: ({parent}) => tierReleaseTrigger(parent) === 'previousSoldOut',
+							validation: (Rule) =>
+								Rule.custom((saleStart, context) => {
+									if (tierReleaseTrigger(context.parent) === 'scheduled' && !saleStart) {
+										return 'Sale start is required when this tier opens on a scheduled date'
+									}
+									return true
+								}),
 						}),
 						defineField({
 							name: 'saleEnd',
@@ -112,6 +121,11 @@ export const eventDetails = defineType({
 							type: 'datetime',
 							validation: (Rule) =>
 								Rule.custom((saleEnd, context) => {
+									// previousSoldOut tiers may still carry a stale saleStart from
+									// before the mode was switched (the field is hidden, not cleared)
+									// — don't compare against it once it's no longer relevant.
+									if (tierReleaseTrigger(context.parent) === 'previousSoldOut') return true
+
 									const saleStart = (context.parent as {saleStart?: string})?.saleStart
 									if (!saleEnd || !saleStart) return true
 									return new Date(saleEnd) > new Date(saleStart)
@@ -164,11 +178,10 @@ export const eventDetails = defineType({
 							title: 'Talent',
 							type: 'reference',
 							to: [{type: 'talent'}],
-							hidden: ({parent}) => (parent as {entryType?: string})?.entryType !== 'talent',
+							hidden: ({parent}) => lineupEntryType(parent) !== 'talent',
 							validation: (Rule) =>
 								Rule.custom((value, context) => {
-									const parent = context.parent as {entryType?: string}
-									if (parent?.entryType === 'talent' && !value) {
+									if (lineupEntryType(context.parent) === 'talent' && !value) {
 										return 'Select a talent, or switch to "Guest" for a one-off name'
 									}
 									return true
@@ -178,11 +191,10 @@ export const eventDetails = defineType({
 							name: 'guestName',
 							title: 'Name',
 							type: 'string',
-							hidden: ({parent}) => (parent as {entryType?: string})?.entryType !== 'guest',
+							hidden: ({parent}) => lineupEntryType(parent) !== 'guest',
 							validation: (Rule) =>
 								Rule.custom((value, context) => {
-									const parent = context.parent as {entryType?: string}
-									if (parent?.entryType === 'guest' && !value) {
+									if (lineupEntryType(context.parent) === 'guest' && !value) {
 										return 'Enter a name, or switch to "Roster talent" to reference an existing profile'
 									}
 									return true
@@ -193,7 +205,7 @@ export const eventDetails = defineType({
 							title: 'Role',
 							type: 'string',
 							description: "e.g. DJ, Live Act — free text since guests aren't on the talent roster",
-							hidden: ({parent}) => (parent as {entryType?: string})?.entryType !== 'guest',
+							hidden: ({parent}) => lineupEntryType(parent) !== 'guest',
 						}),
 						defineField({
 							name: 'setTime',
