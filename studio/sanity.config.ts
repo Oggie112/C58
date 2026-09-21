@@ -8,6 +8,7 @@ import {BookIcon} from '@sanity/icons'
 import {schemaTypes} from './schemaTypes'
 import {resolve} from './presentation/resolve'
 import {CmsGuide} from './tools/CmsGuide'
+import {eventListItem} from './structure/event-list'
 
 const SINGLETON_TYPES = new Set(['siteSettings'])
 const ORDERABLE_TYPES = new Set(['teamMember', 'volunteer', 'talent', 'partner'])
@@ -26,8 +27,14 @@ export default defineConfig({
 				S.list()
 					.title('Content')
 					.items([
+						eventListItem(S),
 						...S.documentTypeListItems().filter(
-							(item) => !SINGLETON_TYPES.has(item.getId() ?? '') && !ORDERABLE_TYPES.has(item.getId() ?? '') && !PLUGIN_TYPES.has(item.getId() ?? ''),
+							(item) =>
+								!SINGLETON_TYPES.has(item.getId() ?? '') &&
+								!ORDERABLE_TYPES.has(item.getId() ?? '') &&
+								!PLUGIN_TYPES.has(item.getId() ?? '') &&
+								item.getId() !== 'event' &&
+								item.getId() !== 'eventDetails',
 						),
 						orderableDocumentListDeskItem({S, context, type: 'teamMember', title: 'Team Members'}),
 						orderableDocumentListDeskItem({S, context, type: 'volunteer', title: 'Volunteers'}),

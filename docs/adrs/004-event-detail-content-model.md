@@ -17,7 +17,7 @@ Both were resolved in discussion:
 
 New `eventDetails` document type, one-to-one referenced from `event` (`eventDetails.event -> event`, required, unique per event). Holds:
 
-- `tiers` — array of ticket tier objects (`name`, `price` in pence, `capacity`, `saleStart`, `saleEnd`, `description`), per the field shape in `sale-architecture.md` §1
+- `tiers` — array of ticket tier objects (`name`, `price` in pounds — not pence as originally sketched in `sale-architecture.md` §1; editors shouldn't have to convert pence in their heads, so the conversion to integer pence happens once at the Milestone 7 fetch boundary instead — `capacity`, `releaseTrigger`, `saleStart`, `saleEnd`, `description`)
 - `ticketingStatus` — manual override (`not_open` / `on_sale` / `sold_out` / `closed`)
 - `lineup` — array of entries (name at minimum; room for role/image/set time as the content need becomes clearer)
 - `faq` — array of question/answer objects

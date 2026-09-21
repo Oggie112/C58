@@ -10,7 +10,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
-| **CMS**  | Not started                                       | `eventDetails` schema (tiers, status, lineup, FAQ) | — |
+| **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | Not started                                       | Provision Supabase + schema     | — |
 | **API**  | Not started                                       | —                                | CMS + DB |
 | **UI**   | Not started                                       | —                                | CMS + DB |
@@ -60,11 +60,6 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 <a name="m6-todo"><h4>To Do (Milestone 6)</h4></a>
 
-- [ ] 6CMS.2. Sanity schema: `eventDetails` document — `event` reference (required, unique), `tiers` array (`name`, `price` in pence, `capacity`, `saleStart`/`saleEnd`, `description`)
-- [ ] 6CMS.3. Sanity schema: `ticketingStatus` field on `eventDetails` (`not_open` / `on_sale` / `sold_out` / `closed`, manual override)
-- [ ] 6CMS.4. Sanity schema: `lineup` field on `eventDetails` (array — name at minimum, room for role/image/set time)
-- [ ] 6CMS.5. Sanity schema: `faq` field on `eventDetails` (array of question/answer objects)
-- [ ] 6CMS.6. Studio structure: surface `eventDetails` inline under its `event` (desk structure) so the reference relationship isn't easy to lose track of — per [ADR 004](../adrs/004-event-detail-content-model.md) consequences
 - [ ] 6DB.1. Provision Supabase project
 - [ ] 6DB.2. `orders` table + migration
 - [ ] 6DB.3. `order_items` table + migration
@@ -80,6 +75,11 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 - [x] 6CMS.1. ADR: event detail content model — [ADR 004](../adrs/004-event-detail-content-model.md)
 - [x] 6API.2. ADR: payment provider — [ADR 002](../adrs/002-payment-provider-sumup.md)
 - [x] 6DB.5. ADR: database — [ADR 003](../adrs/003-database-supabase.md)
+- [x] 6CMS.2. Sanity schema: `eventDetails` document — `event` reference (required, unique via hardened draft/published exclusion), `tiers` array (`name`, `price` in pounds — converted to pence once at the fetch boundary in Milestone 7, not stored as pence — `capacity`, `releaseTrigger` for a scheduled date vs. "opens when previous tier sells out", `saleStart`/`saleEnd` with ordering validation, `description`)
+- [x] 6CMS.3. Sanity schema: `ticketingStatus` field on `eventDetails` (`not_open` / `on_sale` / `sold_out` / `closed`, manual override, surfaced in the document preview subtitle)
+- [x] 6CMS.4. Sanity schema: `lineup` field on `eventDetails` — each entry is either a reference to the existing `talent` roster document or a one-off guest (name + free-text role), plus an optional free-text `setTime`; guests never appear on the general Talent roster page
+- [x] 6CMS.5. Sanity schema: `faq` field on `eventDetails` — question/answer objects; answer is restricted portable text (bold + links only, no headings/lists) reusing the existing `portableTextComponents.tsx` renderer, no new frontend work needed
+- [x] 6CMS.6. Studio structure: custom "Events" desk item (`structure/event-list.ts`) nests each event's `eventDetails` alongside it via a filtered document list, replacing the flat top-level `eventDetails` list. Deferred: the nested "create" flow doesn't pre-fill the `event` reference — needs a registered initial-value template if that's wanted later
 
 ---
 
@@ -93,7 +93,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 <a name="m7-todo"><h4>To Do (Milestone 7)</h4></a>
 
 - [ ] 7UI.1. Event detail page (`app/events/[slug]/page.tsx`) — replaces current external `ticketUrl` hand-off
-- [ ] 7API.1. Remaining-stock computation per tier: Sanity `capacity` minus DB `sold` + `pending` (younger than provider checkout-session window, e.g. SumUp's 30 min)
+- [ ] 7API.1. Remaining-stock computation per tier: Sanity `capacity` minus DB `sold` + `pending` (younger than provider checkout-session window, e.g. SumUp's 30 min). For a `releaseTrigger: 'previousSoldOut'` tier, also gate it open/closed on the *previous* tier's remaining stock hitting zero — Sanity only stores the intent, this is where it actually gets decided
 - [ ] 7UI.2. Tier picker UI — quantities, email input, marketing opt-in checkbox (own copy/default, not the provider's)
 - [ ] 7API.2. Atomic check-and-reserve — stock check + `orders` insert (`status: pending`) in one DB transaction, so concurrent buyers can't both pass the stock check
 - [ ] 7API.3. Checkout session creation (chosen provider), passing `order.id` as reference/metadata for webhook matching
