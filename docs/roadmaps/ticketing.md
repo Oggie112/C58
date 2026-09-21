@@ -11,7 +11,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
-| **DB**   | Schema complete, not pushed to live project       | `supabase db push`; 6DX.2 / 6API.1 | — |
+| **DB**   | Live on Supabase                                   | 6DX.2 / 6API.1                   | — |
 | **API**  | Not started                                       | —                                | — |
 | **UI**   | Not started                                       | —                                | — |
 | **QA**   | Not started                                       | —                                | — |
@@ -76,7 +76,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 - [x] 6DB.3. `order_items` table + migration — joins tiers via Sanity's stable `tiers[]._key`, not `tier_name` (a Studio rename shouldn't break past orders' stock accounting); `tier_name`/`unit_price` kept as purchase-time snapshots
 - [x] 6DB.4. `tickets` table + migration (one row per admission, unique `ticket_code`, `status` check-constrained to match the door-scanner's atomic check-and-flip design)
 
-All three migrations applied in order against a throwaway local Postgres container and negative-tested (bad status values, `quantity <= 0`, duplicate `provider_session_id` all correctly rejected) — not yet pushed to the live Supabase project via `supabase db push`.
+All three migrations applied in order against a throwaway local Postgres container and negative-tested (bad status values, `quantity <= 0`, duplicate `provider_session_id` all correctly rejected), then pushed to the live Supabase project via `supabase db push` and confirmed in sync with `supabase migration list`.
 - [x] 6CMS.2. Sanity schema: `eventDetails` document — `event` reference (required, unique via hardened draft/published exclusion), `tiers` array (`name`, `price` in pounds — converted to pence once at the fetch boundary in Milestone 7, not stored as pence — `capacity`, `releaseTrigger` for a scheduled date vs. "opens when previous tier sells out", `saleStart`/`saleEnd` with ordering validation, `description`)
 - [x] 6CMS.3. Sanity schema: `ticketingStatus` field on `eventDetails` (`not_open` / `on_sale` / `sold_out` / `closed`, manual override, surfaced in the document preview subtitle)
 - [x] 6CMS.4. Sanity schema: `lineup` field on `eventDetails` — each entry is either a reference to the existing `talent` roster document or a one-off guest (name + free-text role), plus an optional free-text `setTime`; guests never appear on the general Talent roster page
