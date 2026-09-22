@@ -35,9 +35,20 @@ describe('EventCard', () => {
 		expect(screen.getByText('£15')).toBeInTheDocument()
 	})
 
-	it('falls back to TICKETS → when no cost', () => {
+	it('renders TICKETS → button for upcoming events', () => {
 		render(<EventCard event={baseEvent} />)
 		expect(screen.getByText('TICKETS →')).toBeInTheDocument()
+	})
+
+	it('links the TICKETS → button to the internal event detail page', () => {
+		render(<EventCard event={baseEvent} />)
+		expect(screen.getByText('TICKETS →').closest('a')).toHaveAttribute('href', '/events/test-event')
+	})
+
+	it('renders both the button and cost when cost is provided, not one instead of the other', () => {
+		render(<EventCard event={{ ...baseEvent, cost: '£15' }} />)
+		expect(screen.getByText('TICKETS →')).toBeInTheDocument()
+		expect(screen.getByText('£15')).toBeInTheDocument()
 	})
 
 	it('shows PAST label when past=true', () => {
