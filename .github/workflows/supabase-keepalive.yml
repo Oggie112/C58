@@ -1,0 +1,18 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: '0 9 * * 1,4' # Monday and Thursday — comfortably under Supabase's ~1 week inactivity pause
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Ping database
+        run: psql "$DATABASE_POOLED_URL" -c "select 1;"
+        env:
+          DATABASE_POOLED_URL: ${{ secrets.DATABASE_POOLED_URL }}
