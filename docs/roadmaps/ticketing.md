@@ -11,7 +11,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 |          | Status                                          | Next Up                        | Blocked                          |
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
-| **DB**   | Live on Supabase                                   | 6DX.2 / 6API.1                   | — |
+| **DB**   | Live on Supabase                                   | 6API.1                            | — |
 | **API**  | Not started                                       | —                                | — |
 | **UI**   | Not started                                       | —                                | — |
 | **QA**   | Not started                                       | —                                | — |
@@ -62,7 +62,6 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 - [ ] 6DX.1. Env vars: Supabase connection string, SumUp keys, Brevo API key
 - [ ] 6API.1. SumUp sandbox/test account wired up
-- [ ] 6DX.2. Note Supabase free-tier inactivity pause in ops docs — calendar reminder or keep-alive once release cadence is known (per [ADR 003](../adrs/003-database-supabase.md))
 
 <a name="m6-blocked"><h4>Blocked (Milestone 6)</h4></a>
 
@@ -75,8 +74,9 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 - [x] 6DB.2. `orders` table + migration — `event_id` points at the Sanity `eventDetails` document (tiers/capacity live there post-ADR 004, not on `event`); `provider_session_id` unique for webhook idempotency; `status` check-constrained; indexes for the capacity-check query and the Milestone 8 email lookup
 - [x] 6DB.3. `order_items` table + migration — joins tiers via Sanity's stable `tiers[]._key`, not `tier_name` (a Studio rename shouldn't break past orders' stock accounting); `tier_name`/`unit_price` kept as purchase-time snapshots
 - [x] 6DB.4. `tickets` table + migration (one row per admission, unique `ticket_code`, `status` check-constrained to match the door-scanner's atomic check-and-flip design)
-
-All three migrations applied in order against a throwaway local Postgres container and negative-tested (bad status values, `quantity <= 0`, duplicate `provider_session_id` all correctly rejected), then pushed to the live Supabase project via `supabase db push` and confirmed in sync with `supabase migration list`.
+  - All three migrations applied in order against a throwaway local Postgres container and negative-tested (bad status values, `quantity <= 0`, duplicate `provider_session_id` all correctly rejected), then pushed to the live Supabase project via `supabase db push` and confirmed in sync with `supabase migration list`.
+- [x] 6DB.6. RLS enabled on all three tables (via dashboard, then captured as a migration — no policies; denies all access to every non-owner role, a fail-safe if Data API is ever turned on before policies exist. Confirmed to have no effect on the app's own access, which connects as the owner role regardless)
+- [x] 6DX.2. Supabase keepalive — `.github/workflows/supabase-keepalive.yml` pings `DATABASE_POOLED_URL` twice weekly (Mon/Thu) via `psql`, well under the ~1 week free-tier inactivity pause; needs a `DATABASE_POOLED_URL` repo secret added before it can run
 - [x] 6CMS.2. Sanity schema: `eventDetails` document — `event` reference (required, unique via hardened draft/published exclusion), `tiers` array (`name`, `price` in pounds — converted to pence once at the fetch boundary in Milestone 7, not stored as pence — `capacity`, `releaseTrigger` for a scheduled date vs. "opens when previous tier sells out", `saleStart`/`saleEnd` with ordering validation, `description`)
 - [x] 6CMS.3. Sanity schema: `ticketingStatus` field on `eventDetails` (`not_open` / `on_sale` / `sold_out` / `closed`, manual override, surfaced in the document preview subtitle)
 - [x] 6CMS.4. Sanity schema: `lineup` field on `eventDetails` — each entry is either a reference to the existing `talent` roster document or a one-off guest (name + free-text role), plus an optional free-text `setTime`; guests never appear on the general Talent roster page
