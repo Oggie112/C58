@@ -12,8 +12,8 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | Live on Supabase                                   | 6API.1                            | — |
-| **API**  | Not started                                       | —                                | — |
-| **UI**   | 7UI.1/7UI.2 complete                                | Checkout submit needs 7API.2/7API.3 | 7API.1 for live stock |
+| **API**  | 7API.1 complete                                    | 7API.2 (atomic check-and-reserve) | — |
+| **UI**   | 7UI.1/7UI.2 complete, live stock wired               | Checkout needs 7API.2/7API.3      | — |
 | **QA**   | Not started                                       | —                                | — |
 | **DX**   | Not started                                       | —                                | — |
 
@@ -94,7 +94,6 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 <a name="m7-todo"><h4>To Do (Milestone 7)</h4></a>
 
-- [ ] 7API.1. Remaining-stock computation per tier: Sanity `capacity` minus DB `sold` + `pending` (younger than provider checkout-session window, e.g. SumUp's 30 min). For a `releaseTrigger: 'previousSoldOut'` tier, also gate it open/closed on the *previous* tier's remaining stock hitting zero — Sanity only stores the intent, this is where it actually gets decided
 - [ ] 7API.2. Atomic check-and-reserve — stock check + `orders` insert (`status: pending`) in one DB transaction, so concurrent buyers can't both pass the stock check
 - [ ] 7API.3. Checkout session creation (chosen provider), passing `order.id` as reference/metadata for webhook matching
 - [ ] 7API.4. Webhook handler — verify payment via API (not redirect alone), mark `orders.status = 'paid'`, generate one `tickets` row per unit with unique `ticket_code`
@@ -106,6 +105,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 - [x] 7UI.1. Event detail page (`app/events/[slug]/page.tsx`) — canonical destination for every event now, replacing the external `ticketUrl` hand-off. Falls back to `ticketUrl` as an external button when an event has no `eventDetails` yet (nothing regresses during migration); lists tiers/lineup/FAQ when it does. `EventCard`'s CTA now always links internally. Verified with a real `next build` against the live dataset (all 3 existing events, none with `eventDetails` yet, so only the fallback path has been exercised against real content so far)
 - [x] 7UI.2. Tier picker (`TierPicker.tsx`) — quantities (capped at `min(capacity, 10)`, placeholder pending `7API.1`'s live stock), email, marketing opt-in (default unchecked, own copy). Wired to a new stubbed server action (`actions.ts`, Zod-validated, first use of Zod in `web/`) that returns "not available yet" — `7API.2`/`7API.3` fill in the real logic later without the UI changing. 10 new tests
+- [x] 7API.1. Remaining-stock computation — `lib/getOrderCounts.ts` (first runtime Postgres connection in `web/`, `postgres` npm package reading `DATABASE_POOLED_URL`) + `lib/stock.ts`'s pure `computeRemainingStock` (capacity minus sold minus pending, `previousSoldOut` gating on the previous tier hitting zero), split across two files so the DB driver never reaches the client bundle. Served via a new dynamic route (`app/api/stock/[eventDetailsId]`, `Cache-Control: no-store`) fetched client-side by `TierPicker` on mount — `/events/[slug]` itself stays static; confirmed in the build output (route renders `ƒ`, event pages stay `●`). `TierPicker` shows "Checking availability…" while loading, falls back to the capacity/order-max cap on fetch failure rather than blocking. SQL verified against seeded data in a throwaway Postgres container (stale pending orders and failed orders correctly excluded, cross-event leakage correctly excluded), not just that it parses
 
 ---
 
