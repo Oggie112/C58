@@ -24,7 +24,7 @@ Deliberately **not** doing the `SanityLive`-gating stopgap (2-line render gate +
 ## When picked up
 
 1. Read the actual v12→v13 migration guide (linked from the changelog above) in full before touching code.
-2. Consider using Sanity's AI-assisted migration skill rather than migrating every call site by hand.
+2. Consider using Sanity's AI-assisted migration skill rather than migrating every call site by hand. npx skills add https://github.com/sanity-io/next-sanity --skill sanity-live-cache-components
 3. Audit every `sanityFetch`/`<SanityLive>` usage across `web/` for the removed/renamed APIs listed above — `sanity/live.ts`, `sanity/fetch.ts`, and anywhere `stega`/`tag` options are passed.
 4. Decide deliberately whether to enable `cacheComponents: true` as part of this, or migrate the library first and adopt Cache Components as a separate follow-up.
 5. Re-run `npm audit` afterward to confirm the `adm-zip`/`js-yaml`/`uuid` chain is actually gone, not just reshuffled.
