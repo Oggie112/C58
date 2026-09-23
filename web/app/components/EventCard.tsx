@@ -73,19 +73,20 @@ export default function EventCard({ event, featured = false, past = false }: Eve
 						<span className="font-body text-label text-c58-muted uppercase tracking-[0.15em]">
 							PAST
 						</span>
-					) : event.ticketUrl ? (
-						<Link
-							href={event.ticketUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 inline-block hover:bg-white active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[background-color,transform] duration-200"
-						>
-							TICKETS →
-						</Link>
 					) : (
-						<span className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice/30 text-c58-muted px-8 py-3.5 inline-block">
-							{event.cost ?? 'TICKETS →'}
-						</span>
+						<div className="flex items-center gap-4">
+							<Link
+								href={`/events/${event.slug.current}`}
+								className="font-body text-label uppercase tracking-[0.15em] bg-c58-ice text-c58-black px-8 py-3.5 inline-block hover:bg-white active:scale-[0.97] active:duration-150 active:[transition-timing-function:cubic-bezier(0.25,0.46,0.45,0.94)] transition-[background-color,transform] duration-200"
+							>
+								TICKETS →
+							</Link>
+							{event.cost && (
+								<span className="font-body text-label text-c58-muted uppercase tracking-[0.15em]">
+									{event.cost}
+								</span>
+							)}
+						</div>
 					)}
 					{event.time && (
 						<span className="font-body text-label text-c58-muted uppercase tracking-[0.15em]">

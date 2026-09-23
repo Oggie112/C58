@@ -210,6 +210,58 @@ export interface SanityEvent {
 	description?: PortableTextBlock[]
 }
 
+// ---------------------------------------------------------------------------
+// Event Details (tickets, line-up, FAQ) — see ADR 004
+// ---------------------------------------------------------------------------
+
+export type ReleaseTrigger = 'scheduled' | 'previousSoldOut'
+export type TicketingStatus = 'not_open' | 'on_sale' | 'sold_out' | 'closed'
+export type LineupEntryType = 'talent' | 'guest'
+
+export interface SanityTier {
+	_key: string
+	name: string
+	price: number // pounds, as stored in Sanity — convert to pence before any money arithmetic
+	capacity: number
+	releaseTrigger: ReleaseTrigger
+	saleStart?: string
+	saleEnd?: string
+	description?: string
+}
+
+export interface SanityLineupEntry {
+	_key: string
+	entryType: LineupEntryType
+	talent?: {
+		_id: string
+		name: string
+		slug: SanitySlug
+		role?: string
+		photo?: SanityImage
+	}
+	guestName?: string
+	guestRole?: string
+	setTime?: string
+}
+
+export interface SanityFaqEntry {
+	_key: string
+	question: string
+	answer: PortableTextBlock[]
+}
+
+export interface SanityEventDetails {
+	_id: string
+	ticketingStatus: TicketingStatus
+	tiers?: SanityTier[]
+	lineup?: SanityLineupEntry[]
+	faq?: SanityFaqEntry[]
+}
+
+export interface SanityEventWithDetails extends SanityEvent {
+	eventDetails?: SanityEventDetails | null
+}
+
 export interface SanityPost {
 	_id: string
 	_type: 'post'
