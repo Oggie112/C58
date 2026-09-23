@@ -40,3 +40,4 @@ NEXT_PUBLIC_SANITY_API_VERSION=2025-02-26
 - [MVP Roadmap](roadmaps/mvp.md)
 - [Ticketing Roadmap](roadmaps/ticketing.md)
 - [Architecture Decisions](adrs/)
+- [next-sanity v13 Migration](next-sanity-v13-migration.md) — tracked, not started
