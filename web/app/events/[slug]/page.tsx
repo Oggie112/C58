@@ -7,7 +7,8 @@ import { getAllEventSlugs, getEventBySlug } from '@/sanity/fetch'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import portableTextComponents from '@/lib/portableTextComponents'
-import type { SanityTier, SanityLineupEntry, SanityFaqEntry, TicketingStatus } from '@/types/sanity'
+import type { SanityLineupEntry, SanityFaqEntry, TicketingStatus } from '@/types/sanity'
+import TierPicker from './TierPicker'
 
 const TICKETING_STATUS_LABEL: Record<TicketingStatus, string> = {
 	not_open: 'Not yet on sale',
@@ -94,38 +95,17 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
 
 				{/* Ticketing */}
 				<section className="mb-12">
-					{tiers.length > 0 ? (
+					{details && tiers.length > 0 ? (
 						<>
 							<div className="flex items-center justify-between mb-6">
 								<h2 className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-white">
 									Tickets
 								</h2>
-								{details && (
-									<span className="font-body text-label uppercase tracking-[0.15em] text-c58-ice">
-										{TICKETING_STATUS_LABEL[details.ticketingStatus]}
-									</span>
-								)}
+								<span className="font-body text-label uppercase tracking-[0.15em] text-c58-ice">
+									{TICKETING_STATUS_LABEL[details.ticketingStatus]}
+								</span>
 							</div>
-							<ul className="space-y-4">
-								{tiers.map((tier: SanityTier) => (
-									<li
-										key={tier._key}
-										className="flex items-start justify-between gap-6 border border-c58-border p-4 md:p-6"
-									>
-										<div>
-											<p className="font-display font-bold uppercase tracking-[0.04em] text-c58-white mb-1">
-												{tier.name}
-											</p>
-											{tier.description && (
-												<p className="font-body text-body text-c58-muted">{tier.description}</p>
-											)}
-										</div>
-										<p className="font-display font-bold text-c58-ice whitespace-nowrap">
-											£{tier.price.toFixed(2)}
-										</p>
-									</li>
-								))}
-							</ul>
+							<TierPicker eventDetailsId={details._id} tiers={tiers} />
 						</>
 					) : event.ticketUrl ? (
 						<Link
