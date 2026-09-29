@@ -1,6 +1,8 @@
 'use server'
 
 import { z } from 'zod'
+import { getEventDetailsById } from '@/sanity/fetch'
+import { reserveOrder } from '@/lib/reserveOrder'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -17,7 +19,7 @@ const CreateOrderSchema = z.object({
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
 
 export interface CreateOrderState {
-	status: 'idle' | 'invalid' | 'unavailable'
+	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'reserved'
 	message?: string
 }
 
@@ -34,12 +36,34 @@ export async function createOrder(
 		}
 	}
 
-	// TODO(7API.2/7API.3): atomic check-and-reserve against Supabase (orders,
-	// order_items), then create a SumUp checkout session and redirect there.
-	// Until that lands, this only validates the payload shape — no order is
-	// created anywhere yet.
-	return {
-		status: 'unavailable',
-		message: "Online ticketing isn't live yet — check back soon.",
+	const eventDetails = await getEventDetailsById(parsed.data.eventDetailsId)
+	if (!eventDetails?.tiers?.length) {
+		return {
+			status: 'invalid',
+			message: 'This event no longer has ticket tiers available.',
+		}
+	}
+
+	const result = await reserveOrder(parsed.data, eventDetails.tiers)
+
+	switch (result.status) {
+		case 'reserved':
+			// TODO(7API.3): create the SumUp checkout session and redirect there
+			// with result.orderId. Until then, the reservation is real (holds
+			// the seats for 30 min) but there's nowhere to actually pay yet.
+			return {
+				status: 'reserved',
+				message: "Your tickets are reserved — checkout isn't live yet, we'll be in touch shortly.",
+			}
+		case 'sold_out':
+			return {
+				status: 'sold_out',
+				message: 'Sorry, one of the tiers you selected just sold out. Please try again.',
+			}
+		case 'tier_not_open':
+			return {
+				status: 'sold_out',
+				message: "One of the selected tiers isn't open yet.",
+			}
 	}
 }

@@ -58,3 +58,22 @@ export const EVENT_BY_SLUG_QUERY = defineQuery(/* groq */ `
 		}
 	}
 `)
+
+// Fetch eventDetails directly by its own _id — used server-side by
+// createOrder/reserveOrder, which only ever have eventDetailsId (not an
+// event slug), so the slug-based join above doesn't fit. Just tiers: that's
+// all reserveOrder needs (name/price/releaseTrigger for the snapshot and
+// previousSoldOut gating) — capacity itself comes from the Postgres mirror,
+// never from this query.
+export const EVENT_DETAILS_BY_ID_QUERY = defineQuery(/* groq */ `
+	*[_type == "eventDetails" && _id == $id][0] {
+		_id,
+		tiers[] {
+			_key,
+			name,
+			price,
+			capacity,
+			releaseTrigger
+		}
+	}
+`)
