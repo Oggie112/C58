@@ -18,23 +18,26 @@ const previousSoldOutTier: SanityTier = {
 }
 
 describe('computeRemainingStock', () => {
-	it('computes remaining as capacity minus sold minus pending', () => {
+	it('computes remaining as capacity minus reserved', () => {
 		const result = computeRemainingStock(
 			[scheduledTier],
-			{ [scheduledTier._key]: { sold: 3, pending: 2 } },
+			{ [scheduledTier._key]: { capacity: 10, reserved: 5 } },
 		)
 		expect(result[scheduledTier._key].remaining).toBe(5)
 	})
 
-	it('treats a tier with no counts entry as fully available', () => {
+	it('treats a tier with no availability entry as unavailable, not fully available', () => {
+		// No entry means no synced tiers row exists yet — the reservation
+		// transaction's atomic UPDATE would find nothing to match and reject
+		// it regardless, so showing it as available here would be dishonest.
 		const result = computeRemainingStock([scheduledTier], {})
-		expect(result[scheduledTier._key].remaining).toBe(10)
+		expect(result[scheduledTier._key].remaining).toBe(0)
 	})
 
 	it('never returns negative remaining, even if oversold', () => {
 		const result = computeRemainingStock(
 			[scheduledTier],
-			{ [scheduledTier._key]: { sold: 8, pending: 5 } },
+			{ [scheduledTier._key]: { capacity: 10, reserved: 13 } },
 		)
 		expect(result[scheduledTier._key].remaining).toBe(0)
 	})
@@ -42,7 +45,7 @@ describe('computeRemainingStock', () => {
 	it('always marks a scheduled tier as open, regardless of stock', () => {
 		const result = computeRemainingStock(
 			[scheduledTier],
-			{ [scheduledTier._key]: { sold: 10, pending: 0 } },
+			{ [scheduledTier._key]: { capacity: 10, reserved: 10 } },
 		)
 		expect(result[scheduledTier._key].isOpen).toBe(true)
 	})
@@ -50,23 +53,15 @@ describe('computeRemainingStock', () => {
 	it('keeps a previousSoldOut tier closed while the previous tier has stock', () => {
 		const result = computeRemainingStock(
 			[scheduledTier, previousSoldOutTier],
-			{ [scheduledTier._key]: { sold: 2, pending: 0 } }, // 8 remaining
+			{ [scheduledTier._key]: { capacity: 10, reserved: 2 } }, // 8 remaining
 		)
 		expect(result[previousSoldOutTier._key].isOpen).toBe(false)
 	})
 
-	it('opens a previousSoldOut tier once the previous tier is fully sold', () => {
+	it('opens a previousSoldOut tier once the previous tier is fully reserved', () => {
 		const result = computeRemainingStock(
 			[scheduledTier, previousSoldOutTier],
-			{ [scheduledTier._key]: { sold: 10, pending: 0 } }, // 0 remaining
-		)
-		expect(result[previousSoldOutTier._key].isOpen).toBe(true)
-	})
-
-	it('opens a previousSoldOut tier once the previous tier is sold out via pending holds too', () => {
-		const result = computeRemainingStock(
-			[scheduledTier, previousSoldOutTier],
-			{ [scheduledTier._key]: { sold: 4, pending: 6 } }, // 0 remaining
+			{ [scheduledTier._key]: { capacity: 10, reserved: 10 } }, // 0 remaining
 		)
 		expect(result[previousSoldOutTier._key].isOpen).toBe(true)
 	})

@@ -1,8 +1,8 @@
 import type { SanityTier } from '@/types/sanity'
 
-export interface OrderCounts {
-	sold: number
-	pending: number
+export interface TierAvailability {
+	capacity: number
+	reserved: number
 }
 
 export interface TierStock {
@@ -16,13 +16,19 @@ export interface TierStock {
 // (Sanity's own ordering, per ADR/schema — "previous" has no other meaning).
 export function computeRemainingStock(
 	tiers: SanityTier[],
-	counts: Record<string, OrderCounts>,
+	availability: Record<string, TierAvailability>,
 ): Record<string, TierStock> {
 	const result: Record<string, TierStock> = {}
 
 	tiers.forEach((tier, index) => {
-		const { sold = 0, pending = 0 } = counts[tier._key] ?? {}
-		const remaining = Math.max(0, tier.capacity - sold - pending)
+		// No entry means no synced tiers row exists yet (webhook hasn't run,
+		// or hasn't caught up) — treat as unavailable, not as "assume Sanity's
+		// capacity." The reservation transaction's own atomic UPDATE would
+		// find zero matching rows and reject it regardless; showing it as
+		// available here would just be a display promising something
+		// enforcement can't actually honour.
+		const { capacity = 0, reserved = 0 } = availability[tier._key] ?? {}
+		const remaining = Math.max(0, capacity - reserved)
 
 		let isOpen = true
 		if (tier.releaseTrigger === 'previousSoldOut') {

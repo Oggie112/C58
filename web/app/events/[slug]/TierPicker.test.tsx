@@ -31,10 +31,13 @@ function mockFetchOnce(body: unknown, ok = true) {
 	}) as jest.Mock
 }
 
-// All-zero counts == every tier fully available, matching the fixtures'
-// Sanity capacities — used by every test that isn't specifically about
-// live-stock capping itself.
-const openStock = { [tiers[0]._key]: { sold: 0, pending: 0 }, [tiers[1]._key]: { sold: 0, pending: 0 } }
+// A tier's own capacity, unreserved — every mocked tier needs a real entry
+// now: a missing one means "no synced row" (unavailable), not "assume
+// Sanity's capacity" (see stock.ts).
+const openStock = {
+	[tiers[0]._key]: { capacity: tiers[0].capacity, reserved: 0 },
+	[tiers[1]._key]: { capacity: tiers[1].capacity, reserved: 0 },
+}
 
 async function renderAndWaitForStock(props: { eventDetailsId?: string; tiers?: SanityTier[] } = {}) {
 	const result = render(
@@ -116,8 +119,8 @@ describe('TierPicker', () => {
 
 	it('caps quantity at live remaining stock even when capacity/order-max allow more', async () => {
 		mockFetchOnce({
-			[tiers[0]._key]: { sold: 2, pending: 0 }, // capacity 3, 1 remaining
-			[tiers[1]._key]: { sold: 0, pending: 0 },
+			[tiers[0]._key]: { capacity: 3, reserved: 2 }, // 1 remaining
+			[tiers[1]._key]: { capacity: 100, reserved: 0 },
 		})
 		await renderAndWaitForStock()
 		const increment = screen.getByLabelText('Increase quantity for General Admission')
@@ -126,12 +129,25 @@ describe('TierPicker', () => {
 		expect(increment).toBeDisabled()
 	})
 
+	it('treats a tier with no synced availability row as unavailable, not fully open', async () => {
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => ({}), // no entry for tier-1 at all
+		}) as jest.Mock
+		await renderAndWaitForStock()
+		expect(screen.getByLabelText('Increase quantity for General Admission')).toBeDisabled()
+	})
+
 	it('disables a previousSoldOut tier and explains why, while the previous tier still has stock', async () => {
 		const gated: SanityTier[] = [
 			tiers[0],
 			{ _key: 'tier-3', name: 'Final Release', price: 40, capacity: 5, releaseTrigger: 'previousSoldOut' },
 		]
-		mockFetchOnce({ [tiers[0]._key]: { sold: 0, pending: 0 } })
+		mockFetchOnce({
+			[tiers[0]._key]: { capacity: 3, reserved: 0 },
+			'tier-3': { capacity: 5, reserved: 0 },
+		})
 		await renderAndWaitForStock({ tiers: gated })
 		expect(screen.getByText('Opens once the previous tier sells out')).toBeInTheDocument()
 		expect(screen.getByLabelText('Increase quantity for Final Release')).toBeDisabled()
@@ -142,7 +158,10 @@ describe('TierPicker', () => {
 			tiers[0],
 			{ _key: 'tier-3', name: 'Final Release', price: 40, capacity: 5, releaseTrigger: 'previousSoldOut' },
 		]
-		mockFetchOnce({ [tiers[0]._key]: { sold: 3, pending: 0 } }) // GA fully sold
+		mockFetchOnce({
+			[tiers[0]._key]: { capacity: 3, reserved: 3 }, // GA fully reserved
+			'tier-3': { capacity: 5, reserved: 0 },
+		})
 		await renderAndWaitForStock({ tiers: gated })
 		expect(screen.queryByText('Opens once the previous tier sells out')).not.toBeInTheDocument()
 		expect(screen.getByLabelText('Increase quantity for Final Release')).not.toBeDisabled()
