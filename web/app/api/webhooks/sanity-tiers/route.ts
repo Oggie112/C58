@@ -3,8 +3,8 @@ import { isValidSignature, SIGNATURE_HEADER_NAME } from '@sanity/webhook'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
 
-// Configure in Sanity's project settings, on eventDetails publish, with a
-// GROQ projection matching this shape exactly:
+// Configure in Sanity's project settings, on eventDetails create/update/delete,
+// with a GROQ projection matching this shape exactly:
 //   {"eventDetailsId": _id, "tiers": tiers[]{_key, capacity}}
 const WebhookPayloadSchema = z.object({
 	eventDetailsId: z.string().min(1),
@@ -18,15 +18,28 @@ export async function POST(request: Request) {
 		return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
 	}
 
-	// isValidSignature needs the raw request body exactly as sent — a
-	// re-encoded JSON string can mismatch even for byte-identical content, so
-	// read text() first and JSON.parse it ourselves, rather than
-	// request.json() (which discards the raw string entirely).
 	const rawBody = await request.text()
 	const signature = request.headers.get(SIGNATURE_HEADER_NAME)
 
 	if (!signature || !(await isValidSignature(rawBody, signature, secret))) {
 		return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+	}
+
+	// A deleted/unpublished document has no current state for the projection
+	// to read tiers[] from, so delete is handled from headers, not the body.
+	if (request.headers.get('sanity-operation') === 'delete') {
+		const eventDetailsId = request.headers.get('sanity-document-id')
+		if (!eventDetailsId) {
+			return NextResponse.json({ error: 'Missing sanity-document-id' }, { status: 400 })
+		}
+
+		try {
+			await sql`update tiers set capacity = reserved where event_id = ${eventDetailsId}`
+			return NextResponse.json({ success: true })
+		} catch (error) {
+			console.error('Failed to pin tiers for deleted event:', error)
+			return NextResponse.json({ error: 'Sync failed' }, { status: 500 })
+		}
 	}
 
 	const parsed = WebhookPayloadSchema.safeParse(JSON.parse(rawBody))
@@ -38,14 +51,6 @@ export async function POST(request: Request) {
 	const tierKeys = tiers.map((tier) => tier._key)
 
 	try {
-		// Known limitation, not fixed here: if a tier's capacity in Sanity is
-		// reduced below its current `reserved` count, this upsert violates the
-		// tiers table's `reserved <= capacity` check constraint. Since the
-		// whole sync is one transaction, that fails every tier in this
-		// payload, not just the offending one — capacity would silently stay
-		// stale for the whole event until a correcting publish. Safe (no bad
-		// data persisted), not graceful. Worth a partial-failure-tolerant
-		// version if this turns out to matter in practice.
 		await sql.begin(async (tx) => {
 			for (const tier of tiers) {
 				await tx`
@@ -55,14 +60,6 @@ export async function POST(request: Request) {
 				`
 			}
 
-			// A tier removed from Sanity is never deleted — order_items may
-			// already reference its tier_key. Setting capacity down to exactly
-			// its current reserved count (not to 0) blocks any new reservation
-			// — capacity - reserved becomes 0 either way — while staying valid
-			// under the reserved <= capacity check constraint regardless of
-			// what reserved currently is; a literal 0 would violate it for any
-			// tier that already has real reservations against it, which is the
-			// realistic case for a tier actually being removed.
 			if (tierKeys.length > 0) {
 				await tx`
 					update tiers set capacity = reserved
