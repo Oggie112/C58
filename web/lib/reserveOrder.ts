@@ -15,7 +15,7 @@ export interface ReserveOrderInput {
 }
 
 export type ReserveResult =
-	| { status: 'reserved'; orderId: string }
+	| { status: 'reserved'; orderId: string; amountTotal: number }
 	| { status: 'sold_out'; tierKey: string }
 	| { status: 'tier_not_open'; tierKey: string }
 
@@ -106,7 +106,7 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 			return order.id as string
 		})
 
-		return { status: 'reserved', orderId }
+		return { status: 'reserved', orderId, amountTotal }
 	} catch (err) {
 		if (err instanceof SoldOutError) return { status: 'sold_out', tierKey: err.tierKey }
 		if (err instanceof TierNotOpenError) return { status: 'tier_not_open', tierKey: err.tierKey }

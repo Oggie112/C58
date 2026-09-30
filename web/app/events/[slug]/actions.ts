@@ -1,8 +1,12 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getEventDetailsById } from '@/sanity/fetch'
 import { reserveOrder } from '@/lib/reserveOrder'
+import { createCheckoutSession } from '@/lib/sumup'
+import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
+import { failReservation } from '@/lib/failReservation'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -19,7 +23,7 @@ const CreateOrderSchema = z.object({
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
 
 export interface CreateOrderState {
-	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'reserved'
+	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed'
 	message?: string
 }
 
@@ -47,14 +51,24 @@ export async function createOrder(
 	const result = await reserveOrder(parsed.data, eventDetails.tiers)
 
 	switch (result.status) {
-		case 'reserved':
-			// TODO(7API.3): create the SumUp checkout session and redirect there
-			// with result.orderId. Until then, the reservation is real (holds
-			// the seats for 30 min) but there's nowhere to actually pay yet.
-			return {
-				status: 'reserved',
-				message: "Your tickets are reserved — checkout isn't live yet, we'll be in touch shortly.",
+		case 'reserved': {
+			let session
+			try {
+				session = await createCheckoutSession(result.orderId, result.amountTotal, `C58 order ${result.orderId}`)
+			} catch (error) {
+				console.error('Failed to create SumUp checkout session:', error)
+				await failReservation(result.orderId)
+				return {
+					status: 'checkout_failed',
+					message: "Something went wrong starting checkout. You haven't been charged — please try again.",
+				}
 			}
+
+			await attachCheckoutSession(result.orderId, session.id)
+			// redirect() throws internally — must stay outside the try/catch
+			// above, or the catch would swallow the navigation as an error.
+			redirect(session.hostedCheckoutUrl)
+		}
 		case 'sold_out':
 			return {
 				status: 'sold_out',
