@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useMemo, useState, type SubmitEvent } from 'react'
+import { startTransition, useActionState, useEffect, useMemo, useState, type SubmitEvent } from 'react'
 import type { SanityTier } from '@/types/sanity'
 import { computeRemainingStock, type TierStock } from '@/lib/stock'
 import { createOrder, type CreateOrderState } from './actions'
@@ -86,13 +86,15 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 		e.preventDefault()
 		if (!canSubmit) return
 
-		dispatch({
-			eventDetailsId,
-			items: tiers
-				.filter((tier) => (quantities[tier._key] ?? 0) > 0)
-				.map((tier) => ({ tierKey: tier._key, quantity: quantities[tier._key] })),
-			email,
-			marketingOptIn,
+		startTransition(() => {
+			dispatch({
+				eventDetailsId,
+				items: tiers
+					.filter((tier) => (quantities[tier._key] ?? 0) > 0)
+					.map((tier) => ({ tierKey: tier._key, quantity: quantities[tier._key] })),
+				email,
+				marketingOptIn,
+			})
 		})
 	}
 
