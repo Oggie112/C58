@@ -1,6 +1,12 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { getEventDetailsById } from '@/sanity/fetch'
+import { reserveOrder } from '@/lib/reserveOrder'
+import { createCheckoutSession } from '@/lib/sumup'
+import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
+import { failReservation } from '@/lib/failReservation'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -17,7 +23,7 @@ const CreateOrderSchema = z.object({
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
 
 export interface CreateOrderState {
-	status: 'idle' | 'invalid' | 'unavailable'
+	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed'
 	message?: string
 }
 
@@ -34,12 +40,44 @@ export async function createOrder(
 		}
 	}
 
-	// TODO(7API.2/7API.3): atomic check-and-reserve against Supabase (orders,
-	// order_items), then create a SumUp checkout session and redirect there.
-	// Until that lands, this only validates the payload shape — no order is
-	// created anywhere yet.
-	return {
-		status: 'unavailable',
-		message: "Online ticketing isn't live yet — check back soon.",
+	const eventDetails = await getEventDetailsById(parsed.data.eventDetailsId)
+	if (!eventDetails?.tiers?.length) {
+		return {
+			status: 'invalid',
+			message: 'This event no longer has ticket tiers available.',
+		}
+	}
+
+	const result = await reserveOrder(parsed.data, eventDetails.tiers)
+
+	switch (result.status) {
+		case 'reserved': {
+			let session
+			try {
+				session = await createCheckoutSession(result.orderId, result.amountTotal, `C58 order ${result.orderId}`)
+			} catch (error) {
+				console.error('Failed to create SumUp checkout session:', error)
+				await failReservation(result.orderId)
+				return {
+					status: 'checkout_failed',
+					message: "Something went wrong starting checkout. You haven't been charged — please try again.",
+				}
+			}
+
+			await attachCheckoutSession(result.orderId, session.id)
+			// redirect() throws internally — must stay outside the try/catch
+			// above, or the catch would swallow the navigation as an error.
+			redirect(session.hostedCheckoutUrl)
+		}
+		case 'sold_out':
+			return {
+				status: 'sold_out',
+				message: 'Sorry, one of the tiers you selected just sold out. Please try again.',
+			}
+		case 'tier_not_open':
+			return {
+				status: 'sold_out',
+				message: "One of the selected tiers isn't open yet.",
+			}
 	}
 }

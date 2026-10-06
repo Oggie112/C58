@@ -12,18 +12,21 @@
   "dependencies": {
     "@behold/react": "^0.1.11",
     "@sanity/image-url": "^2.0.3",
+    "@sanity/webhook": "^4.0.4",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.13.5",
     "motion": "^12.35.2",
     "next": "16.3.6",
     "next-sanity": "^12.1.0",
+    "postgres": "^3.4.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testcontainers/postgresql": "^12.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jest": "^30.0.0",

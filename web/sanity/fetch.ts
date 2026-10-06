@@ -1,7 +1,7 @@
 import { sanityFetch } from "./live"
-import { SanityEvent, SanityEventWithDetails, SanityPage, SanityPost, SanitySiteSettings, SanityTalent, SanityPartner } from "../types/sanity"
+import { SanityEvent, SanityEventWithDetails, SanityEventDetails, SanityPage, SanityPost, SanitySiteSettings, SanityTalent, SanityPartner } from "../types/sanity"
 import { UPCOMING_EVENTS_QUERY, PAST_EVENTS_QUERY, NEAREST_EVENT_QUERY } from "./queries/events"
-import { ALL_EVENT_SLUGS_QUERY, EVENT_BY_SLUG_QUERY } from "./queries/event-details"
+import { ALL_EVENT_SLUGS_QUERY, EVENT_BY_SLUG_QUERY, EVENT_DETAILS_BY_ID_QUERY } from "./queries/event-details"
 import { ALL_PAGE_SLUGS_QUERY, PAGE_BY_SLUG_QUERY } from "./queries/page-builder"
 import { GET_SITE_SETTINGS } from "./queries/singleton"
 import { ALL_POST_SLUGS_QUERY, ALL_POSTS_QUERY, POST_BY_SLUG_QUERY } from "./queries/posts"
@@ -34,6 +34,13 @@ export async function getAllEventSlugs(options?: { perspective?: 'published' | '
 export async function getEventBySlug(slug: string): Promise<SanityEventWithDetails | null> {
 	const { data } = await sanityFetch({ query: EVENT_BY_SLUG_QUERY, params: { slug } })
 	return data as SanityEventWithDetails | null
+}
+
+export async function getEventDetailsById(
+	id: string,
+): Promise<Pick<SanityEventDetails, '_id' | 'tiers'> | null> {
+	const { data } = await sanityFetch({ query: EVENT_DETAILS_BY_ID_QUERY, params: { id } })
+	return data as Pick<SanityEventDetails, '_id' | 'tiers'> | null
 }
 
 export async function getAllPageSlugs(options?: { perspective?: 'published' | 'drafts', stega?: boolean }): Promise<Array<{ slug: string }>> {

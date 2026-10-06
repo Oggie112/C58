@@ -2,12 +2,13 @@ import type { Config } from 'jest'
 
 const config: Config = {
 	projects: [
-		{	
+		{
 			displayName: 'node',
 			preset: 'ts-jest',
 			testEnvironment: 'node',
 			testMatch: ['**/*.test.ts'],
 			moduleNameMapper: {
+				'^@/(.*)$' : '<rootDir>/$1',
 				'^next-sanity$': '<rootDir>/__mocks__/next-sanity.ts',
 			}
 		},
