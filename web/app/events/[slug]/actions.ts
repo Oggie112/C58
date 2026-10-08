@@ -7,18 +7,32 @@ import { reserveOrder } from '@/lib/reserveOrder'
 import { createCheckoutSession } from '@/lib/sumup'
 import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
 import { failReservation } from '@/lib/failReservation'
+import { PER_ORDER_MAX } from '@/lib/orderLimits'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
-	// Generous relative to TierPicker's own PER_ORDER_MAX (10) — this is a
-	// server-side sanity bound, not the real UX cap; the atomic capacity
-	// check downstream already rejects anything the tier can't fulfil.
-	quantity: z.number().int().positive().max(20),
+	// Same constant the UI's +/- buttons are capped by — a direct-POST
+	// bypass of the UI must never be allowed more per tier than the UI
+	// itself permits.
+	quantity: z.number().int().positive().max(PER_ORDER_MAX),
 })
 
 const CreateOrderSchema = z.object({
 	eventDetailsId: z.string().min(1),
-	items: z.array(OrderItemSchema).min(1, 'Select at least one ticket'),
+	items: z
+		.array(OrderItemSchema)
+		.min(1, 'Select at least one ticket')
+		// Generous backstop against an absurdly large array, not the real
+		// defense — a legitimate order never has more entries than the
+		// event has tiers. The real defense is the uniqueness check below:
+		// without it, a per-item quantity cap means nothing, since any
+		// total can be reassembled by repeating the same tierKey across
+		// multiple entries.
+		.max(20)
+		.refine(
+			(items) => new Set(items.map((item) => item.tierKey)).size === items.length,
+			'Each tier can only appear once per order',
+		),
 	email: z.string().email('Enter a valid email address'),
 	marketingOptIn: z.boolean(),
 })

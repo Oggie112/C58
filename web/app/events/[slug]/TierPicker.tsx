@@ -3,11 +3,8 @@
 import { startTransition, useActionState, useEffect, useMemo, useState, type SubmitEvent } from 'react'
 import type { SanityTier } from '@/types/sanity'
 import { computeRemainingStock, type TierStock } from '@/lib/stock'
+import { PER_ORDER_MAX } from '@/lib/orderLimits'
 import { createOrder, type CreateOrderState } from './actions'
-
-// Placeholder per-order cap — not real availability on its own, but combined
-// with live remaining stock (fetched below) once that's loaded.
-const PER_ORDER_MAX = 10
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
