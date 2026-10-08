@@ -89,7 +89,7 @@ create table order_items (
 create table tickets (
   id uuid primary key default gen_random_uuid(),
   order_item_id uuid references order_items(id),
-  ticket_code text unique not null,    -- e.g. C58-XXXXXXXX, what the QR encodes
+  ticket_code text unique not null,    -- e.g. C58-XXXXXXXXXXXXXXXX, what the QR encodes
   status text not null default 'valid', -- valid | used | voided
   scanned_at timestamptz
 );

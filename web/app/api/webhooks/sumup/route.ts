@@ -10,12 +10,24 @@ import { generateTicketCode } from '@/lib/generateTicketCode'
 // own re-fetch, using our own API key, before anything is written.
 const WebhookPayloadSchema = z.object({
 	event_type: z.string(),
-	id: z.string().min(1),
+	// Not the real guard — the DB lookup below already only ever matches a
+	// value our own server wrote (from SumUp's own checkout-creation
+	// response), never attacker input. This is cheap, independent insurance
+	// against that assumption weakening if this code is ever refactored.
+	id: z.uuid(),
 })
 
 export async function POST(request: Request) {
 	const rawBody = await request.text()
-	const parsed = WebhookPayloadSchema.safeParse(JSON.parse(rawBody))
+
+	let body: unknown
+	try {
+		body = JSON.parse(rawBody)
+	} catch {
+		return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+	}
+
+	const parsed = WebhookPayloadSchema.safeParse(body)
 	if (!parsed.success) {
 		return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
 	}

@@ -68,4 +68,18 @@ describe('reserveOrder concurrency', () => {
 		`
 		expect(tier.reserved).toBe(1)
 	})
+
+	it('returns invalid_tier for an unknown tierKey instead of throwing', async () => {
+		const result = await reserveOrder(
+			{
+				eventDetailsId: 'concurrency-test-event',
+				items: [{ tierKey: 'does-not-exist', quantity: 1 }],
+				email: 'buyer@example.com',
+				marketingOptIn: false,
+			},
+			[],
+		)
+
+		expect(result).toEqual({ status: 'invalid_tier', tierKey: 'does-not-exist' })
+	})
 })

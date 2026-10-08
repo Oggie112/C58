@@ -10,7 +10,10 @@ import { failReservation } from '@/lib/failReservation'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
-	quantity: z.number().int().positive(),
+	// Generous relative to TierPicker's own PER_ORDER_MAX (10) — this is a
+	// server-side sanity bound, not the real UX cap; the atomic capacity
+	// check downstream already rejects anything the tier can't fulfil.
+	quantity: z.number().int().positive().max(20),
 })
 
 const CreateOrderSchema = z.object({
@@ -78,6 +81,11 @@ export async function createOrder(
 			return {
 				status: 'sold_out',
 				message: "One of the selected tiers isn't open yet.",
+			}
+		case 'invalid_tier':
+			return {
+				status: 'invalid',
+				message: 'One of the selected tiers is no longer available.',
 			}
 	}
 }

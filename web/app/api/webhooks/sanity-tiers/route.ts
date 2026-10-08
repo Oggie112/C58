@@ -42,7 +42,14 @@ export async function POST(request: Request) {
 		}
 	}
 
-	const parsed = WebhookPayloadSchema.safeParse(JSON.parse(rawBody))
+	let body: unknown
+	try {
+		body = JSON.parse(rawBody)
+	} catch {
+		return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+	}
+
+	const parsed = WebhookPayloadSchema.safeParse(body)
 	if (!parsed.success) {
 		return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
 	}
