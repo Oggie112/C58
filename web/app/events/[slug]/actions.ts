@@ -1,5 +1,6 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getEventDetailsById } from '@/sanity/fetch'
@@ -8,6 +9,8 @@ import { createCheckoutSession } from '@/lib/sumup'
 import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
 import { failReservation } from '@/lib/failReservation'
 import { PER_ORDER_MAX } from '@/lib/orderLimits'
+import { checkRateLimit } from '@/lib/rateLimit'
+import { verifyTurnstileToken } from '@/lib/turnstile'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -35,12 +38,15 @@ const CreateOrderSchema = z.object({
 		),
 	email: z.string().email('Enter a valid email address'),
 	marketingOptIn: z.boolean(),
+	// Only present once the client has been challenged and solved it — see
+	// checkRateLimit below.
+	turnstileToken: z.string().optional(),
 })
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
 
 export interface CreateOrderState {
-	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed'
+	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed' | 'challenge_required'
 	message?: string
 }
 
@@ -54,6 +60,23 @@ export async function createOrder(
 		return {
 			status: 'invalid',
 			message: parsed.error.issues[0]?.message ?? 'Check your details and try again.',
+		}
+	}
+
+	// x-vercel-forwarded-for over x-forwarded-for: identical on a plain
+	// Vercel deployment, but stays correct if a proxy ever sits in front —
+	// confirmed from Vercel's own docs that it overwrites (does not forward)
+	// a client-supplied x-forwarded-for, specifically to prevent spoofing.
+	const headersList = await headers()
+	const ip = headersList.get('x-vercel-forwarded-for') ?? headersList.get('x-forwarded-for') ?? 'unknown'
+
+	const { limited } = await checkRateLimit(ip)
+	if (limited) {
+		const tokenValid = parsed.data.turnstileToken
+			? await verifyTurnstileToken(parsed.data.turnstileToken, ip)
+			: false
+		if (!tokenValid) {
+			return { status: 'challenge_required' }
 		}
 	}
 
