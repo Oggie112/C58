@@ -18,6 +18,7 @@ export type ReserveResult =
 	| { status: 'reserved'; orderId: string; amountTotal: number }
 	| { status: 'sold_out'; tierKey: string }
 	| { status: 'tier_not_open'; tierKey: string }
+	| { status: 'invalid_tier'; tierKey: string }
 
 class SoldOutError extends Error {
 	constructor(public tierKey: string) {
@@ -37,11 +38,14 @@ class TierNotOpenError extends Error {
 // never holds a DB lock open across an external HTTP call to Sanity.
 export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]): Promise<ReserveResult> {
 	// An unknown tierKey is a bad-input problem, not a concurrency one — fail
-	// before opening the transaction at all, not partway through it.
-	const resolvedItems = input.items.map((item) => {
+	// before opening the transaction at all, not partway through it. Returned,
+	// not thrown: a client probing with a bogus tierKey shouldn't produce an
+	// uncaught exception on every attempt.
+	const resolvedItems: { tierKey: string; quantity: number; tierName: string; unitPrice: number }[] = []
+	for (const item of input.items) {
 		const tier = tiers.find((t) => t._key === item.tierKey)
-		if (!tier) throw new Error(`Unknown tier: ${item.tierKey}`)
-		return {
+		if (!tier) return { status: 'invalid_tier', tierKey: item.tierKey }
+		resolvedItems.push({
 			tierKey: item.tierKey,
 			quantity: item.quantity,
 			tierName: tier.name,
@@ -49,8 +53,8 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 			// fetch-boundary decision. Sanity stores pounds; Postgres money
 			// columns are pence throughout.
 			unitPrice: Math.round(tier.price * 100),
-		}
-	})
+		})
+	}
 	const amountTotal = resolvedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
 
 	try {

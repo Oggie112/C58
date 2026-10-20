@@ -1,5 +1,6 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getEventDetailsById } from '@/sanity/fetch'
@@ -7,23 +8,45 @@ import { reserveOrder } from '@/lib/reserveOrder'
 import { createCheckoutSession } from '@/lib/sumup'
 import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
 import { failReservation } from '@/lib/failReservation'
+import { PER_ORDER_MAX } from '@/lib/orderLimits'
+import { checkRateLimit } from '@/lib/rateLimit'
+import { verifyTurnstileToken } from '@/lib/turnstile'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
-	quantity: z.number().int().positive(),
+	// Same constant the UI's +/- buttons are capped by — a direct-POST
+	// bypass of the UI must never be allowed more per tier than the UI
+	// itself permits.
+	quantity: z.number().int().positive().max(PER_ORDER_MAX),
 })
 
 const CreateOrderSchema = z.object({
 	eventDetailsId: z.string().min(1),
-	items: z.array(OrderItemSchema).min(1, 'Select at least one ticket'),
+	items: z
+		.array(OrderItemSchema)
+		.min(1, 'Select at least one ticket')
+		// Generous backstop against an absurdly large array, not the real
+		// defense — a legitimate order never has more entries than the
+		// event has tiers. The real defense is the uniqueness check below:
+		// without it, a per-item quantity cap means nothing, since any
+		// total can be reassembled by repeating the same tierKey across
+		// multiple entries.
+		.max(20)
+		.refine(
+			(items) => new Set(items.map((item) => item.tierKey)).size === items.length,
+			'Each tier can only appear once per order',
+		),
 	email: z.string().email('Enter a valid email address'),
 	marketingOptIn: z.boolean(),
+	// Only present once the client has been challenged and solved it — see
+	// checkRateLimit below.
+	turnstileToken: z.string().optional(),
 })
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
 
 export interface CreateOrderState {
-	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed'
+	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed' | 'challenge_required'
 	message?: string
 }
 
@@ -37,6 +60,23 @@ export async function createOrder(
 		return {
 			status: 'invalid',
 			message: parsed.error.issues[0]?.message ?? 'Check your details and try again.',
+		}
+	}
+
+	// x-vercel-forwarded-for over x-forwarded-for: identical on a plain
+	// Vercel deployment, but stays correct if a proxy ever sits in front —
+	// confirmed from Vercel's own docs that it overwrites (does not forward)
+	// a client-supplied x-forwarded-for, specifically to prevent spoofing.
+	const headersList = await headers()
+	const ip = headersList.get('x-vercel-forwarded-for') ?? headersList.get('x-forwarded-for') ?? 'unknown'
+
+	const { limited } = await checkRateLimit(ip)
+	if (limited) {
+		const tokenValid = parsed.data.turnstileToken
+			? await verifyTurnstileToken(parsed.data.turnstileToken, ip)
+			: false
+		if (!tokenValid) {
+			return { status: 'challenge_required' }
 		}
 	}
 
@@ -78,6 +118,11 @@ export async function createOrder(
 			return {
 				status: 'sold_out',
 				message: "One of the selected tiers isn't open yet.",
+			}
+		case 'invalid_tier':
+			return {
+				status: 'invalid',
+				message: 'One of the selected tiers is no longer available.',
 			}
 	}
 }

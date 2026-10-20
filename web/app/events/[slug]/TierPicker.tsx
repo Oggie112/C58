@@ -1,13 +1,22 @@
 'use client'
 
-import { startTransition, useActionState, useEffect, useMemo, useState, type SubmitEvent } from 'react'
+import { startTransition, useActionState, useEffect, useEffectEvent, useMemo, useState, type SubmitEvent } from 'react'
+import Script from 'next/script'
 import type { SanityTier } from '@/types/sanity'
 import { computeRemainingStock, type TierStock } from '@/lib/stock'
+import { PER_ORDER_MAX } from '@/lib/orderLimits'
 import { createOrder, type CreateOrderState } from './actions'
 
-// Placeholder per-order cap — not real availability on its own, but combined
-// with live remaining stock (fetched below) once that's loaded.
-const PER_ORDER_MAX = 10
+declare global {
+	interface Window {
+		turnstile?: {
+			render: (container: string, params: { sitekey: string; callback: (token: string) => void }) => string
+			remove: (widgetId: string) => void
+		}
+	}
+}
+
+const TURNSTILE_CONTAINER_ID = 'turnstile-container'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -29,6 +38,7 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 	const [marketingOptIn, setMarketingOptIn] = useState(false)
 	const [stockState, setStockState] = useState<StockState>({ status: 'loading' })
 	const [state, dispatch, isPending] = useActionState(createOrder, initialActionState)
+	const [turnstileScriptLoaded, setTurnstileScriptLoaded] = useState(false)
 
 	useEffect(() => {
 		let cancelled = false
@@ -82,10 +92,7 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 		setQuantities((prev) => ({ ...prev, [tier._key]: clamped }))
 	}
 
-	function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
-		e.preventDefault()
-		if (!canSubmit) return
-
+	function submitOrder(turnstileToken?: string) {
 		startTransition(() => {
 			dispatch({
 				eventDetailsId,
@@ -94,12 +101,49 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 					.map((tier) => ({ tierKey: tier._key, quantity: quantities[tier._key] })),
 				email,
 				marketingOptIn,
+				turnstileToken,
 			})
 		})
 	}
 
+	function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+		e.preventDefault()
+		if (!canSubmit) return
+		submitOrder()
+	}
+
+	// Always calls submitOrder using the render's current email/quantities/
+	// marketingOptIn at the moment this actually fires — not whatever was
+	// current when the widget first mounted. Lets the effect below skip
+	// re-running on every keystroke while the challenge is still showing,
+	// without silently submitting stale form values once it resolves.
+	const handleTurnstileSuccess = useEffectEvent((token: string) => {
+		submitOrder(token)
+	})
+
+	// Only ever rendered once the server has actually seen enough attempts
+	// to ask for it — most real buyers never see this at all. Re-submits
+	// automatically once solved, rather than making them click again.
+	useEffect(() => {
+		if (state.status !== 'challenge_required' || !turnstileScriptLoaded) return
+		const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+		if (!siteKey || !window.turnstile) return
+
+		const widgetId = window.turnstile.render(`#${TURNSTILE_CONTAINER_ID}`, {
+			sitekey: siteKey,
+			callback: handleTurnstileSuccess,
+		})
+
+		return () => window.turnstile?.remove(widgetId)
+	}, [state.status, turnstileScriptLoaded])
+
 	return (
 		<form onSubmit={handleSubmit}>
+			<Script
+				src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+				onLoad={() => setTurnstileScriptLoaded(true)}
+			/>
+
 			{stockState.status === 'loading' && (
 				<p className="font-body text-label text-c58-muted uppercase tracking-[0.15em] mb-4">
 					Checking availability…
@@ -202,6 +246,8 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 					{state.message}
 				</p>
 			)}
+
+			{state.status === 'challenge_required' && <div id={TURNSTILE_CONTAINER_ID} className="mb-4" />}
 
 			<button
 				type="submit"
