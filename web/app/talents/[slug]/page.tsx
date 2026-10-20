@@ -10,7 +10,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-	{ params }: { params: Promise<{ slug: string }> }
+	{ params }: PageProps<'/talents/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
 	const talent = await getTalentBySlug(slug)
@@ -30,7 +30,7 @@ export async function generateMetadata(
 	}
 }
 
-export default async function TalentPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function TalentPage({ params }: PageProps<'/talents/[slug]'>) {
 	const { slug } = await params
 	const talent = await getTalentBySlug(slug)
 

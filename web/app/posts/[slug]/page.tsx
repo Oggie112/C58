@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-	{ params }: { params: Promise<{ slug: string }> }
+	{ params }: PageProps<'/posts/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
 	const post = await getPostBySlug(slug)
@@ -31,7 +31,7 @@ export async function generateMetadata(
 	}
 }
 
-export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PostPage({ params }: PageProps<'/posts/[slug]'>) {
 	const { slug } = await params
 	const post = await getPostBySlug(slug)
 

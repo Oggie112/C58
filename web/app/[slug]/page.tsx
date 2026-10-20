@@ -4,7 +4,7 @@ import PageBuilder from "@/app/components/PageBuilder";
 import { urlFor } from "@/sanity/image";
 
 export async function generateMetadata(
-	{ params }: { params: Promise<{ slug: string }> }
+	{ params }: PageProps<'/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
 	const page = await getPageBySlug(slug, { stega: false })
@@ -29,7 +29,7 @@ export async function generateStaticParams() {
 	return await getAllPageSlugs({ perspective: 'published', stega: false })
 }
 
-export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+export default async function Page({ params }: PageProps<'/[slug]'>) {
 	const { slug } = await params
 	const page = await getPageBySlug(slug)
 	if (!page) {
