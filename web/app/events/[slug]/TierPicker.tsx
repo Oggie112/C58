@@ -1,6 +1,6 @@
 'use client'
 
-import { startTransition, useActionState, useEffect, useMemo, useState, type SubmitEvent } from 'react'
+import { startTransition, useActionState, useEffect, useEffectEvent, useMemo, useState, type SubmitEvent } from 'react'
 import Script from 'next/script'
 import type { SanityTier } from '@/types/sanity'
 import { computeRemainingStock, type TierStock } from '@/lib/stock'
@@ -112,6 +112,15 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 		submitOrder()
 	}
 
+	// Always calls submitOrder using the render's current email/quantities/
+	// marketingOptIn at the moment this actually fires — not whatever was
+	// current when the widget first mounted. Lets the effect below skip
+	// re-running on every keystroke while the challenge is still showing,
+	// without silently submitting stale form values once it resolves.
+	const handleTurnstileSuccess = useEffectEvent((token: string) => {
+		submitOrder(token)
+	})
+
 	// Only ever rendered once the server has actually seen enough attempts
 	// to ask for it — most real buyers never see this at all. Re-submits
 	// automatically once solved, rather than making them click again.
@@ -122,11 +131,10 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 
 		const widgetId = window.turnstile.render(`#${TURNSTILE_CONTAINER_ID}`, {
 			sitekey: siteKey,
-			callback: (token) => submitOrder(token),
+			callback: handleTurnstileSuccess,
 		})
 
 		return () => window.turnstile?.remove(widgetId)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [state.status, turnstileScriptLoaded])
 
 	return (

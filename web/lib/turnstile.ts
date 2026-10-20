@@ -8,14 +8,16 @@ export async function verifyTurnstileToken(token: string, remoteIp: string): Pro
 	const secret = process.env.TURNSTILE_SECRET_KEY
 	if (!secret) throw new Error('TURNSTILE_SECRET_KEY is not set')
 
-	const response = await fetch(TURNSTILE_VERIFY_URL, {
+	const httpResponse = await fetch(TURNSTILE_VERIFY_URL, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
+		// "response" here is Cloudflare's own required field name for the
+		// solved token — not related to the httpResponse variable above.
 		body: JSON.stringify({ secret, response: token, remoteip: remoteIp }),
 	})
 
-	if (!response.ok) return false
+	if (!httpResponse.ok) return false
 
-	const body = (await response.json()) as VerifyResponse
+	const body = (await httpResponse.json()) as VerifyResponse
 	return body.success
 }
