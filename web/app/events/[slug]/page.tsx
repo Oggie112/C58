@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-	{ params }: { params: Promise<{ slug: string }> }
+	{ params }: PageProps<'/events/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
 	const event = await getEventBySlug(slug)
@@ -41,7 +41,7 @@ export async function generateMetadata(
 	}
 }
 
-export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function EventPage({ params }: PageProps<'/events/[slug]'>) {
 	const { slug } = await params
 	const event = await getEventBySlug(slug)
 

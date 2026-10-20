@@ -5,7 +5,7 @@ import { getTierAvailability } from '@/lib/getTierAvailability'
 
 export async function GET(
 	_request: Request,
-	{ params }: { params: Promise<{ eventDetailsId: string }> },
+	{ params }: RouteContext<'/api/stock/[eventDetailsId]'>,
 ) {
 	const { eventDetailsId } = await params
 

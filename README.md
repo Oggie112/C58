@@ -171,10 +171,13 @@ RLS is enabled on every table with no policies — the app connects as the table
 ## Other Commands
 
 ```bash
-cd web && npm run build    # Production build
-cd web && npm test         # Jest test suite (Docker must be running)
-cd web && npm run lint     # ESLint
+cd web && npm run build      # Production build
+cd web && npm run typecheck  # Generate route types, then tsc --noEmit
+cd web && npm test           # Jest test suite (Docker must be running)
+cd web && npm run lint       # ESLint
 ```
+
+Route params are typed with Next's generated `PageProps` / `RouteContext` helpers, which live in `.next/types/`. Use `npm run typecheck` rather than a bare `tsc` — in a fresh checkout those types don't exist until `next typegen` (or `dev` / `build`) has run.
 
 Jest runs two projects: `*.test.ts` under Node and `*.test.tsx` under jsdom. `lib/reserveOrder.concurrency.test.ts` spins up a throwaway Postgres container via Testcontainers.
 
