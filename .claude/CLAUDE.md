@@ -23,6 +23,7 @@ React + Next.js + TypeScript + Tailwind CSS + Sanity (headless CMS) + next-sanit
 cd web && npm install
 cd web && npm run dev      # http://localhost:3000
 cd web && npm run build
+cd web && npm run typecheck   # next typegen + tsc --noEmit
 cd web && npm test
 
 # Sanity Studio (studio/)
@@ -65,9 +66,11 @@ cmd //c mklink /J web\node_modules ..\..\..\web\node_modules
 
 (adjust the relative path to the main checkout's `web/node_modules` based on the worktree's actual location, e.g. `.claude/worktrees/agent-<id>/web/node_modules`).
 
-`web/.env.local` is gitignored and won't exist in a fresh worktree either — but prefer avoiding the copy where possible: for plans that only touch className/motion-prop values (no data-fetching/SSR changes), `npx tsc --noEmit` + `npm run lint` inside `web/` is sufficient verification and needs no Sanity credentials. Only copy `.env.local` in when a plan specifically requires a full `next build` (e.g. it touches page data-fetching).
+`web/.env.local` is gitignored and won't exist in a fresh worktree either — but prefer avoiding the copy where possible: for plans that only touch className/motion-prop values (no data-fetching/SSR changes), `npm run typecheck` + `npm run lint` inside `web/` is sufficient verification and needs no Sanity credentials. Only copy `.env.local` in when a plan specifically requires a full `next build` (e.g. it touches page data-fetching).
 
-Note: `npm run build` (Turbopack) will actively fail inside a worktree using the `node_modules` junction trick — `TurbopackInternalError: Symlink node_modules is invalid, it points out of the filesystem root`. This is a Turbopack limitation with junctions crossing the worktree boundary, not a code issue. Don't chase it — `tsc`/`lint`/`jest` inside the worktree is the ceiling for verification there; do the real `npm run build` after applying the reviewed diff to the main checkout instead.
+Use `npm run typecheck`, not a bare `npx tsc --noEmit`: route params are typed with Next's generated global helpers (`PageProps<'/route'>`, `RouteContext<'/route'>`), which live in `.next/types/` — absent in a fresh worktree, so bare `tsc` fails with "Cannot find name 'PageProps'". The script runs `next typegen` first, which works fine through the `node_modules` junction (unlike `next build`).
+
+Note: `npm run build` (Turbopack) will actively fail inside a worktree using the `node_modules` junction trick — `TurbopackInternalError: Symlink node_modules is invalid, it points out of the filesystem root`. This is a Turbopack limitation with junctions crossing the worktree boundary, not a code issue. Don't chase it — `typecheck`/`lint`/`jest` inside the worktree is the ceiling for verification there; do the real `npm run build` after applying the reviewed diff to the main checkout instead.
 
 **Cleanup order matters.** Once a worktree used the `node_modules` junction trick, do NOT run `git worktree remove` while the junction is still present. Windows junctions (`mklink /J`, tag `IO_REPARSE_TAG_MOUNT_POINT`) are a different reparse-point type from true NTFS symlinks (`IO_REPARSE_TAG_SYMLINK`), and some recursive-delete code paths (including, apparently, Git for Windows' worktree removal) only special-case true symlinks — meaning a recursive delete can walk *through* a junction instead of just unlinking it, deleting the real target directory's contents. This is the suspected cause of the main checkout's `web/node_modules` turning up completely empty mid-session once already. Always unlink the junction directly first, *then* remove the worktree:
 
