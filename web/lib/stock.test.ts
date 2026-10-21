@@ -66,6 +66,30 @@ describe('computeRemainingStock', () => {
 		expect(result[previousSoldOutTier._key].isOpen).toBe(true)
 	})
 
+	it('keeps a latched previousSoldOut tier open after the previous tier regains stock', () => {
+		// The sweep released an unpaid hold on the previous tier's last seats.
+		const result = computeRemainingStock(
+			[scheduledTier, previousSoldOutTier],
+			{
+				[scheduledTier._key]: { capacity: 10, reserved: 8 }, // 2 back on sale
+				[previousSoldOutTier._key]: { capacity: 5, reserved: 1, opened: true },
+			},
+		)
+		expect(result[scheduledTier._key].remaining).toBe(2)
+		expect(result[previousSoldOutTier._key].isOpen).toBe(true)
+	})
+
+	it('keeps an unlatched previousSoldOut tier closed while the previous tier has stock', () => {
+		const result = computeRemainingStock(
+			[scheduledTier, previousSoldOutTier],
+			{
+				[scheduledTier._key]: { capacity: 10, reserved: 8 },
+				[previousSoldOutTier._key]: { capacity: 5, reserved: 0, opened: false },
+			},
+		)
+		expect(result[previousSoldOutTier._key].isOpen).toBe(false)
+	})
+
 	it('treats a misconfigured first-tier previousSoldOut as closed rather than throwing', () => {
 		const result = computeRemainingStock(
 			[previousSoldOutTier],

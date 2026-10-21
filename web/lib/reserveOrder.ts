@@ -2,6 +2,7 @@ import { sql } from './db'
 import { sweepStaleReservations } from './sweepStaleReservations'
 import { getTierAvailability } from './getTierAvailability'
 import { computeRemainingStock } from './stock'
+import { latchOpenTiers } from './latchOpenTiers'
 import type { SanityTier } from '@/types/sanity'
 
 // Deliberately not imported from actions.ts's CreateOrderInput — lib/ is the
@@ -90,6 +91,11 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 				`
 				if (!updated) throw new SoldOutError(item.tierKey)
 			}
+
+			// If this reservation just took a tier's last seats, the next
+			// `previousSoldOut` tier is now open — latch it, so the sweep
+			// releasing this hold later (if it goes unpaid) can't close it again.
+			await latchOpenTiers(tx, input.eventDetailsId, tiers)
 
 			const [order] = await tx<{ id: string }[]>`
 				insert into orders (event_id, provider, provider_session_id, email, marketing_opt_in, amount_total, status)
