@@ -42,7 +42,13 @@ export async function confirmOrder(order: ConfirmableOrder): Promise<ConfirmOrde
 		return 'paid'
 	}
 
-	if (status === 'FAILED' || status === 'EXPIRED') {
+	// SumUp's FAILED means "this attempt failed", not "this checkout is over" —
+	// the buyer can retry on the same hosted page until valid_until. Verified
+	// in the sandbox: a declined card fires a FAILED webhook, then a retry on
+	// the same checkout turns it PAID. Releasing stock on FAILED would let that
+	// retry land on an order already failed — paid, no tickets, seats resold.
+	// Only EXPIRED is final; abandoned checkouts are left to the sweep.
+	if (status === 'EXPIRED') {
 		await failReservation(order.id)
 		return 'failed'
 	}

@@ -1,7 +1,7 @@
 import { sql } from './db'
 
 // Releases a single order's held stock immediately, rather than leaving it
-// for the 30-minute sweep — used when checkout-session creation fails right
+// for the sweep (see reservationWindow.ts) — used when checkout-session creation fails right
 // after a successful reservation, so a buyer hitting a SumUp error isn't
 // stuck watching the tier they just failed to check out for stay unavailable.
 export async function failReservation(orderId: string): Promise<void> {

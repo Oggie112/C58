@@ -1,7 +1,8 @@
 import type { SqlClient } from './db'
+import { RESERVATION_HOLD_MINUTES } from './reservationWindow'
 
-// Frees capacity held by pending orders that are past the checkout-session
-// window (30 min) without ever actually completing. Deliberately called
+// Frees capacity held by pending orders that are past the reservation hold
+// (see reservationWindow.ts) without ever actually completing. Deliberately called
 // from BOTH the reservation transaction and the stock-availability read
 // path (app/api/stock/[eventDetailsId]/route.ts), not just at reservation
 // time — see the "sweep has to run on read too" note in the plan for
@@ -20,7 +21,7 @@ export async function sweepStaleReservations(sql: SqlClient, eventId: string): P
 		join orders on orders.id = order_items.order_id
 		where orders.event_id = ${eventId}
 			and orders.status = 'pending'
-			and orders.created_at <= now() - interval '30 minutes'
+			and orders.created_at <= now() - make_interval(mins => ${RESERVATION_HOLD_MINUTES})
 	`
 
 	if (stale.length === 0) return

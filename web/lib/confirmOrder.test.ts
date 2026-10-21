@@ -115,10 +115,10 @@ describe('confirmOrder', () => {
 		expect(await orderState(order.id)).toEqual({ status: 'paid', ticketCount: 3 })
 	})
 
-	it.each(['FAILED', 'EXPIRED'] as const)('marks a %s order failed and releases its reserved stock', async (status) => {
+	it('marks an EXPIRED order failed and releases its reserved stock', async () => {
 		const order = await seedPendingOrder()
 		const reservedBefore = await reservedTotal()
-		getCheckoutStatus.mockResolvedValue(status)
+		getCheckoutStatus.mockResolvedValue('EXPIRED')
 
 		await expect(confirmOrder(order)).resolves.toBe('failed')
 
@@ -126,14 +126,30 @@ describe('confirmOrder', () => {
 		expect(await reservedTotal()).toBe(reservedBefore - 3)
 	})
 
-	it('leaves a still-PENDING checkout untouched', async () => {
+	it.each(['PENDING', 'FAILED'] as const)('leaves a %s checkout pending with its stock still held', async (status) => {
 		const order = await seedPendingOrder()
 		const reservedBefore = await reservedTotal()
-		getCheckoutStatus.mockResolvedValue('PENDING')
+		getCheckoutStatus.mockResolvedValue(status)
 
 		await expect(confirmOrder(order)).resolves.toBe('pending')
 
 		expect(await orderState(order.id)).toEqual({ status: 'pending', ticketCount: 0 })
+		expect(await reservedTotal()).toBe(reservedBefore)
+	})
+
+	// The sandbox-observed sequence: declined card → FAILED webhook → buyer
+	// retries on the same hosted page → PAID webhook.
+	it('issues tickets when a FAILED attempt is followed by a successful retry', async () => {
+		const order = await seedPendingOrder()
+		const reservedBefore = await reservedTotal()
+
+		getCheckoutStatus.mockResolvedValueOnce('FAILED')
+		await expect(confirmOrder(order)).resolves.toBe('pending')
+
+		getCheckoutStatus.mockResolvedValueOnce('PAID')
+		await expect(confirmOrder(order)).resolves.toBe('paid')
+
+		expect(await orderState(order.id)).toEqual({ status: 'paid', ticketCount: 3 })
 		expect(await reservedTotal()).toBe(reservedBefore)
 	})
 
