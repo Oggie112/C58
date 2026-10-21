@@ -1,8 +1,6 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import type { CheckoutStatus } from './sumup'
+import { startTestDatabase, type TestDatabase } from '@/tests/helpers/testDatabase'
 
 jest.mock('./sumup', () => ({
 	getCheckoutStatus: jest.fn(),
@@ -13,38 +11,25 @@ jest.mock('./sumup', () => ({
 // webhook and the order page, so double-issuing or failing to release stock
 // here is a correctness bug, not a cosmetic one.
 describe('confirmOrder', () => {
-	let container: StartedPostgreSqlContainer
-	let sql: typeof import('./db').sql
+	let db: TestDatabase
+	let sql: TestDatabase['sql']
 	let confirmOrder: typeof import('./confirmOrder').confirmOrder
 	let getCheckoutStatus: jest.MockedFunction<(checkoutId: string) => Promise<CheckoutStatus>>
 
 	const eventId = 'confirm-order-test-event'
 
 	beforeAll(async () => {
-		container = await new PostgreSqlContainer('postgres:16').start()
-		process.env.DATABASE_POOLED_URL = container.getConnectionUri()
-
-		// lib/db.ts reads DATABASE_POOLED_URL at module-load time — imported
-		// dynamically, after the env var above is set.
-		;({ sql } = await import('./db'))
+		db = await startTestDatabase()
+		sql = db.sql
+		// Dynamic, after startTestDatabase — see its note on lib/db.ts.
 		;({ confirmOrder } = await import('./confirmOrder'))
 		getCheckoutStatus = (await import('./sumup')).getCheckoutStatus as typeof getCheckoutStatus
-
-		const migrationsDir = path.resolve(__dirname, '../../supabase/migrations')
-		const migrationFiles = fs
-			.readdirSync(migrationsDir)
-			.filter((file) => file.endsWith('.sql'))
-			.sort()
-		for (const file of migrationFiles) {
-			await sql.file(path.join(migrationsDir, file))
-		}
 
 		await sql`insert into tiers (event_id, tier_key, capacity, reserved) values (${eventId}, 'ga', 100, 0), (${eventId}, 'vip', 100, 0)`
 	}, 60_000)
 
 	afterAll(async () => {
-		await sql.end()
-		await container.stop()
+		await db.stop()
 	})
 
 	// A pending order holding `ga` x2 and `vip` x1, with tiers.reserved

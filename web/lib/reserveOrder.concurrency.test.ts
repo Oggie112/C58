@@ -1,44 +1,23 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import type { SanityTier } from '@/types/sanity'
+import { startTestDatabase, type TestDatabase } from '@/tests/helpers/testDatabase'
 
-// The one deliberately committed DB-backed test in this project — every
-// other Postgres-touching check has been ad-hoc and deleted after use, but
-// this is the actual correctness guarantee the whole reservation design
-// exists for (no overselling), not incidental dev verification. Spins up
-// its own throwaway container via testcontainers rather than relying on an
-// externally-provided DATABASE_POOLED_URL, so `npm test` stays self
-// contained — Docker is the only requirement, same as every ad-hoc check
-// this project has already relied on.
+// Committed rather than ad-hoc (the project's default for DB-touching
+// checks): this is the actual correctness guarantee the whole reservation
+// design exists for — no overselling — not incidental dev verification.
 describe('reserveOrder concurrency', () => {
-	let container: StartedPostgreSqlContainer
-	let sql: typeof import('./db').sql
+	let db: TestDatabase
+	let sql: TestDatabase['sql']
 	let reserveOrder: typeof import('./reserveOrder').reserveOrder
 
 	beforeAll(async () => {
-		container = await new PostgreSqlContainer('postgres:16').start()
-		process.env.DATABASE_POOLED_URL = container.getConnectionUri()
-
-		// lib/db.ts reads DATABASE_POOLED_URL at module-load time, so these
-		// must be imported dynamically, after the env var above is set — a
-		// static top-level import would evaluate (and throw) too early.
-		;({ sql } = await import('./db'))
+		db = await startTestDatabase()
+		sql = db.sql
+		// Dynamic, after startTestDatabase — see its note on lib/db.ts.
 		;({ reserveOrder } = await import('./reserveOrder'))
-
-		const migrationsDir = path.resolve(__dirname, '../../supabase/migrations')
-		const migrationFiles = fs
-			.readdirSync(migrationsDir)
-			.filter((file) => file.endsWith('.sql'))
-			.sort()
-		for (const file of migrationFiles) {
-			await sql.file(path.join(migrationsDir, file))
-		}
 	}, 60_000)
 
 	afterAll(async () => {
-		await sql.end()
-		await container.stop()
+		await db.stop()
 	})
 
 	it('resolves two simultaneous purchases against the last tier spot to exactly one reserved, one sold out', async () => {
