@@ -12,8 +12,8 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | All migrations pushed to live Supabase; RLS enabled on every table (new project trigger covers future tables automatically) | — | — |
-| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase | — | — |
-| **UI**   | 7UI.1/7UI.2 complete, reservation redirects to SumUp checkout | Confirmation screen needs 8UI.2/8UI.3 | — |
+| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase | 8API.0 (extract `confirmOrder`), then 8API.2 | 8API.1/8API.3 need a Brevo account + `c58.uk` sender domain verified |
+| **UI**   | 7UI.1/7UI.2 complete, reservation redirects to SumUp checkout | 8UI.2 (`/orders/[token]` post-payment page) | 8UI.1/8UI.3 need Brevo (as above) |
 | **QA**   | 7QA.1/7QA.2 complete — concurrency test + full security review, real Turnstile keys live | —                                | — |
 | **DX**   | Not started                                       | —                                | — |
 
@@ -118,19 +118,32 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 > [!IMPORTANT]
 > **Goal:** Buyer gets their tickets (QR codes) without the flow depending on instant email delivery, and can check order status without the confirmation email having arrived.
 
+**Decisions (Milestone 8):**
+
+- **Order page keyed by a separate `access_token`, not `orders.id`.** The page shows QR codes, so its URL *is* the tickets. `orders.id` is already exposed as SumUp's `checkout_reference` and in the checkout description — visible on buyer receipts and in a merchant dashboard shared with a sister business.
+- **Email lookup never displays tickets.** "Email + event lookup" becomes a resend-to-that-address form with a neutral response ("if we have an order for that address, we've sent it again") — knowing someone's email gets you nothing but sending them their own confirmation. Doubles as the retry path for a failed send.
+- **QR codes delivered as PNG attachments**, plus a "View your tickets" link to the order page. Base64 `data:` URI images are stripped by Gmail, so inline embedding is unreliable.
+- **Brevo calls run via Next's `after()`**, never inline — the webhook's response and success never depend on Brevo. A failed send leaves `confirmation_sent_at` null rather than being lost, since a re-delivered webhook takes the "already paid" fast path and would never retry it.
+- **Plain HTML template**, not React Email — one template doesn't justify the dependency. Revisit if Milestone 10 adds refund notices.
+- **Sender `tickets@c58.uk`, reply-to the business Gmail.** Brevo can't authenticate a `gmail.com` sender (spam-folder risk for tickets). No mailbox needed on `c58.uk` to send — only Brevo's DKIM/verification/DMARC records, added in Vercel DNS (the domain's nameservers; no MX/SPF/DMARC records exist yet, so nothing to conflict with).
+
 <a name="m8-doing"><h4>In Progress (Milestone 8)</h4></a>
+
+- [ ] 8API.0. Extract the SumUp webhook's PAID/FAILED handling into `lib/confirmOrder.ts` — no behaviour change; prerequisite for 8UI.2, which needs to reconcile an order itself when the buyer lands before the webhook does
 
 <a name="m8-todo"><h4>To Do (Milestone 8)</h4></a>
 
-- [ ] 8API.1. Brevo transactional email — confirmation send on webhook success
-- [ ] 8API.2. QR code generation per ticket (`qrcode`, encodes `ticket_code` only — validation stays server-side)
-- [ ] 8UI.1. Confirmation email template — inline/attached QR per ticket for multi-ticket orders
-- [ ] 8API.3. Mailing list push (`POST /v3/contacts`) when `marketing_opt_in = true` — non-blocking, log-and-continue on failure, must never fail the webhook
-- [ ] 8UI.2. Post-payment screen — "confirmation may take up to 24 hours" messaging
-- [ ] 8UI.3. Self-serve order-status page (order ID or email + event lookup)
+- [ ] 8UI.2. Post-payment page at `/orders/[token]` — set SumUp's `redirect_url` to it; on load, calls `confirmOrder` if the order is still `pending` (buyer can beat the webhook), then shows pending / paid / failed. New `orders.access_token` column (random, unique)
+- [ ] 8API.2. QR code generation per ticket (`qrcode`, encodes `ticket_code` only — validation stays server-side) — rendered on the order page with tier name, and as PNGs for 8UI.1
+- [ ] 8API.1. Brevo transactional email — confirmation send triggered from `confirmOrder` via `after()`; new `orders.confirmation_sent_at` column
+- [ ] 8UI.1. Confirmation email template — plain HTML, one PNG QR attachment per ticket, link to `/orders/[token]`
+- [ ] 8UI.3. Resend-confirmation form on `/orders` — email in, resend of every paid order for that address out, neutral response, never displays order data; rate-limited via existing `checkRateLimit`
+- [ ] 8API.3. Mailing list push (`POST /v3/contacts`) when `marketing_opt_in = true` — via `after()`, log-and-continue on failure, must never fail the webhook
 - [ ] 8DX.1. Brevo quota plan documented — campaigns scheduled days before release, never on release day; note trigger for upgrading to Starter tier
 
 <a name="m8-blocked"><h4>Blocked (Milestone 8)</h4></a>
+
+- [ ] 8DX.2. Brevo account + `c58.uk` sender domain authentication (DKIM/verification/DMARC records added in Vercel DNS) + opt-in contact list created — blocks 8API.1, 8UI.1, 8UI.3, 8API.3. Needs doing by the client; DNS propagation means starting early is worthwhile. Also unblocks `6DX.1`'s outstanding Brevo env vars (`BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME`, `BREVO_LIST_ID`)
 
 <a name="m8-done"><h4>Completed (Milestone 8)</h4></a>
 
@@ -197,7 +210,7 @@ m10["`**Milestone 10**<br/>Refunds & Hardening`"]:::mile
 
 m6 --> m7 --> m8 --> m9 --> m10
 
-class m6 open
+class m6,m8 open
 
 classDef default fill:#f9f
 classDef open fill:#ff9
