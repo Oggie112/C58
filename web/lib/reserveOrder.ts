@@ -3,6 +3,7 @@ import { sweepStaleReservations } from './sweepStaleReservations'
 import { getTierAvailability } from './getTierAvailability'
 import { computeRemainingStock } from './stock'
 import { latchOpenTiers } from './latchOpenTiers'
+import { generateAccessToken } from './generateAccessToken'
 import type { SanityTier } from '@/types/sanity'
 
 // Deliberately not imported from actions.ts's CreateOrderInput — lib/ is the
@@ -16,7 +17,7 @@ export interface ReserveOrderInput {
 }
 
 export type ReserveResult =
-	| { status: 'reserved'; orderId: string; amountTotal: number }
+	| { status: 'reserved'; orderId: string; amountTotal: number; accessToken: string }
 	| { status: 'sold_out'; tierKey: string }
 	| { status: 'tier_not_open'; tierKey: string }
 	| { status: 'invalid_tier'; tierKey: string }
@@ -57,6 +58,7 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 		})
 	}
 	const amountTotal = resolvedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+	const accessToken = generateAccessToken()
 
 	try {
 		const orderId = await sql.begin(async (tx) => {
@@ -98,10 +100,10 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 			await latchOpenTiers(tx, input.eventDetailsId, tiers)
 
 			const [order] = await tx<{ id: string }[]>`
-				insert into orders (event_id, provider, provider_session_id, email, marketing_opt_in, amount_total, status)
+				insert into orders (event_id, provider, provider_session_id, email, marketing_opt_in, amount_total, status, access_token)
 				values (
 					${input.eventDetailsId}, 'sumup', null, ${input.email},
-					${input.marketingOptIn}, ${amountTotal}, 'pending'
+					${input.marketingOptIn}, ${amountTotal}, 'pending', ${accessToken}
 				)
 				returning id
 			`
@@ -116,7 +118,7 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 			return order.id as string
 		})
 
-		return { status: 'reserved', orderId, amountTotal }
+		return { status: 'reserved', orderId, amountTotal, accessToken }
 	} catch (err) {
 		if (err instanceof SoldOutError) return { status: 'sold_out', tierKey: err.tierKey }
 		if (err instanceof TierNotOpenError) return { status: 'tier_not_open', tierKey: err.tierKey }

@@ -94,7 +94,12 @@ export async function createOrder(
 		case 'reserved': {
 			let session
 			try {
-				session = await createCheckoutSession(result.orderId, result.amountTotal, `C58 order ${result.orderId}`)
+				session = await createCheckoutSession(
+					result.orderId,
+					result.amountTotal,
+					`C58 order ${result.orderId}`,
+					`${process.env.NEXT_PUBLIC_SITE_URL}/orders/${result.accessToken}`,
+				)
 			} catch (error) {
 				console.error('Failed to create SumUp checkout session:', error)
 				await failReservation(result.orderId)

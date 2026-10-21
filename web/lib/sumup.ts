@@ -21,7 +21,12 @@ function authHeaders() {
 	return { Authorization: `Bearer ${apiKey}` }
 }
 
-export async function createCheckoutSession(orderId: string, amountPence: number, description: string): Promise<CheckoutSession> {
+export async function createCheckoutSession(
+	orderId: string,
+	amountPence: number,
+	description: string,
+	redirectUrl: string,
+): Promise<CheckoutSession> {
 	const merchantCode = process.env.SUMUP_MERCHANT_CODE
 	if (!merchantCode) throw new Error('SUMUP_MERCHANT_CODE is not set')
 
@@ -43,6 +48,11 @@ export async function createCheckoutSession(orderId: string, amountPence: number
 			description,
 			hosted_checkout: { enabled: true },
 			return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/sumup`,
+			// Sandbox-verified: hosted checkout doesn't redirect here
+			// automatically — it adds a "Back to merchant website" button to
+			// SumUp's success page — and appends no query parameters, so the
+			// URL must already identify the order itself.
+			redirect_url: redirectUrl,
 			valid_until: validUntil.toISOString(),
 		}),
 	})
