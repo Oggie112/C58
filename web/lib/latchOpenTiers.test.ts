@@ -1,15 +1,13 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import type { SanityTier } from '@/types/sanity'
+import { startTestDatabase, type TestDatabase } from '@/tests/helpers/testDatabase'
 
 // Committed for the same reason as reserveOrder.concurrency.test.ts: whether
 // a tier is open is enforced inside reserveOrder's transaction, and the
 // failure mode (a tier closing on buyers mid-checkout) only shows up across
 // a real reservation, a real sweep and a second reservation.
 describe('previousSoldOut tier latch', () => {
-	let container: StartedPostgreSqlContainer
-	let sql: typeof import('./db').sql
+	let db: TestDatabase
+	let sql: TestDatabase['sql']
 	let reserveOrder: typeof import('./reserveOrder').reserveOrder
 	let sweepStaleReservations: typeof import('./sweepStaleReservations').sweepStaleReservations
 	let RESERVATION_HOLD_MINUTES: number
@@ -20,29 +18,16 @@ describe('previousSoldOut tier latch', () => {
 	]
 
 	beforeAll(async () => {
-		container = await new PostgreSqlContainer('postgres:16').start()
-		process.env.DATABASE_POOLED_URL = container.getConnectionUri()
-
-		// lib/db.ts reads DATABASE_POOLED_URL at module-load time — imported
-		// dynamically, after the env var above is set.
-		;({ sql } = await import('./db'))
+		db = await startTestDatabase()
+		sql = db.sql
+		// Dynamic, after startTestDatabase — see its note on lib/db.ts.
 		;({ reserveOrder } = await import('./reserveOrder'))
 		;({ sweepStaleReservations } = await import('./sweepStaleReservations'))
 		;({ RESERVATION_HOLD_MINUTES } = await import('./reservationWindow'))
-
-		const migrationsDir = path.resolve(__dirname, '../../supabase/migrations')
-		const migrationFiles = fs
-			.readdirSync(migrationsDir)
-			.filter((file) => file.endsWith('.sql'))
-			.sort()
-		for (const file of migrationFiles) {
-			await sql.file(path.join(migrationsDir, file))
-		}
 	}, 60_000)
 
 	afterAll(async () => {
-		await sql.end()
-		await container.stop()
+		await db.stop()
 	})
 
 	let eventId: string
