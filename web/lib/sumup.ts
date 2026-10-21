@@ -1,12 +1,6 @@
-const SUMUP_API_BASE = 'https://api.sumup.com'
+import { CHECKOUT_VALID_MINUTES } from './reservationWindow'
 
-// Deliberately shorter than sweepStaleReservations's 30-minute window, not a
-// mismatch — the sweep is lazy (only runs on the next read/write, never
-// early but possibly late), so a payment SumUp accepts right at the 30-min
-// mark could still be settling when the sweep releases the same seat. This
-// margin guarantees SumUp has closed the checkout before the sweep is even
-// eligible to touch it.
-const CHECKOUT_VALID_MINUTES = 25
+const SUMUP_API_BASE = 'https://api.sumup.com'
 
 export interface CheckoutSession {
 	id: string
