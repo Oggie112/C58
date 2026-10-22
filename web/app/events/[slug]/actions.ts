@@ -94,7 +94,12 @@ export async function createOrder(
 		case 'reserved': {
 			let session
 			try {
-				session = await createCheckoutSession(result.orderId, result.amountTotal, `C58 order ${result.orderId}`)
+				session = await createCheckoutSession(
+					result.orderId,
+					result.amountTotal,
+					`C58 order ${result.orderId}`,
+					`${process.env.NEXT_PUBLIC_SITE_URL}/orders/${result.accessToken}`,
+				)
 			} catch (error) {
 				console.error('Failed to create SumUp checkout session:', error)
 				await failReservation(result.orderId)
@@ -104,9 +109,23 @@ export async function createOrder(
 				}
 			}
 
-			await attachCheckoutSession(result.orderId, session.id)
-			// redirect() throws internally — must stay outside the try/catch
-			// above, or the catch would swallow the navigation as an error.
+			try {
+				await attachCheckoutSession(result.orderId, session.id)
+			} catch (error) {
+				// Without the checkout id recorded, neither the webhook nor the
+				// order page can ever match this order to a payment — so don't
+				// send the buyer to pay. The orphaned SumUp checkout was never
+				// shown to anyone and expires on its own.
+				console.error('Failed to record SumUp checkout session:', error)
+				await failReservation(result.orderId)
+				return {
+					status: 'checkout_failed',
+					message: "Something went wrong starting checkout. You haven't been charged — please try again.",
+				}
+			}
+
+			// redirect() throws internally — must stay outside both try/catches
+			// above, or a catch would swallow the navigation as an error.
 			redirect(session.hostedCheckoutUrl)
 		}
 		case 'sold_out':

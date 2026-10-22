@@ -59,6 +59,19 @@ export const EVENT_BY_SLUG_QUERY = defineQuery(/* groq */ `
 	}
 `)
 
+// The event an eventDetails document belongs to, by the eventDetails _id —
+// orders store eventDetails ids (that's where the tiers live), so the order
+// page reaches the event through its forward `event` reference.
+export const EVENT_BY_DETAILS_ID_QUERY = defineQuery(/* groq */ `
+	*[_type == "eventDetails" && _id == $id][0].event-> {
+		title,
+		slug,
+		date,
+		time,
+		location
+	}
+`)
+
 // Fetch eventDetails directly by its own _id — used server-side by
 // createOrder/reserveOrder, which only ever have eventDetailsId (not an
 // event slug), so the slug-based join above doesn't fit. Just tiers: that's
