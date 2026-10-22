@@ -8,6 +8,14 @@ export interface OrderLine {
 	unitPrice: number // pence
 }
 
+export type TicketStatus = 'valid' | 'used' | 'voided'
+
+export interface Ticket {
+	code: string
+	tierName: string
+	status: TicketStatus
+}
+
 export interface OrderSummary {
 	id: string
 	eventId: string // Sanity eventDetails _id
@@ -16,6 +24,8 @@ export interface OrderSummary {
 	amountTotal: number // pence
 	providerSessionId: string | null
 	lines: OrderLine[]
+	// Empty until confirmOrder issues them on payment — one per admission.
+	tickets: Ticket[]
 }
 
 // generateAccessToken's output shape — anything else can't be a real token,
@@ -36,7 +46,19 @@ export async function getOrderByToken(token: string): Promise<OrderSummary | nul
 	const lines = await sql<{ tier_name: string; quantity: number; unit_price: number }[]>`
 		select tier_name, quantity, unit_price from order_items
 		where order_id = ${order.id}
-		order by unit_price, tier_name
+		order by unit_price, tier_name, id
+	`
+
+	// Same ordering as the lines, so tickets group in the same sequence as the
+	// order summary. order_items.id keeps each line's tickets together even if
+	// two tiers share a name and price; tickets.id as the final tie-break keeps
+	// a reload stable (no ordering on insert time — tickets has no created_at).
+	const tickets = await sql<{ ticket_code: string; tier_name: string; status: TicketStatus }[]>`
+		select tickets.ticket_code, order_items.tier_name, tickets.status
+		from tickets
+		join order_items on order_items.id = tickets.order_item_id
+		where order_items.order_id = ${order.id}
+		order by order_items.unit_price, order_items.tier_name, order_items.id, tickets.id
 	`
 
 	return {
@@ -50,6 +72,11 @@ export async function getOrderByToken(token: string): Promise<OrderSummary | nul
 			tierName: line.tier_name,
 			quantity: line.quantity,
 			unitPrice: line.unit_price,
+		})),
+		tickets: tickets.map((ticket) => ({
+			code: ticket.ticket_code,
+			tierName: ticket.tier_name,
+			status: ticket.status,
 		})),
 	}
 }

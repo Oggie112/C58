@@ -6,6 +6,7 @@ import { getOrderByToken, type OrderSummary } from '@/lib/getOrderByToken'
 import { confirmOrder } from '@/lib/confirmOrder'
 import { getEventByDetailsId } from '@/sanity/fetch'
 import { formatEventDate } from '@/lib/dateFormat'
+import { ticketQrSvgDataUri } from '@/lib/ticketQrCode'
 import PendingRefresh from './PendingRefresh'
 
 // The URL is the order's secret (see lib/generateAccessToken.ts): keep it
@@ -54,6 +55,11 @@ export default async function OrderPage({ params }: PageProps<'/orders/[token]'>
 	const paymentNeverStarted = order.status === 'pending' && !order.providerSessionId
 	const notCompleted = order.status === 'failed' || order.status === 'refunded' || paymentNeverStarted
 
+	// Only a paid order's tickets are admissions; a refunded order's are
+	// voided and must not be shown as scannable.
+	const tickets = order.status === 'paid' ? order.tickets : []
+	const qrCodes = await Promise.all(tickets.map((ticket) => ticketQrSvgDataUri(ticket.code)))
+
 	return (
 		<article className="pt-24 pb-32 px-4 md:px-6">
 			<div className="max-w-[760px] mx-auto">
@@ -75,8 +81,9 @@ export default async function OrderPage({ params }: PageProps<'/orders/[token]'>
 				<section className="mb-12">
 					{order.status === 'paid' && (
 						<p className="font-body text-c58-white">
-							Payment confirmed. Your tickets are below, and a confirmation is on its way to{' '}
-							<span className="text-c58-ice">{order.email}</span> — it can take a little while to arrive.
+							Payment confirmed. Your tickets are below — one code per person, scanned at the door. A screenshot
+							works fine. A confirmation is also on its way to <span className="text-c58-ice">{order.email}</span>{' '}
+							— it can take a little while to arrive.
 						</p>
 					)}
 					{order.status === 'pending' && !paymentNeverStarted && <PendingRefresh />}
@@ -96,9 +103,46 @@ export default async function OrderPage({ params }: PageProps<'/orders/[token]'>
 					)}
 				</section>
 
+				{tickets.length > 0 && (
+					<section className="mb-12">
+						<h2 className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-white mb-6">
+							Tickets
+						</h2>
+						<ul className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+							{tickets.map((ticket, index) => {
+								const unusable = ticket.status !== 'valid'
+								return (
+									<li key={ticket.code} className="relative bg-white p-4">
+										{/* A data URI gains nothing from next/image's optimisation pipeline. */}
+										{/* eslint-disable-next-line @next/next/no-img-element */}
+										<img
+											src={qrCodes[index]}
+											alt={`Ticket QR code for ${ticket.tierName}, ticket ${index + 1} of ${tickets.length}`}
+											className={`block w-full aspect-square ${unusable ? 'opacity-20' : ''}`}
+										/>
+										<div className="mt-3 flex items-baseline justify-between gap-4 text-c58-black">
+											<span className="font-display font-bold uppercase tracking-[0.04em]">{ticket.tierName}</span>
+											<span className="font-body text-label uppercase tracking-[0.15em]">
+												{index + 1} of {tickets.length}
+											</span>
+										</div>
+										{/* Human-readable fallback if a scan fails at the door. */}
+										<p className="mt-1 font-body text-label tracking-[0.1em] text-c58-black">{ticket.code}</p>
+										{unusable && (
+											<span className="absolute inset-x-4 top-1/3 text-center font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-black">
+												{ticket.status === 'used' ? 'Scanned' : 'Cancelled'}
+											</span>
+										)}
+									</li>
+								)
+							})}
+						</ul>
+					</section>
+				)}
+
 				<section className="mb-12">
 					<h2 className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-white mb-6">
-						{order.status === 'paid' ? 'Tickets' : 'Order'}
+						Order
 					</h2>
 					<ul className="space-y-4">
 						{order.lines.map((line) => (
