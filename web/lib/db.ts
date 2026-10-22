@@ -7,7 +7,14 @@ if (!process.env.DATABASE_POOLED_URL) {
 // Singleton, mirrors sanity/client.ts. DATABASE_POOLED_URL is Supabase's
 // transaction-pooler connection string (port 6543) — suited to serverless,
 // where each invocation would otherwise open its own direct connection.
-export const sql = postgres(process.env.DATABASE_POOLED_URL)
+//
+// prepare: false is required by that pooler, not a tuning choice: transaction
+// mode can hand each transaction to a different backend connection, so a
+// statement postgres.js prepared on one may not exist on the next —
+// intermittent "prepared statement … does not exist" errors (seen in the
+// 8UI.2 end-to-end run). Supabase's guidance for transaction mode is to
+// disable prepared statements in the client.
+export const sql = postgres(process.env.DATABASE_POOLED_URL, { prepare: false })
 
 // The `postgres` package exports these only inside its namespace, not as
 // plain named exports — re-exported here so other files can just
