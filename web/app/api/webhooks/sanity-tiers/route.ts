@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { decodeSignatureHeader, isValidSignature, SIGNATURE_HEADER_NAME } from '@sanity/webhook'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
+import { verifySanityWebhook } from '@/lib/verifySanityWebhook'
 
 // Configure in Sanity's project settings, on eventDetails create/update/delete,
 // with a GROQ projection matching this shape exactly:
@@ -11,35 +11,10 @@ const WebhookPayloadSchema = z.object({
 	tiers: z.array(z.object({ _key: z.string().min(1), capacity: z.number().int().min(0) })),
 })
 
-// isValidSignature only proves the signature matches the timestamp embedded
-// in it — it never checks that timestamp is recent, so a captured valid
-// (body, signature) pair is otherwise replayable forever. Sanity retries a
-// failed delivery twice at 30s intervals with a 30s timeout per attempt
-// (worst case ~150s after the original attempt); this gives a comfortable
-// margin above that without leaving the window open indefinitely.
-const SIGNATURE_MAX_AGE_MS = 5 * 60 * 1000
-
 export async function POST(request: Request) {
-	const secret = process.env.SANITY_WEBHOOK_SECRET
-	if (!secret) {
-		console.error('SANITY_WEBHOOK_SECRET is not set')
-		return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
-	}
-
-	const rawBody = await request.text()
-	const signature = request.headers.get(SIGNATURE_HEADER_NAME)
-
-	if (!signature || !(await isValidSignature(rawBody, signature, secret))) {
-		return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-	}
-
-	// Safe to decode again without a try/catch — isValidSignature having
-	// already returned true means it successfully decoded this exact header
-	// internally, so decoding it a second time here can't throw.
-	const { timestamp } = decodeSignatureHeader(signature)
-	if (Date.now() - timestamp > SIGNATURE_MAX_AGE_MS) {
-		return NextResponse.json({ error: 'Signature expired' }, { status: 401 })
-	}
+	const verification = await verifySanityWebhook(request, 'SANITY_WEBHOOK_SECRET')
+	if (!verification.ok) return verification.response
+	const { rawBody } = verification
 
 	// A deleted/unpublished document has no current state for the projection
 	// to read tiers[] from, so delete is handled from headers, not the body.
