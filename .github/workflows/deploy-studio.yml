@@ -27,3 +27,8 @@ jobs:
       - run: npm run deploy -- --yes
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+          # Site the Presentation tool previews. studio/.env* is gitignored, so
+          # without this the CI build falls back to sanity.config.ts's
+          # http://localhost:3000. Public value, not a secret — SANITY_STUDIO_*
+          # vars are inlined into the browser bundle anyway.
+          SANITY_STUDIO_PREVIEW_URL: https://www.c58.uk

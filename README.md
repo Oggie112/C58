@@ -128,6 +128,29 @@ cd web && npm run dev
 cd studio && npm run dev
 ```
 
+### 5. Studio environment files (optional)
+
+The Studio's Presentation tool previews whatever `SANITY_STUDIO_PREVIEW_URL` points at, falling back to `http://localhost:3000`. The Studio loads env files by mode — `sanity dev` runs in _development_, `sanity build`/`sanity deploy` in _production_:
+
+| File | `sanity dev` | `sanity build` / `deploy` |
+| --- | --- | --- |
+| `.env` | ✅ | ✅ |
+| `.env.local` | ✅ | ✅ |
+| `.env.development` | ✅ | ❌ |
+| `.env.production` | ❌ | ✅ |
+
+Recommended local setup (all `studio/.env*` files are gitignored):
+
+```env
+# studio/.env — shared default
+SANITY_STUDIO_PREVIEW_URL=https://www.c58.uk
+
+# studio/.env.development — local Presentation previews your local web/ dev server
+SANITY_STUDIO_PREVIEW_URL=http://localhost:3000
+```
+
+> **Don't put `localhost` in `.env.local`.** Despite the name, it's loaded in every mode, so a manual `sanity deploy` from your machine would bake `localhost:3000` into the live Studio — editors' Presentation would then try to load their own machine. Deploys normally run in CI, which sets the production URL itself (see [GitHub Actions](#github-actions-secrets)).
+
 ---
 
 ## Ticketing
@@ -189,7 +212,15 @@ The frontend deploys automatically to Vercel on push to `main`. No manual steps 
 
 **Required Vercel environment variables** — add every variable from `web/.env.local` to the Vercel project settings, with `NEXT_PUBLIC_SITE_URL` set to the deployed domain.
 
-The Sanity Studio is deployed to [c58.sanity.studio](https://c58.sanity.studio) by GitHub Actions on push to `main` when `studio/` changes.
+The Sanity Studio is deployed to [c58.sanity.studio](https://c58.sanity.studio) (redirects to its `sanity.io/@…` dashboard address, deep links included) by GitHub Actions on push to `main` when `studio/` changes.
+
+The canonical site is **`https://www.c58.uk`** — `c58.uk` and `c58.vercel.app` both permanently redirect to it. Keep these in step with it:
+
+| Where | Setting |
+| --- | --- |
+| Vercel (Production + Preview) | `NEXT_PUBLIC_SITE_URL=https://www.c58.uk` |
+| `deploy-studio.yml` | `SANITY_STUDIO_PREVIEW_URL: https://www.c58.uk` (plain workflow env, not a secret) |
+| sanity.io/manage → API → CORS origins | `https://www.c58.uk`, with credentials allowed — needed for live draft previews |
 
 ### GitHub Actions secrets
 
