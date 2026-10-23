@@ -85,6 +85,8 @@ NEXT_PUBLIC_SANITY_VIEWER_TOKEN=your_viewer_token
 SANITY_API_READ_TOKEN=your_read_token
 # Shared secret for the eventDetails → tiers sync webhook
 SANITY_WEBHOOK_SECRET=your_webhook_secret
+# Shared secret for the publish → site revalidation webhook (a different value)
+SANITY_REVALIDATE_SECRET=your_revalidate_secret
 
 # --- Database (server-only) ---
 # Supabase transaction-pooler connection string (port 6543)
@@ -107,7 +109,8 @@ Where to get each value:
 | Variable | Source |
 | --- | --- |
 | Sanity tokens | **sanity.io/manage → API → Tokens** — both `Viewer` permissions |
-| `SANITY_WEBHOOK_SECRET` | Set by you when creating the webhook (see below) |
+| `SANITY_WEBHOOK_SECRET` | Set by you when creating the tiers webhook (see [below](#sanity-tiers-webhook)) |
+| `SANITY_REVALIDATE_SECRET` | Set by you when creating the revalidate webhook (see [below](#sanity-revalidate-webhook)) — use a different value from `SANITY_WEBHOOK_SECRET` so each can be rotated independently |
 | `DATABASE_POOLED_URL` | Supabase dashboard → **Connect → Transaction pooler** |
 | `SUMUP_API_KEY` | SumUp dashboard → **Developers → API keys**. Use the secret API key, **not** the "Public Key" shown alongside it |
 | `SUMUP_MERCHANT_CODE` | SumUp dashboard → account / profile |
@@ -150,6 +153,32 @@ SANITY_STUDIO_PREVIEW_URL=http://localhost:3000
 ```
 
 > **Don't put `localhost` in `.env.local`.** Despite the name, it's loaded in every mode, so a manual `sanity deploy` from your machine would bake `localhost:3000` into the live Studio — editors' Presentation would then try to load their own machine. Deploys normally run in CI, which sets the production URL itself (see [GitHub Actions](#github-actions-secrets)).
+
+---
+
+## Content updates
+
+Published Studio edits reach the cached site through a webhook, not through visitors' browsers. `next-sanity` v13's `<SanityLive>` only refreshes an editor's own preview in draft mode, and otherwise relies on whoever happens to be connected — with nobody on the site at publish time, the cached pages would stay stale indefinitely.
+
+| Who | On publish |
+| --- | --- |
+| Editors in Presentation (draft mode) | Preview refreshes immediately (`<SanityLive>`) |
+| Visitors with a page already open | See the change on their next navigation or refresh |
+| Everyone else | Fresh content on their next visit (webhook) |
+
+### Sanity revalidate webhook
+
+Configure in **sanity.io/manage → API → Webhooks**:
+
+- **URL:** `<NEXT_PUBLIC_SITE_URL>/api/webhooks/sanity-revalidate`
+- **Dataset:** `production`
+- **Trigger on:** create, update, delete
+- **Filter:** leave empty (any document type)
+- **Drafts:** excluded — only published changes should revalidate the public site
+- **Projection:** leave empty (the payload is ignored)
+- **Secret:** same value as `SANITY_REVALIDATE_SECRET`
+
+Any published change revalidates every page (`revalidatePath('/', 'layout')`); each page re-renders on its next visit. Fine at this site's size — swap in tag-precise invalidation if it grows.
 
 ---
 
