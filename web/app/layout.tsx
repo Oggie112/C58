@@ -42,6 +42,14 @@ export const metadata: Metadata = {
 	},
 };
 
+// Pages are prerendered, and the upcoming/past event lists compare against
+// today's date (sanity/fetch.ts) — without a time-based revalidation they'd
+// stay frozen at the last build or publish. Hourly re-renders roll them over;
+// fetches whose params haven't changed still hit the data cache, so this
+// costs no extra Sanity requests. Becomes cacheLife('hours') once
+// cacheComponents is on (route segment config is incompatible with it).
+export const revalidate = 3600
+
 export default async function RootLayout({
 	children,
 }: Readonly<{
