@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, DM_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
 import "./globals.css";
@@ -8,18 +7,7 @@ import Footer from "./components/Footer";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "./components/DisableDraftMode";
 import RedactedAnalytics from "./components/RedactedAnalytics";
-
-const barlowCondensed = Barlow_Condensed({
-	subsets: ["latin"],
-	weight: ["600", "700"],
-	variable: "--font-display",
-});
-
-const dmMono = DM_Mono({
-	subsets: ["latin"],
-	weight: ["400", "500"],
-	variable: "--font-body",
-});
+import { fontVariables } from "./fonts";
 
 export const metadata: Metadata = {
 	// metadataBase is required for Next.js to construct absolute URLs for OG images.
@@ -59,7 +47,7 @@ export default async function RootLayout({
 
 	return (
 		<html lang="en">
-			<body className={`${barlowCondensed.variable} ${dmMono.variable}`}>
+			<body className={fontVariables}>
 				<Nav />
 				{children}
 				<Footer />
