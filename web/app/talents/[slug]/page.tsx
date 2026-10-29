@@ -3,17 +3,18 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getAllTalentSlugs, getTalentBySlug } from '@/sanity/fetch'
+import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
 
 export async function generateStaticParams() {
-	return await getAllTalentSlugs({ perspective: 'published', stega: false })
+	return await getAllTalentSlugs(PUBLISHED_FETCH_OPTIONS)
 }
 
 export async function generateMetadata(
 	{ params }: PageProps<'/talents/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
-	const talent = await getTalentBySlug(slug)
+	const talent = await getTalentBySlug(slug, await getMetadataFetchOptions())
 	if (!talent) return {}
 
 	const ogImage = talent.photo
@@ -32,7 +33,7 @@ export async function generateMetadata(
 
 export default async function TalentPage({ params }: PageProps<'/talents/[slug]'>) {
 	const { slug } = await params
-	const talent = await getTalentBySlug(slug)
+	const talent = await getTalentBySlug(slug, await getDynamicFetchOptions())
 
 	if (!talent) notFound()
 

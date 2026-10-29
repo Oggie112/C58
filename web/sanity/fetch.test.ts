@@ -7,6 +7,9 @@ jest.mock('./live', () => ({
 
 const mockSanityFetch = sanityFetch as jest.Mock
 
+const PUBLISHED = { perspective: 'published', stega: false } as const
+const DRAFTS = { perspective: 'drafts', stega: true } as const
+
 beforeEach(() => {
 	mockSanityFetch.mockReset()
 })
@@ -16,7 +19,7 @@ describe('getAllPageSlugs', () => {
 		const mockSlugs = [{ slug: 'home' }, { slug: 'about' }]
 		mockSanityFetch.mockResolvedValue({ data: mockSlugs, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getAllPageSlugs()
+		const result = await getAllPageSlugs(PUBLISHED)
 
 		expect(result).toEqual(mockSlugs)
 	})
@@ -27,7 +30,7 @@ describe('getPageBySlug', () => {
 		const mockPage = { _id: '4', title: 'About', slug: { current: 'about' } }
 		mockSanityFetch.mockResolvedValue({ data: mockPage, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getPageBySlug('about')
+		const result = await getPageBySlug('about', PUBLISHED)
 
 		expect(result).toEqual(mockPage)
 		expect(mockSanityFetch).toHaveBeenCalledWith(
@@ -35,10 +38,20 @@ describe('getPageBySlug', () => {
 		)
 	})
 
+	it('passes the fetch options through to sanityFetch', async () => {
+		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
+
+		await getPageBySlug('about', DRAFTS)
+
+		expect(mockSanityFetch).toHaveBeenCalledWith(
+			expect.objectContaining({ perspective: 'drafts', stega: true }),
+		)
+	})
+
 	it('returns null when no page matches the slug', async () => {
 		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getPageBySlug('nonexistent')
+		const result = await getPageBySlug('nonexistent', PUBLISHED)
 
 		expect(result).toBeNull()
 	})
@@ -49,7 +62,7 @@ describe('getPostBySlug', () => {
 		const mockPost = { _id: '2', title: 'Test Post', slug: { current: 'test-post' }, date: '2025-06-01' }
 		mockSanityFetch.mockResolvedValue({ data: mockPost, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getPostBySlug('test-post')
+		const result = await getPostBySlug('test-post', PUBLISHED)
 
 		expect(result).toEqual(mockPost)
 		expect(mockSanityFetch).toHaveBeenCalledWith(
@@ -60,7 +73,7 @@ describe('getPostBySlug', () => {
 	it('returns null when no post matches the slug', async () => {
 		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getPostBySlug('nonexistent')
+		const result = await getPostBySlug('nonexistent', PUBLISHED)
 
 		expect(result).toBeNull()
 	})
@@ -76,7 +89,7 @@ describe('getSiteSettings', () => {
 		}
 		mockSanityFetch.mockResolvedValue({ data: mockSettings, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getSiteSettings()
+		const result = await getSiteSettings(PUBLISHED)
 
 		expect(result).toEqual(mockSettings)
 	})
@@ -84,7 +97,7 @@ describe('getSiteSettings', () => {
 	it('returns null when no settings document exists', async () => {
 		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
 
-		const result = await getSiteSettings()
+		const result = await getSiteSettings(PUBLISHED)
 
 		expect(result).toBeNull()
 	})

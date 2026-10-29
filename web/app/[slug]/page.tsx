@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getAllPageSlugs, getPageBySlug } from "@/sanity/fetch";
+import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from "@/sanity/fetchOptions";
 import PageBuilder from "@/app/components/PageBuilder";
 import { urlFor } from "@/sanity/image";
 
@@ -8,7 +9,7 @@ export async function generateMetadata(
 	{ params }: PageProps<'/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
-	const page = await getPageBySlug(slug, { stega: false })
+	const page = await getPageBySlug(slug, await getMetadataFetchOptions())
 	if (!page) return {}
 
 	const seoImage = page.seo?.image
@@ -27,12 +28,12 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-	return await getAllPageSlugs({ perspective: 'published', stega: false })
+	return await getAllPageSlugs(PUBLISHED_FETCH_OPTIONS)
 }
 
 export default async function Page({ params }: PageProps<'/[slug]'>) {
 	const { slug } = await params
-	const page = await getPageBySlug(slug)
+	const page = await getPageBySlug(slug, await getDynamicFetchOptions())
 	if (!page) notFound()
 	return <PageBuilder blocks={page.pageBuilder ?? []} />
 }

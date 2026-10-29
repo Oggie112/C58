@@ -3,19 +3,20 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { getAllPostSlugs, getPostBySlug } from '@/sanity/fetch'
+import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import portableTextComponents from '@/lib/portableTextComponents'
 
 export async function generateStaticParams() {
-	return await getAllPostSlugs({ perspective: 'published', stega: false })
+	return await getAllPostSlugs(PUBLISHED_FETCH_OPTIONS)
 }
 
 export async function generateMetadata(
 	{ params }: PageProps<'/posts/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
-	const post = await getPostBySlug(slug)
+	const post = await getPostBySlug(slug, await getMetadataFetchOptions())
 	if (!post) return {}
 
 	const ogImage = post.image
@@ -33,7 +34,7 @@ export async function generateMetadata(
 
 export default async function PostPage({ params }: PageProps<'/posts/[slug]'>) {
 	const { slug } = await params
-	const post = await getPostBySlug(slug)
+	const post = await getPostBySlug(slug, await getDynamicFetchOptions())
 
 	if (!post) notFound()
 

@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getEventDetailsById } from '@/sanity/fetch'
+import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { reserveOrder } from '@/lib/reserveOrder'
 import { createCheckoutSession } from '@/lib/sumup'
 import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
@@ -80,7 +81,9 @@ export async function createOrder(
 		}
 	}
 
-	const eventDetails = await getEventDetailsById(parsed.data.eventDetailsId)
+	// Always published: prices and tiers must be what buyers can see, never an
+	// editor's unpublished draft — even if the buyer is an editor in draft mode.
+	const eventDetails = await getEventDetailsById(parsed.data.eventDetailsId, PUBLISHED_FETCH_OPTIONS)
 	if (!eventDetails?.tiers?.length) {
 		return {
 			status: 'invalid',

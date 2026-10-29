@@ -1,7 +1,8 @@
 import { getSiteSettings } from '@/sanity/fetch'
+import { getDynamicFetchOptions } from '@/sanity/fetchOptions'
 
 export default async function Footer() {
-	const settings = await getSiteSettings()
+	const settings = await getSiteSettings(await getDynamicFetchOptions())
 	const socialLinks = settings?.socialLinks ?? []
 	const privacyPolicyHref = settings?.privacyPolicySlug ? `/${settings.privacyPolicySlug}` : null
 	const year = new Date().getFullYear()

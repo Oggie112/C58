@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getOrderByToken, type OrderSummary } from '@/lib/getOrderByToken'
 import { confirmOrder } from '@/lib/confirmOrder'
 import { getEventByDetailsId } from '@/sanity/fetch'
+import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { formatEventDate } from '@/lib/dateFormat'
 import { ticketQrSvgDataUri } from '@/lib/ticketQrCode'
 import PendingRefresh from './PendingRefresh'
@@ -45,7 +46,7 @@ export default async function OrderPage({ params }: PageProps<'/orders/[token]'>
 	const order = await loadOrder(token)
 	if (!order) notFound()
 
-	const event = await getEventByDetailsId(order.eventId)
+	const event = await getEventByDetailsId(order.eventId, PUBLISHED_FETCH_OPTIONS)
 	const eventHref = event?.slug?.current ? `/events/${event.slug.current}` : '/'
 
 	// Pending but never linked to a SumUp checkout: createOrder failed between

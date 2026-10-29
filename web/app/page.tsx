@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
 import { getPageBySlug } from "@/sanity/fetch"
+import { getDynamicFetchOptions, getMetadataFetchOptions } from "@/sanity/fetchOptions"
 import PageBuilder from "@/app/components/PageBuilder"
 import { urlFor } from "@/sanity/image"
 
 const HOME_SLUG = "home"
 
 export async function generateMetadata(): Promise<Metadata> {
-	const page = await getPageBySlug(HOME_SLUG, { stega: false })
+	const page = await getPageBySlug(HOME_SLUG, await getMetadataFetchOptions())
 	if (!page) return {}
 
 	const seoImage = page.seo?.image
@@ -25,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-	const page = await getPageBySlug(HOME_SLUG)
+	const page = await getPageBySlug(HOME_SLUG, await getDynamicFetchOptions())
 	if (!page) return <div>Home page not found — create a page in Sanity with the slug &quot;home&quot;.</div>
 	return <PageBuilder blocks={page.pageBuilder ?? []} />
 }
