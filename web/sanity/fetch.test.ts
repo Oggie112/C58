@@ -1,4 +1,4 @@
-import { getNearestEvent, getAllPageSlugs, getPageBySlug, getSiteSettings, getPostBySlug } from './fetch'
+import { getAllPageSlugs, getPageBySlug, getSiteSettings, getPostBySlug } from './fetch'
 import { sanityFetch } from './live'
 
 jest.mock('./live', () => ({
@@ -9,25 +9,6 @@ const mockSanityFetch = sanityFetch as jest.Mock
 
 beforeEach(() => {
 	mockSanityFetch.mockReset()
-})
-
-describe('getNearestEvent', () => {
-	it('returns a single event when one exists', async () => {
-		const mockEvent = { _id: '3', title: 'Next Event', date: '2025-07-01' }
-		mockSanityFetch.mockResolvedValue({ data: mockEvent, sourceMap: null, tags: ['sanity'] })
-
-		const result = await getNearestEvent()
-
-		expect(result).toEqual(mockEvent)
-	})
-
-	it('returns null when no upcoming event exists', async () => {
-		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
-
-		const result = await getNearestEvent()
-
-		expect(result).toBeNull()
-	})
 })
 
 describe('getAllPageSlugs', () => {
