@@ -82,6 +82,8 @@ export interface HeroBlock {
 	overlayText?: string
 	contentType?: 'nextEvent' | 'featuredPost'
 	post?: SanityPost
+	// Resolved by PAGE_BY_SLUG_QUERY only when contentType is 'nextEvent'
+	nextEvent?: SanityEvent | null
 }
 
 export interface NextEventBlock {
@@ -95,6 +97,8 @@ export interface FeaturedUpdateBlock {
 	heading?: string
 	contentType: 'nextEvent' | 'featuredPost'
 	post?: SanityPost
+	// Resolved by PAGE_BY_SLUG_QUERY only when contentType is 'nextEvent'
+	nextEvent?: SanityEvent | null
 }
 
 export interface EventListBlock {
@@ -103,6 +107,8 @@ export interface EventListBlock {
 	heading?: string
 	subheading?: string
 	showPast?: boolean
+	upcomingEvents: SanityEvent[]
+	pastEvents: SanityEvent[]
 }
 
 export interface RichTextBlock {
@@ -132,6 +138,7 @@ export interface ContactBlock {
 	_type: 'contactBlock'
 	_key: string
 	showMap?: boolean
+	settings: Pick<SanitySiteSettings, 'email' | 'phone' | 'address'> | null
 }
 
 export interface InstagramBlock {
@@ -152,6 +159,7 @@ export interface BlogListBlock {
 	_type: 'blogListBlock'
 	_key: string
 	heading?: string
+	posts: SanityPost[]
 }
 
 export interface TalentListBlock {
@@ -159,6 +167,7 @@ export interface TalentListBlock {
 	_key: string
 	heading?: string
 	subheading?: string
+	talents: SanityTalent[]
 }
 
 export interface PartnersBlock {
@@ -166,6 +175,7 @@ export interface PartnersBlock {
 	_key: string
 	heading?: string
 	subheading?: string
+	partners: SanityPartner[]
 }
 
 export type PageBuilderBlock =

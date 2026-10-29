@@ -56,7 +56,8 @@ export async function getAllPageSlugs(options?: { perspective?: 'published' | 'd
 }
 
 export async function getPageBySlug(slug: string, options?: { stega?: boolean }): Promise<SanityPage | null> {
-	const { data } = await sanityFetch({ query: PAGE_BY_SLUG_QUERY, params: { slug }, stega: options?.stega })
+	const today = new Date().toISOString().slice(0, 10)
+	const { data } = await sanityFetch({ query: PAGE_BY_SLUG_QUERY, params: { slug, today }, stega: options?.stega })
 	return data as SanityPage | null
 }
 

@@ -81,7 +81,7 @@ describe('getPageBySlug', () => {
 
 		expect(result).toEqual(mockPage)
 		expect(mockSanityFetch).toHaveBeenCalledWith(
-			expect.objectContaining({ params: { slug: 'about' } }),
+			expect.objectContaining({ params: { slug: 'about', today: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) } }),
 		)
 	})
 
