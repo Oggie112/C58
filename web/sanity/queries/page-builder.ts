@@ -1,7 +1,10 @@
 import { defineQuery } from 'next-sanity'
+import { EVENT_CARD_FIELDS } from './events'
 
 // Fetch a single page by slug with all page builder blocks expanded.
-// References inside heroBlock, featuredUpdateBlock, featuredPostBlock, and teamBlock are resolved inline.
+// Every block's data — references and collections alike — is resolved here,
+// so blocks are purely presentational and the page is one Sanity request.
+// $today (YYYY-MM-DD) splits events into upcoming and past.
 export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 	*[_type == "page" && slug.current == $slug][0] {
 		_id,
@@ -25,6 +28,9 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 				},
 				"post": post-> {
 					_id, _type, title, slug, date, image, body
+				},
+				contentType == "nextEvent" => {
+					"nextEvent": *[_type == "event" && date >= $today] | order(date asc)[0] { ${EVENT_CARD_FIELDS} }
 				}
 			},
 			_type == "featuredUpdateBlock" => {
@@ -32,7 +38,38 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 				contentType,
 				"post": post-> {
 					_id, _type, title, slug, date, image, body
+				},
+				contentType == "nextEvent" => {
+					"nextEvent": *[_type == "event" && date >= $today] | order(date asc)[0] { ${EVENT_CARD_FIELDS} }
 				}
+			},
+			_type == "eventListBlock" => {
+				...,
+				"upcomingEvents": *[_type == "event" && date >= $today] | order(date asc) { ${EVENT_CARD_FIELDS} },
+				"pastEvents": *[_type == "event" && date < $today] | order(date desc) { ${EVENT_CARD_FIELDS} }
+			},
+			_type == "blogListBlock" => {
+				...,
+				"posts": *[_type == "post"] | order(date desc) {
+					_id, _type, title, slug, date, image, body
+				}
+			},
+			_type == "talentListBlock" => {
+				...,
+				"talents": *[_type == "talent"] | order(orderRank) {
+					_id, _type, name, slug, role, bio, photo,
+					socialLinks[] { platform, url }
+				}
+			},
+			_type == "partnersBlock" => {
+				...,
+				"partners": *[_type == "partner"] | order(orderRank) {
+					_id, _type, name, logo, website, description
+				}
+			},
+			_type == "contactBlock" => {
+				...,
+				"settings": *[_id == "siteSettings"][0] { email, phone, address }
 			},
 			_type == "featuredPostBlock" => {
 				heading,

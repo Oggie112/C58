@@ -1,5 +1,4 @@
 import { PartnersBlock as PartnersBlockType } from '@/types/sanity'
-import { getAllPartners } from '@/sanity/fetch'
 import PageTitle from './PageTitle'
 import PartnerRow from './PartnerRow'
 
@@ -14,24 +13,9 @@ function PartnersShell({ heading, subheading, children }: { heading: string; sub
 	)
 }
 
-export default async function PartnersBlock({ block }: { block: PartnersBlockType }) {
+export default function PartnersBlock({ block }: { block: PartnersBlockType }) {
 	const heading = block.heading ?? 'OUR PARTNERS'
-
-	let partners
-	try {
-		partners = await getAllPartners()
-	} catch (error) {
-		console.error('Failed to fetch partners:', error)
-		return (
-			<PartnersShell heading={heading} subheading={block.subheading}>
-				<div className="border border-c58-border p-8 md:p-12 text-center">
-					<p className="font-body text-body text-c58-ghost">
-						Something went wrong loading partners. Please try refreshing the page.
-					</p>
-				</div>
-			</PartnersShell>
-		)
-	}
+	const { partners } = block
 
 	if (!partners.length) {
 		return (

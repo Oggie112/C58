@@ -7,20 +7,6 @@ export const ALL_TALENT_SLUGS_QUERY = defineQuery(/* groq */ `
 	}
 `)
 
-// Fetch all talents, ordered by orderRank.
-export const ALL_TALENTS_QUERY = defineQuery(/* groq */ `
-	*[_type == "talent"] | order(orderRank) {
-		_id,
-		_type,
-		name,
-		slug,
-		role,
-		bio,
-		photo,
-		socialLinks[] { platform, url }
-	}
-`)
-
 // Fetch a single talent by slug.
 export const TALENT_BY_SLUG_QUERY = defineQuery(/* groq */ `
 	*[_type == "talent" && slug.current == $slug][0] {

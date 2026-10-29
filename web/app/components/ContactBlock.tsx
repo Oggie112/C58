@@ -1,16 +1,8 @@
 import { ContactBlock as ContactBlockType } from '@/types/sanity'
-import { getSiteSettings } from '@/sanity/fetch'
 import SectionMarker from './SectionMarker'
 
-export default async function ContactBlock({ block, sectionNumber }: { block: ContactBlockType; sectionNumber?: string }) {
-	let settings
-	try {
-		settings = await getSiteSettings()
-	} catch (error) {
-		console.error('Failed to fetch site settings:', error)
-		return null
-	}
-
+export default function ContactBlock({ block, sectionNumber }: { block: ContactBlockType; sectionNumber?: string }) {
+	const { settings } = block
 	if (!settings) return null
 
 	return (
