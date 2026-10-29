@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import { getAllPageSlugs, getPageBySlug } from "@/sanity/fetch";
 import PageBuilder from "@/app/components/PageBuilder";
 import { urlFor } from "@/sanity/image";
@@ -32,8 +33,6 @@ export async function generateStaticParams() {
 export default async function Page({ params }: PageProps<'/[slug]'>) {
 	const { slug } = await params
 	const page = await getPageBySlug(slug)
-	if (!page) {
-		return <div>Page not found</div>
-	}
+	if (!page) notFound()
 	return <PageBuilder blocks={page.pageBuilder ?? []} />
 }
