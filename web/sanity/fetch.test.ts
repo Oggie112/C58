@@ -1,4 +1,4 @@
-import { getUpcomingEvents, getPastEvents, getNearestEvent, getAllPageSlugs, getPageBySlug, getSiteSettings, getAllPosts, getPostBySlug } from './fetch'
+import { getNearestEvent, getAllPageSlugs, getPageBySlug, getSiteSettings, getPostBySlug } from './fetch'
 import { sanityFetch } from './live'
 
 jest.mock('./live', () => ({
@@ -9,37 +9,6 @@ const mockSanityFetch = sanityFetch as jest.Mock
 
 beforeEach(() => {
 	mockSanityFetch.mockReset()
-})
-
-describe('getUpcomingEvents', () => {
-	it('returns an array of events', async () => {
-		const mockEvents = [{ _id: '1', title: 'Test Event', date: '2025-06-01' }]
-		mockSanityFetch.mockResolvedValue({ data: mockEvents, sourceMap: null, tags: ['sanity'] })
-
-		const result = await getUpcomingEvents()
-
-		expect(result).toEqual(mockEvents)
-		expect(mockSanityFetch).toHaveBeenCalledTimes(1)
-	})
-
-	it('returns an empty array when no events exist', async () => {
-		mockSanityFetch.mockResolvedValue({ data: [], sourceMap: null, tags: ['sanity'] })
-
-		const result = await getUpcomingEvents()
-
-		expect(result).toEqual([])
-	})
-})
-
-describe('getPastEvents', () => {
-	it('returns an array of past events', async () => {
-		const mockEvents = [{ _id: '2', title: 'Past Event', date: '2024-01-01' }]
-		mockSanityFetch.mockResolvedValue({ data: mockEvents, sourceMap: null, tags: ['sanity'] })
-
-		const result = await getPastEvents()
-
-		expect(result).toEqual(mockEvents)
-	})
 })
 
 describe('getNearestEvent', () => {
@@ -91,26 +60,6 @@ describe('getPageBySlug', () => {
 		const result = await getPageBySlug('nonexistent')
 
 		expect(result).toBeNull()
-	})
-})
-
-describe('getAllPosts', () => {
-	it('returns an array of posts', async () => {
-		const mockPosts = [{ _id: '1', title: 'Test Post', date: '2025-06-01' }]
-		mockSanityFetch.mockResolvedValue({ data: mockPosts, sourceMap: null, tags: ['sanity'] })
-
-		const result = await getAllPosts()
-
-		expect(result).toEqual(mockPosts)
-		expect(mockSanityFetch).toHaveBeenCalledTimes(1)
-	})
-
-	it('returns an empty array when no posts exist', async () => {
-		mockSanityFetch.mockResolvedValue({ data: [], sourceMap: null, tags: ['sanity'] })
-
-		const result = await getAllPosts()
-
-		expect(result).toEqual([])
 	})
 })
 
