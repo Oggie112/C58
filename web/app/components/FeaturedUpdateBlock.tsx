@@ -1,6 +1,5 @@
 import { FeaturedUpdateBlock as FeaturedUpdateBlockType } from '@/types/sanity'
-import { getNearestEvent } from '@/sanity/fetch'
-import { SanityEvent, SanityPost } from '@/types/sanity'
+import { SanityPost } from '@/types/sanity'
 import EventCard from './EventCard'
 import PostCard from './PostCard'
 
@@ -8,22 +7,15 @@ interface Props {
 	block: FeaturedUpdateBlockType
 }
 
-export default async function FeaturedUpdateBlock({ block }: Props) {
-	const { heading, contentType, post } = block
+export default function FeaturedUpdateBlock({ block }: Props) {
+	const { heading, contentType, post, nextEvent } = block
 
 	let card: React.ReactNode
 	let defaultHeading: string
 
 	if (contentType === 'nextEvent') {
-		let event: SanityEvent | null = null
-		try {
-			event = await getNearestEvent()
-		} catch (error) {
-			console.error('FeaturedUpdateBlock: failed to fetch nearest event:', error)
-			return null
-		}
-		if (!event) return null
-		card = <EventCard event={event} featured />
+		if (!nextEvent) return null
+		card = <EventCard event={nextEvent} featured />
 		defaultHeading = 'NEXT EVENT'
 	} else {
 		if (!post) return null
