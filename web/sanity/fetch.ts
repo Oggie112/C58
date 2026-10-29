@@ -1,17 +1,10 @@
 import { sanityFetch } from "./live"
 import { SanityEvent, SanityEventWithDetails, SanityEventDetails, SanityPage, SanityPost, SanitySiteSettings, SanityTalent } from "../types/sanity"
-import { NEAREST_EVENT_QUERY } from "./queries/events"
 import { ALL_EVENT_SLUGS_QUERY, EVENT_BY_DETAILS_ID_QUERY, EVENT_BY_SLUG_QUERY, EVENT_DETAILS_BY_ID_QUERY } from "./queries/event-details"
 import { ALL_PAGE_SLUGS_QUERY, PAGE_BY_SLUG_QUERY } from "./queries/page-builder"
 import { GET_SITE_SETTINGS } from "./queries/singleton"
 import { ALL_POST_SLUGS_QUERY, POST_BY_SLUG_QUERY } from "./queries/posts"
 import { ALL_TALENT_SLUGS_QUERY, TALENT_BY_SLUG_QUERY } from "./queries/talents"
-
-export async function getNearestEvent(): Promise<SanityEvent | null> {
-	const today = new Date().toISOString().slice(0, 10)
-	const { data } = await sanityFetch({ query: NEAREST_EVENT_QUERY, params: { today } })
-	return data as SanityEvent | null
-}
 
 export async function getAllEventSlugs(options?: { perspective?: 'published' | 'drafts', stega?: boolean }): Promise<Array<{ slug: string }>> {
 	const { data } = await sanityFetch({ query: ALL_EVENT_SLUGS_QUERY, perspective: options?.perspective, stega: options?.stega })

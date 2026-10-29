@@ -11,7 +11,6 @@ import {siteSettings} from './documents/site-settings'
 
 // Blocks
 import {heroBlock} from './blocks/hero-block'
-import {nextEventBlock} from './blocks/next-event-block'
 import {featuredUpdateBlock} from './blocks/featured-update-block'
 import {blogListBlock} from './blocks/blog-list-block'
 import {talentListBlock} from './blocks/talent-list-block'
@@ -40,7 +39,6 @@ export const schemaTypes = [
 	siteSettings,
 	// Blocks
 	heroBlock,
-	nextEventBlock,
 	featuredUpdateBlock,
 	blogListBlock,
 	talentListBlock,

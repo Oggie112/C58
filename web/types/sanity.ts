@@ -86,11 +86,6 @@ export interface HeroBlock {
 	nextEvent?: SanityEvent | null
 }
 
-export interface NextEventBlock {
-	_type: 'nextEventBlock'
-	_key: string
-}
-
 export interface FeaturedUpdateBlock {
 	_type: 'featuredUpdateBlock'
 	_key: string
@@ -180,7 +175,6 @@ export interface PartnersBlock {
 
 export type PageBuilderBlock =
 	| HeroBlock
-	| NextEventBlock
 	| FeaturedUpdateBlock
 	| EventListBlock
 	| BlogListBlock

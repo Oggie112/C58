@@ -107,9 +107,10 @@ export const PAGE_BY_SLUG_QUERY = defineQuery(/* groq */ `
 	}
 `)
 
-// Fetch all page slugs — used for static route generation.
+// Fetch all page slugs — used for static route generation. Excludes "home",
+// which renders at "/" (app/page.tsx); /home redirects there (next.config.ts).
 export const ALL_PAGE_SLUGS_QUERY = defineQuery(/* groq */ `
-	*[_type == "page" && defined(slug.current)] {
+	*[_type == "page" && defined(slug.current) && slug.current != "home"] {
 		"slug": slug.current
 	}
 `)
