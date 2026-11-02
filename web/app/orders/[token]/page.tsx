@@ -40,7 +40,14 @@ async function loadOrder(token: string): Promise<OrderSummary | null> {
 }
 
 export default async function OrderPage({ params }: PageProps<'/orders/[token]'>) {
-	await connection() // per-request: reads and may write live order state
+	// Required: reads and may write live order state per request. Postgres
+	// queries aren't fetch(), so without this Next couldn't tell they're live
+	// and would try to prerender them. Its Suspense boundary is loading.tsx.
+	//
+	// Because the layout streams first, an unknown token's notFound() renders
+	// the 404 page with noindex but a 200 status. Accepted: tokens are
+	// unguessable secrets and the page is noindex regardless.
+	await connection()
 	const { token } = await params
 
 	const order = await loadOrder(token)

@@ -1,8 +1,15 @@
 import { getAllPageSlugs, getPageBySlug, getSiteSettings, getPostBySlug } from './fetch'
+import { cacheLife } from 'next/cache'
 import { sanityFetch } from './live'
 
 jest.mock('./live', () => ({
 	sanityFetch: jest.fn(),
+}))
+
+// Outside a Next build 'use cache' is an inert string, but cacheLife() throws
+// without the cacheComponents config — mock it (and assert on it below).
+jest.mock('next/cache', () => ({
+	cacheLife: jest.fn(),
 }))
 
 const mockSanityFetch = sanityFetch as jest.Mock
@@ -36,6 +43,14 @@ describe('getPageBySlug', () => {
 		expect(mockSanityFetch).toHaveBeenCalledWith(
 			expect.objectContaining({ params: { slug: 'about', today: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) } }),
 		)
+	})
+
+	it('caches for hours so the date-based event lists roll over', async () => {
+		mockSanityFetch.mockResolvedValue({ data: null, sourceMap: null, tags: ['sanity'] })
+
+		await getPageBySlug('events', PUBLISHED)
+
+		expect(cacheLife).toHaveBeenCalledWith('hours')
 	})
 
 	it('passes the fetch options through to sanityFetch', async () => {
