@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getOrderByToken, type OrderSummary } from '@/lib/getOrderByToken'
 import { confirmOrder } from '@/lib/confirmOrder'
 import { getEventByDetailsId } from '@/sanity/fetch'
+import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { formatEventDate } from '@/lib/dateFormat'
 import { ticketQrSvgDataUri } from '@/lib/ticketQrCode'
 import PendingRefresh from './PendingRefresh'
@@ -39,13 +40,20 @@ async function loadOrder(token: string): Promise<OrderSummary | null> {
 }
 
 export default async function OrderPage({ params }: PageProps<'/orders/[token]'>) {
-	await connection() // per-request: reads and may write live order state
+	// Required: reads and may write live order state per request. Postgres
+	// queries aren't fetch(), so without this Next couldn't tell they're live
+	// and would try to prerender them. Its Suspense boundary is loading.tsx.
+	//
+	// Because the layout streams first, an unknown token's notFound() renders
+	// the 404 page with noindex but a 200 status. Accepted: tokens are
+	// unguessable secrets and the page is noindex regardless.
+	await connection()
 	const { token } = await params
 
 	const order = await loadOrder(token)
 	if (!order) notFound()
 
-	const event = await getEventByDetailsId(order.eventId)
+	const event = await getEventByDetailsId(order.eventId, PUBLISHED_FETCH_OPTIONS)
 	const eventHref = event?.slug?.current ? `/events/${event.slug.current}` : '/'
 
 	// Pending but never linked to a SumUp checkout: createOrder failed between

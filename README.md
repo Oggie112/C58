@@ -180,6 +180,23 @@ Configure in **sanity.io/manage → API → Webhooks**:
 
 Any published change revalidates every page (`revalidatePath('/', 'layout')`); each page re-renders on its next visit. Fine at this site's size — swap in tag-precise invalidation if it grows.
 
+### Caching
+
+The site uses Next's [Cache Components](https://nextjs.org/docs/app/getting-started/caching): nothing is cached unless marked `'use cache'`, and request-time reads must sit inside a Suspense boundary. Background in [`docs/next-sanity-v13-migration.md`](docs/next-sanity-v13-migration.md).
+
+- **All Sanity queries go through a wrapper in `web/sanity/fetch.ts`.** Each is a `'use cache'` scope; its arguments form the cache key.
+- **Every wrapper takes `FetchOptions`** (`perspective` + `stega`) from `web/sanity/fetchOptions.ts`. Cached code can't read cookies, so these are resolved outside and passed in. `defineLive` runs in strict mode, so a missing option is an error rather than silently published content in Presentation:
+
+  | Where | Use |
+  | --- | --- |
+  | Page content, `Nav`, `Footer` | `getDynamicFetchOptions()` |
+  | `generateMetadata` | `getMetadataFetchOptions()` — no stega in titles or share cards |
+  | `generateStaticParams`, server actions, order pages | `PUBLISHED_FETCH_OPTIONS` — never drafts |
+
+- **Lifetimes:** Sanity data is long-lived (expired on publish by the webhook). `getPageBySlug` uses `cacheLife('hours')` so upcoming/past event lists roll over. Within a scope the shortest `cacheLife` wins, and a page lives as long as the shortest thing it renders — a short lifetime in a shared component (e.g. the nav) shortens every page.
+- **Reading the clock** (`new Date()`, `Date.now()`) during a prerender fails the build — put it in a cached function with a `cacheLife` (see `getCurrentYear` in `Footer.tsx`).
+- **Local builds and stale content:** `.next/cache/fetch-cache` survives rebuilds and only production receives the publish webhook. If a local build shows content you've since edited, delete `web/.next/cache/fetch-cache` and rebuild.
+
 ---
 
 ## Ticketing
@@ -191,7 +208,7 @@ Purchase flow, end to end:
 3. A SumUp hosted checkout is created and the buyer is redirected to it.
 4. SumUp calls `/api/webhooks/sumup`. The handler re-fetches the checkout status from SumUp, then marks the order paid and issues one ticket per admission.
 
-Abandoned reservations are released lazily after 30 minutes — no cron job.
+Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 
 Prices are stored in **pounds** in Sanity and **pence** in Postgres; conversion happens once in `reserveOrder`.
 

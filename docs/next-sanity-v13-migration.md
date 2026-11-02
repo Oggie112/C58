@@ -1,4 +1,4 @@
-# next-sanity v13 + Cache Components Migration — Step 1 Done, Step 2 Planned
+# next-sanity v13 + Cache Components Migration — Done
 
 Two-step plan (see [Plan](#plan)), deliberately scheduled **after Milestone 8** of the [Ticketing Roadmap](roadmaps/ticketing.md): both this work and the ticketing branches touch `app/layout.tsx` and `app/orders/[token]/page.tsx`, and a regression should point unambiguously at one or the other.
 
@@ -53,6 +53,7 @@ Consequences:
 - **The build can't verify it.** `next build --debug-prerender` *"does not prove"* draft mode, Presentation perspective switching, or overlays work — manual testing in `next dev` with draft mode on **and** off is the only check.
 - `generateStaticParams` → `sanityFetchStaticParams` (hardcodes published + no stega); `generateMetadata`/sitemap/OG images → `sanityFetchMetadata` (resolves perspective, never stega). Server actions must resolve perspective themselves — never accept it as input (untrusted).
 - **Treat the AI skill as an assistant, not an authority.** It contradicts the official guide on whether `draftMode()` may be awaited inside `'use cache'` (skill: yes; official guide: no). Check its output against the guide.
+  - **Resolved 2026-10-29:** the skill is right for Next 16.4 — its bundled docs (`draft-mode.md`) allow reading `draftMode().isEnabled` inside `'use cache'`, and draft requests bypass every cache. `cookies()` is still blocked, so the perspective cookie must still be resolved outside. Sanity's guide is out of date here.
 
 ### What it touches in C58
 
@@ -85,14 +86,28 @@ Paused once for `chore/next-16.4` (PR #43): Server Actions DoS advisories publis
   - **Verified on a production build** (`next start`, no browser connected): page cached as title A → publish B → still A (gap confirmed) → signed webhook → **first** visit afterwards already B (no stale-while-revalidate round).
   - If Next fixes #93210, the only thing worth revisiting is opting connected public visitors back into instant updates via `action` — likely with a Sanity Function trigger rather than this plain webhook, since `waitFor="function"` needs to know when invalidation finished. The webhook itself stays.
 
-### Step 2 — enable `cacheComponents` (separate branch)
+### Step 2 — enable `cacheComponents` — **done 2026-11-02** (`feat/cache-components`)
 
-1. Read Sanity's [Cache Components guide](https://www.sanity.io/docs/nextjs/cache-components) in full.
-2. Optionally use the migration skill as an assistant — `npx skills add https://github.com/sanity-io/next-sanity --skill sanity-live-cache-components` — checking its output against the guide (see the `draftMode()` contradiction above).
-3. Switch `defineLive` to `strict: true` and let TypeScript find every call site needing perspective/stega.
-4. Convert route by route to the three-layer split; thread fetch options through `PageBuilder` to the self-fetching blocks.
-5. Move `generateStaticParams`/`generateMetadata` to the new helpers; wrap `layout.tsx`'s request-time work and `/orders/[token]` in Suspense.
-6. Update `connection()`'s comment in `/orders/[token]/page.tsx` — it becomes required rather than redundant.
+Groundwork landed first in `refactor/resolve-block-data-in-page-query` (PR #47): the eight self-fetching page-builder blocks now read data resolved by `PAGE_BY_SLUG_QUERY`, so fetch options stop at the page and never reach `PageBuilder` or the blocks.
+
+**Findings that changed the plan** (bundled Next 16.4 docs and installed next-sanity source, 2026-10-29):
+
+- Under Cache Components, next-sanity's `sanityFetch` (`conditions/next-js`) **no longer resolves draft mode at all** — without explicit options it fetches published content with no stega, so Presentation would silently break. `strict: true` is effectively mandatory. It also calls `cacheTag`/`cacheLife(sanity)` itself, so every call must sit in a `'use cache'` scope.
+- `partialPrefetching` must be set explicitly (unset logs a warning); Sanity's guide doesn't mention it.
+- `generateStaticParams` returning `[]` fails the build — `/posts/[slug]` (0 posts).
+- Calling `cacheLife` twice in one scope keeps the **shortest** lifetime (Next source, `cache-life.js`).
+
+**What was built:**
+
+1. **`sanity/fetchOptions.ts`** (commit `f4a0063`, verified under the old caching model first): `getDynamicFetchOptions()` (published/no stega outside draft mode *without reading cookies*, keeping pages prerenderable; Presentation's perspective cookie + stega inside it), `getMetadataFetchOptions()` (same perspective, never stega), `PUBLISHED_FETCH_OPTIONS` (static params, `createOrder`, order pages). Every wrapper in `sanity/fetch.ts` requires them. Fixed in passing: `createOrder` previously read **draft** tiers/prices for an editor in draft mode.
+2. **Data-level caching instead of the three-layer split.** Each `sanity/fetch.ts` wrapper is a `'use cache'` scope; its arguments (slug, perspective, stega) are the cache key. Pages resolve options outside the cache and pass them in — same effect as Sanity's page/dynamic/cached layers, without restructuring every route. Perspective switching (drafts/published/releases) kept (option A).
+3. **Lifetimes:** `cacheLife: { default: sanity }` in `next.config.ts` (safety net for scopes without one); `getPageBySlug` adds `cacheLife('hours')`, replacing the root layout's `revalidate = 3600` so date-based event lists still roll over; the footer year moved into a `'days'` cached function (reading the clock during a prerender is now an error). A page's lifetime is the shortest of what it used: page-builder pages 1 h, event/talent pages 1 d.
+4. **`partialPrefetching: false`** — unlisted dynamic paths wait for their first full render, as before. Revisit before Next 17 makes it the default.
+5. **`/posts/[slug]`:** `generateStaticParams` dropped and `instant = false` — restore once posts exist. **`/orders/[token]`:** `loading.tsx` as its required Suspense boundary; `connection()` now required.
+6. **Accepted soft 404s:** on `/posts/[slug]` and `/orders/[token]` the layout streams before `notFound()` runs, so unknown slugs/tokens get the 404 page with `noindex` but a **200**. Routes with `generateStaticParams` still return real 404s. `instant = false` does not change this (tried).
+7. **Webhook unchanged:** `revalidatePath('/', 'layout')` reaches `'use cache'` entries — verified on a production build (publish → still cached → webhook → first visit fresh).
+
+**Local gotcha:** `.next/cache/fetch-cache` persists between local builds, and only production receives the publish webhook — so a local `next build` can render content that was edited since an earlier local build. Delete `.next/cache/fetch-cache` before a local build that must reflect recent publishes. Production is unaffected (the webhook expires it there), and this predates Cache Components.
 
 ### Verification (both steps)
 
@@ -101,3 +116,5 @@ Per this project's usual bar: `npm run typecheck`, lint, full Jest suite, real `
 - `next dev` with draft mode **off**: published content renders; a published Studio edit appears on the live site (within whatever window the chosen `action` gives).
 - `next dev` with draft mode **on**, inside Presentation: draft edits appear live, overlays click through to the right fields, perspective switching (drafts / published / a release) changes the rendered content. **Use the local Studio with `studio/.env.development` pointing at `http://localhost:3000`** (see README) — `studio/.env` points Presentation at production, so without it local Presentation testing silently tests the live site. Confirm in the `web/` dev log that `/api/draft-mode/enable` was actually hit.
 - Ticket purchase flow end to end, since it shares `layout.tsx`.
+
+**Step 2 results:** typecheck, lint, Jest (17 suites, 102 tests) and build pass; rendered HTML of all 10 content pages identical to the pre-change baseline apart from invisible React boundary markers; Presentation overlays, live drafts, perspective switching and event pages verified in dev (Next's indicator shows "Cache disabled" in draft mode — the expected bypass); SumUp sandbox purchase end to end (order paid, 2 tickets at the published 100p, stock 2/10 reserved, no server errors).

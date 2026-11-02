@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PortableText } from 'next-sanity'
 import { getAllEventSlugs, getEventBySlug } from '@/sanity/fetch'
+import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import portableTextComponents from '@/lib/portableTextComponents'
@@ -18,14 +19,14 @@ const TICKETING_STATUS_LABEL: Record<TicketingStatus, string> = {
 }
 
 export async function generateStaticParams() {
-	return await getAllEventSlugs({ perspective: 'published', stega: false })
+	return await getAllEventSlugs(PUBLISHED_FETCH_OPTIONS)
 }
 
 export async function generateMetadata(
 	{ params }: PageProps<'/events/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
-	const event = await getEventBySlug(slug)
+	const event = await getEventBySlug(slug, await getMetadataFetchOptions())
 	if (!event) return {}
 
 	const ogImage = event.image
@@ -43,7 +44,7 @@ export async function generateMetadata(
 
 export default async function EventPage({ params }: PageProps<'/events/[slug]'>) {
 	const { slug } = await params
-	const event = await getEventBySlug(slug)
+	const event = await getEventBySlug(slug, await getDynamicFetchOptions())
 
 	if (!event) notFound()
 

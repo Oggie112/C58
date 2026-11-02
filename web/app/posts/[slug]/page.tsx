@@ -2,20 +2,27 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
-import { getAllPostSlugs, getPostBySlug } from '@/sanity/fetch'
+import { getPostBySlug } from '@/sanity/fetch'
+import { getDynamicFetchOptions, getMetadataFetchOptions } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import portableTextComponents from '@/lib/portableTextComponents'
 
-export async function generateStaticParams() {
-	return await getAllPostSlugs({ perspective: 'published', stega: false })
-}
+// No generateStaticParams: under Cache Components an empty result fails the
+// build, and there are no posts yet. Post pages render on request (their
+// data is still cached), so the route is allowed to block. As the layout
+// streams first, an unknown slug gets the 404 page with noindex but a 200
+// status — accepted while there are no posts to link to.
+// Once the blog has content, restore generateStaticParams (returning
+// getAllPostSlugs(PUBLISHED_FETCH_OPTIONS)) and remove this: unlisted slugs
+// then render fully before sending, restoring real 404s.
+export const instant = false
 
 export async function generateMetadata(
 	{ params }: PageProps<'/posts/[slug]'>
 ): Promise<Metadata> {
 	const { slug } = await params
-	const post = await getPostBySlug(slug)
+	const post = await getPostBySlug(slug, await getMetadataFetchOptions())
 	if (!post) return {}
 
 	const ogImage = post.image
@@ -33,7 +40,7 @@ export async function generateMetadata(
 
 export default async function PostPage({ params }: PageProps<'/posts/[slug]'>) {
 	const { slug } = await params
-	const post = await getPostBySlug(slug)
+	const post = await getPostBySlug(slug, await getDynamicFetchOptions())
 
 	if (!post) notFound()
 

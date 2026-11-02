@@ -1,10 +1,20 @@
+import { cacheLife } from 'next/cache'
 import { getSiteSettings } from '@/sanity/fetch'
+import { getDynamicFetchOptions } from '@/sanity/fetchOptions'
+
+// Reading the clock during a prerender is an error under Cache Components
+// unless it's inside a cache scope with a lifetime.
+async function getCurrentYear(): Promise<number> {
+	'use cache'
+	cacheLife('days')
+	return new Date().getFullYear()
+}
 
 export default async function Footer() {
-	const settings = await getSiteSettings()
+	const settings = await getSiteSettings(await getDynamicFetchOptions())
 	const socialLinks = settings?.socialLinks ?? []
 	const privacyPolicyHref = settings?.privacyPolicySlug ? `/${settings.privacyPolicySlug}` : null
-	const year = new Date().getFullYear()
+	const year = await getCurrentYear()
 
 	return (
 		<footer className="border-t border-c58-border px-4 md:px-6 py-6">
