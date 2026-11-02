@@ -56,6 +56,16 @@ c58/
 
 > Add coding conventions, naming patterns, and architectural decisions here as the project evolves.
 
+### Sanity data fetching (Cache Components)
+
+`cacheComponents` is on and `defineLive` runs in strict mode — see the README's Caching section.
+
+- Fetch Sanity data only through the `'use cache'` wrappers in `web/sanity/fetch.ts`; add a new wrapper (with `'use cache'`) rather than calling `sanityFetch` from a component.
+- Always pass `FetchOptions` from `web/sanity/fetchOptions.ts`: `getDynamicFetchOptions()` for page content, `getMetadataFetchOptions()` for metadata, `PUBLISHED_FETCH_OPTIONS` for static params, server actions and anything money-related. Never accept perspective/stega from request input.
+- Page-builder blocks are presentational: resolve their data in `PAGE_BY_SLUG_QUERY`, don't fetch inside blocks.
+- No `new Date()`/`Date.now()` outside a `'use cache'` scope with an explicit `cacheLife`. Keep `cacheLife` in shared components long — the shortest one on a page sets the page's lifetime.
+- Verification for data-fetching changes needs `next dev` with draft mode on and off (Presentation), not just `next build`.
+
 ### Worktree executor agents (e.g. `improve-animations execute`)
 
 When dispatching an agent with `isolation: "worktree"` into this repo, symlink `node_modules` from the main checkout instead of running `npm install` — dependencies don't change between plans, so a fresh install is wasted time. Windows (no admin needed, directory junction):
