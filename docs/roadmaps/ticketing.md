@@ -12,10 +12,10 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | All migrations pushed to live Supabase; RLS enabled on every table (new project trigger covers future tables automatically) | — | — |
-| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase | 8DX.1 (Brevo quota plan doc); everything else in Milestone 8 waits on 8DX.2 | 8API.1/8API.3 need a Brevo account + `c58.uk` sender domain verified |
-| **UI**   | 7UI.1/7UI.2/8UI.2 complete — SumUp checkout returns buyers to `/orders/[token]`, which shows a scannable QR per ticket (8API.2) | — (8UI.1/8UI.3 blocked) | 8UI.1/8UI.3 need Brevo (as above) |
+| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase | 8API.1 (confirmation email), 8DX.1 (Brevo quota plan doc), 8API.3 (mailing list push) | — (Brevo set up in 8DX.2) |
+| **UI**   | 7UI.1/7UI.2/8UI.2 complete — SumUp checkout returns buyers to `/orders/[token]`, which shows a scannable QR per ticket (8API.2) | 8UI.1 (confirmation email template, with 8API.1), 8UI.3 (resend form) | — |
 | **QA**   | 7QA.1/7QA.2 complete — concurrency test + full security review, real Turnstile keys live | —                                | — |
-| **DX**   | Not started                                       | —                                | — |
+| **DX**   | 6DX.1/8DX.2 complete — Brevo account, `c58.uk` authenticated (branded `mail.c58.uk`), restricted API key, env vars in Vercel | 8DX.1 (quota plan) | — |
 
 ---
 
@@ -60,12 +60,11 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 <a name="m6-todo"><h4>To Do (Milestone 6)</h4></a>
 
-- [ ] 6DX.1. Env vars: Brevo API key (Supabase and SumUp done, see completed items)
-
 <a name="m6-blocked"><h4>Blocked (Milestone 6)</h4></a>
 
 <a name="m6-done"><h4>Completed (Milestone 6)</h4></a>
 
+- [x] 6DX.1. Env vars: Brevo (2026-11-03, with 8DX.2) — `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME`, `BREVO_LIST_ID` set in `web/.env.local` and Vercel (Production + Preview). `BREVO_REPLY_TO_EMAIL` to follow with 8API.1. Supabase and SumUp done earlier, see below
 - [x] 6CMS.1. ADR: event detail content model — [ADR 004](../adrs/004-event-detail-content-model.md)
 - [x] 6API.2. ADR: payment provider — [ADR 002](../adrs/002-payment-provider-sumup.md)
 - [x] 6DB.5. ADR: database — [ADR 003](../adrs/003-database-supabase.md)
@@ -129,7 +128,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 - **QR codes delivered as PNG attachments**, plus a "View your tickets" link to the order page. Base64 `data:` URI images are stripped by Gmail, so inline embedding is unreliable.
 - **Brevo calls run via Next's `after()`**, never inline — the webhook's response and success never depend on Brevo. A failed send leaves `confirmation_sent_at` null rather than being lost, since a re-delivered webhook takes the "already paid" fast path and would never retry it.
 - **Plain HTML template**, not React Email — one template doesn't justify the dependency. Revisit if Milestone 10 adds refund notices.
-- **Sender `tickets@c58.uk`, reply-to the business Gmail.** Brevo can't authenticate a `gmail.com` sender (spam-folder risk for tickets). No mailbox needed on `c58.uk` to send — only Brevo's DKIM/verification/DMARC records, added in Vercel DNS (the domain's nameservers; no MX/SPF/DMARC records exist yet, so nothing to conflict with).
+- **Sender `tickets@c58.uk`, reply-to the business Gmail.** As built (8DX.2): sending domain `c58.uk`; Brevo traffic (return-path, link tracking, images) runs through the branded subdomain `mail.c58.uk`, isolating the root domain's reputation from campaign complaints — `tickets.c58.uk` deliberately left free for a future ticketing/door app. **Click tracking off for transactional sends** (8API.1): it would route the order-page link, and its secret token, through Brevo's redirect. Brevo can't authenticate a `gmail.com` sender (spam-folder risk for tickets). No mailbox needed on `c58.uk` to send — only Brevo's DKIM/verification/DMARC records, added in Vercel DNS (the domain's nameservers; no MX/SPF/DMARC records exist yet, so nothing to conflict with).
 
 <a name="m8-doing"><h4>In Progress (Milestone 8)</h4></a>
 
@@ -139,13 +138,17 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 - [ ] 8UI.1. Confirmation email template — plain HTML, one PNG QR attachment per ticket, link to `/orders/[token]`
 - [ ] 8UI.3. Resend-confirmation form on `/orders` — email in, resend of every paid order for that address out, neutral response, never displays order data; rate-limited via existing `checkRateLimit`
 - [ ] 8API.3. Mailing list push (`POST /v3/contacts`) when `marketing_opt_in = true` — via `after()`, log-and-continue on failure, must never fail the webhook
-- [ ] 8DX.1. Brevo quota plan documented — campaigns scheduled days before release, never on release day; note trigger for upgrading to Starter tier
+- [ ] 8DX.1. Brevo quota plan documented — campaigns scheduled days before release, never on release day; note trigger for upgrading to Starter tier. Confirmed via the API: Free plan, **300 sends/day** (`sendLimit`), transactional included — a release selling to 300+ buyers in a day would leave later confirmations unsent
 
 <a name="m8-blocked"><h4>Blocked (Milestone 8)</h4></a>
 
-- [ ] 8DX.2. Brevo account + `c58.uk` sender domain authentication (DKIM/verification/DMARC records added in Vercel DNS) + opt-in contact list created — blocks 8API.1, 8UI.1, 8UI.3, 8API.3. Needs doing by the client; DNS propagation means starting early is worthwhile. Also unblocks `6DX.1`'s outstanding Brevo env vars (`BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME`, `BREVO_LIST_ID`)
-
 <a name="m8-done"><h4>Completed (Milestone 8)</h4></a>
+
+- [x] 8DX.2. Brevo account and `c58.uk` sender authentication (2026-11-03) — unblocks 8API.1, 8UI.1, 8UI.3, 8API.3
+  - **Domain:** Brevo's new domain flow — sending domain `c58.uk`, branded subdomain `mail.c58.uk`. Records in Vercel DNS, each verified on `ns1.vercel-dns.com` and Google's resolver before authenticating: `brevo-code` TXT on the root, two DKIM CNAMEs (`brevo1`/`brevo2._domainkey`), branded `mail` CNAME, and Brevo's DMARC TXT (`p=none`, aggregate reports to Brevo's dashboard — the only DMARC record). No SPF or MX added: nothing receives mail on `c58.uk`, and the branded return-path gives SPF alignment
+  - **Sender** `tickets@c58.uk` active (no mailbox needed once the domain is authenticated); opt-in list "Tickets - Marketing Opt-In" (ID 3)
+  - **API key:** restricted to what Milestone 8 needs (transactional send, contacts read/write, account read), **expires November 2027** (one-year expiry, created 2026-11-03) — renew before then or confirmation emails stop silently. Unknown-IP blocking off (Vercel's egress IPs aren't fixed); re-check after the first production sends, as Brevo's automatic mode can re-enable it
+  - Verified with read-only calls from the key: Free plan, 300 sends/day, transactional enabled; list ID 3 resolves; sender active
 
 - [x] 8API.0. SumUp webhook's PAID/FAILED handling extracted into `lib/confirmOrder.ts` (PR #37) — no behaviour change; prerequisite for 8UI.2. First committed test for it: Testcontainers-backed, covering per-admission ticket fan-out across line items, idempotency, a concurrent double-confirm, stock release, and SumUp lookup failure — idempotency and race cases confirmed failing with the atomic-claim guard removed
 - [x] 8UI.2. Post-payment page at `/orders/[token]` (`feat/order-status-page`). New `orders.access_token` (nullable unique; migration pushed live ahead of merge) — 256-bit base64url from `lib/generateAccessToken.ts`, generated in app code rather than as a column default (a `gen_random_bytes` default would need pgcrypto), stored by `reserveOrder` and returned in `ReserveResult`. `createCheckoutSession` gained a `redirectUrl` argument, set by `createOrder` to `${NEXT_PUBLIC_SITE_URL}/orders/<token>`. `lib/getOrderByToken.ts` rejects anything not shaped like a token before querying. The page: `await connection()` for per-request rendering (`export const dynamic` is removed under Next 16's `cacheComponents`; `connection()` works either way); calls `confirmOrder` for a `pending` order with a checkout id and re-reads (the re-read is where branch 3's ticket codes will come from), tolerating a SumUp failure by still rendering it as pending; event details via new `EVENT_BY_DETAILS_ID_QUERY` (forward `eventDetails.event` ref); paid / confirming / not-completed states with lines and total. `PendingRefresh` re-renders every 3s and gives up after ~1 minute. A pending order with no checkout id shows "payment never started" (no polling) — and `createOrder` now `failReservation`s and returns `checkout_failed` if `attachCheckoutSession` fails, so that state should no longer arise. Privacy: `noindex`, `referrer: no-referrer` (also strips the token from analytics beacons' `Referer`), and a `RedactedAnalytics` client wrapper whose `beforeSend` hooks rewrite `/orders/<token>` to `/orders/[token]` for both Vercel Analytics and Speed Insights (event shapes checked against the installed packages' types). Known, accepted: Vercel request logs still record the raw path. Tests: token generation/storage/lookup against Testcontainers, `redirect_url`/`return_url` in the SumUp request, URL redaction. Sandbox-verified hosted-checkout behaviour it's built around:
