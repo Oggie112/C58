@@ -21,3 +21,13 @@ export async function ticketQrSvgDataUri(ticketCode: string): Promise<string> {
 	const svg = await QRCode.toString(ticketCode, { ...QR_OPTIONS, type: 'svg' })
 	return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
+
+// Email attachment version (8UI.1). PNG rather than SVG: mail clients and
+// phone galleries handle it everywhere, and it can't carry script. 600px
+// across a version-1 code (21 modules + 2×2 quiet zone = 25) is 24px per
+// module — crisp on any screen, and only a few kilobytes.
+export const TICKET_QR_PNG_WIDTH = 600
+
+export async function ticketQrPng(ticketCode: string): Promise<Buffer> {
+	return QRCode.toBuffer(ticketCode, { ...QR_OPTIONS, type: 'png', width: TICKET_QR_PNG_WIDTH })
+}
