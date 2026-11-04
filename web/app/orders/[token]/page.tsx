@@ -7,6 +7,7 @@ import { confirmOrder } from '@/lib/confirmOrder'
 import { getEventByDetailsId } from '@/sanity/fetch'
 import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { formatEventDate } from '@/lib/dateFormat'
+import { formatPence } from '@/lib/formatPence'
 import { ticketQrSvgDataUri } from '@/lib/ticketQrCode'
 import PendingRefresh from './PendingRefresh'
 
@@ -17,8 +18,6 @@ export const metadata: Metadata = {
 	robots: { index: false, follow: false },
 	referrer: 'no-referrer',
 }
-
-const formatPence = (pence: number) => `£${(pence / 100).toFixed(2)}`
 
 // Buyers land here from SumUp's "Back to merchant website" button, often
 // before the webhook has arrived — so a still-pending order is confirmed
