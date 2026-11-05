@@ -32,17 +32,36 @@ export interface OrderSummary {
 // so it's rejected without a DB round-trip.
 const ACCESS_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/
 
+interface OrderRow {
+	id: string
+	event_id: string
+	status: OrderStatus
+	email: string
+	amount_total: number
+	provider_session_id: string | null
+}
+
 export async function getOrderByToken(token: string): Promise<OrderSummary | null> {
 	if (!ACCESS_TOKEN_PATTERN.test(token)) return null
 
-	const [order] = await sql<
-		{ id: string; event_id: string; status: OrderStatus; email: string; amount_total: number; provider_session_id: string | null }[]
-	>`
+	const [order] = await sql<OrderRow[]>`
 		select id, event_id, status, email, amount_total, provider_session_id
 		from orders where access_token = ${token}
 	`
-	if (!order) return null
+	return order ? withLinesAndTickets(order) : null
+}
 
+// Server-side only (e.g. the confirmation email sender) — never from request
+// input: unlike a token, an order id isn't a secret.
+export async function getOrderById(id: string): Promise<OrderSummary | null> {
+	const [order] = await sql<OrderRow[]>`
+		select id, event_id, status, email, amount_total, provider_session_id
+		from orders where id = ${id}
+	`
+	return order ? withLinesAndTickets(order) : null
+}
+
+async function withLinesAndTickets(order: OrderRow): Promise<OrderSummary> {
 	const lines = await sql<{ tier_name: string; quantity: number; unit_price: number }[]>`
 		select tier_name, quantity, unit_price from order_items
 		where order_id = ${order.id}

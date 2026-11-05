@@ -96,6 +96,15 @@ DATABASE_POOLED_URL=postgresql://...
 SUMUP_API_KEY=your_sumup_api_key
 SUMUP_MERCHANT_CODE=your_merchant_code
 
+# --- Brevo: order confirmation emails (server-only) ---
+BREVO_API_KEY=your_brevo_api_key
+BREVO_SENDER_EMAIL=tickets@c58.uk
+BREVO_SENDER_NAME=C58
+BREVO_LIST_ID=3
+# Optional locally; required in production — without it, replies go to the
+# sender address, which has no mailbox, and bounce
+BREVO_REPLY_TO_EMAIL=your_reply_to_address
+
 # --- Cloudflare Turnstile ---
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_site_key
 TURNSTILE_SECRET_KEY=your_secret_key
@@ -114,6 +123,10 @@ Where to get each value:
 | `DATABASE_POOLED_URL` | Supabase dashboard → **Connect → Transaction pooler** |
 | `SUMUP_API_KEY` | SumUp dashboard → **Developers → API keys**. Use the secret API key, **not** the "Public Key" shown alongside it |
 | `SUMUP_MERCHANT_CODE` | SumUp dashboard → account / profile |
+| `BREVO_API_KEY` | Brevo → **SMTP & API → API keys**. Restricted access: transactional email send, contacts read/write, account read. Shown once — copy it straight into env vars. Keep Brevo's unknown-IP blocking **off** (Vercel's outbound IPs aren't fixed) |
+| `BREVO_SENDER_EMAIL` / `BREVO_SENDER_NAME` | An active sender on the authenticated `c58.uk` domain (Brevo → **Senders, Domains & Dedicated IPs**) |
+| `BREVO_LIST_ID` | Brevo → **Contacts → Lists** — the marketing opt-in list's numeric ID |
+| `BREVO_REPLY_TO_EMAIL` | The business inbox buyers' replies should reach |
 | Turnstile keys | Cloudflare dashboard → **Turnstile**. Add `localhost` to the widget's hostname allowlist for local dev |
 | `NEXT_PUBLIC_BEHOLD_FEED_ID` | [behold.so](https://behold.so) feed settings |
 
@@ -206,7 +219,8 @@ Purchase flow, end to end:
 1. `/events/[slug]` renders tiers from Sanity; `TierPicker` fetches live availability from `/api/stock/[eventDetailsId]`.
 2. The `createOrder` server action validates input, applies the rate limit (Turnstile challenge once exceeded), and atomically reserves stock in Postgres (`lib/reserveOrder.ts`).
 3. A SumUp hosted checkout is created and the buyer is redirected to it.
-4. SumUp calls `/api/webhooks/sumup`. The handler re-fetches the checkout status from SumUp, then marks the order paid and issues one ticket per admission.
+4. SumUp calls `/api/webhooks/sumup`. The handler re-fetches the checkout status from SumUp, then marks the order paid and issues one ticket per admission. The buyer's "Back to merchant website" button leads to `/orders/[token]`, which confirms the same way if it gets there first.
+5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery or order-page visit.
 
 Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 

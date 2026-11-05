@@ -56,6 +56,10 @@ c58/
 
 > Add coding conventions, naming patterns, and architectural decisions here as the project evolves.
 
+### Test data (overrides the global fixtures rule)
+
+Pragmatic split: put test data in `web/tests/fixtures/<module>.ts` (named exports, `import * as fixtures from '../tests/fixtures/<module>'`) when it's **reused across tests or bulky** — e.g. orders and hostile content in `tests/fixtures/confirmationEmail.ts`. A small constant used once stays inline in the test. Existing inline tests aren't converted retroactively.
+
 ### Sanity data fetching (Cache Components)
 
 `cacheComponents` is on and `defineLive` runs in strict mode — see the README's Caching section.
