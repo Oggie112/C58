@@ -105,6 +105,11 @@ BREVO_LIST_ID=3
 # sender address, which has no mailbox, and bounce
 BREVO_REPLY_TO_EMAIL=your_reply_to_address
 
+# --- Scheduled jobs (server-only) ---
+# Shared secret for the hourly confirmation-retry endpoint; must match the
+# CRON_SECRET GitHub Actions secret
+CRON_SECRET=your_cron_secret
+
 # --- Cloudflare Turnstile ---
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_site_key
 TURNSTILE_SECRET_KEY=your_secret_key
@@ -127,6 +132,7 @@ Where to get each value:
 | `BREVO_SENDER_EMAIL` / `BREVO_SENDER_NAME` | An active sender on the authenticated `c58.uk` domain (Brevo → **Senders, Domains & Dedicated IPs**) |
 | `BREVO_LIST_ID` | Brevo → **Contacts → Lists** — the marketing opt-in list's numeric ID |
 | `BREVO_REPLY_TO_EMAIL` | The business inbox buyers' replies should reach |
+| `CRON_SECRET` | Generate a long random value, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Set the **same value** in Vercel and as a GitHub Actions secret (see [GitHub Actions secrets](#github-actions-secrets)) |
 | Turnstile keys | Cloudflare dashboard → **Turnstile**. Add `localhost` to the widget's hostname allowlist for local dev |
 | `NEXT_PUBLIC_BEHOLD_FEED_ID` | [behold.so](https://behold.so) feed settings |
 
@@ -220,7 +226,7 @@ Purchase flow, end to end:
 2. The `createOrder` server action validates input, applies the rate limit (Turnstile challenge once exceeded), and atomically reserves stock in Postgres (`lib/reserveOrder.ts`).
 3. A SumUp hosted checkout is created and the buyer is redirected to it.
 4. SumUp calls `/api/webhooks/sumup`. The handler re-fetches the checkout status from SumUp, then marks the order paid and issues one ticket per admission. The buyer's "Back to merchant website" button leads to `/orders/[token]`, which confirms the same way if it gets there first.
-5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery or order-page visit.
+5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery, order-page visit, or the **hourly retry** (`.github/workflows/retry-confirmations.yml` → `POST /api/cron/retry-confirmations`). A failed retry fails the workflow, so GitHub emails the repo owner — what to do next is in [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md).
 
 Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 
@@ -288,6 +294,7 @@ The canonical site is **`https://www.c58.uk`** — `c58.uk` and `c58.vercel.app`
 | --- | --- |
 | `SANITY_AUTH_TOKEN` | `deploy-studio.yml` — Studio deploys |
 | `DATABASE_POOLED_URL` | `supabase-keepalive.yml` — pings the database twice weekly so the free tier doesn't pause |
+| `CRON_SECRET` | `retry-confirmations.yml` — hourly retry of unsent order confirmation emails. Same value as Vercel's `CRON_SECRET` |
 
 ---
 

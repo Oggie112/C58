@@ -94,7 +94,7 @@ describe('sendOrderConfirmation', () => {
 	it('emails the buyer one PNG QR per ticket, keyed by the order id, and records the send', async () => {
 		const order = await paidOrder()
 
-		await sendOrderConfirmation(order.orderId)
+		expect(await sendOrderConfirmation(order.orderId)).toBe('sent')
 
 		expect(sendTransactionalEmail).toHaveBeenCalledTimes(1)
 		const email = sendTransactionalEmail.mock.calls[0][0]
@@ -130,8 +130,8 @@ describe('sendOrderConfirmation', () => {
 	it('sends once however many times it is called', async () => {
 		const order = await paidOrder()
 
-		await sendOrderConfirmation(order.orderId)
-		await sendOrderConfirmation(order.orderId)
+		expect(await sendOrderConfirmation(order.orderId)).toBe('sent')
+		expect(await sendOrderConfirmation(order.orderId)).toBe('skipped')
 
 		expect(sendTransactionalEmail).toHaveBeenCalledTimes(1)
 	})
@@ -139,9 +139,11 @@ describe('sendOrderConfirmation', () => {
 	it('sends once when called concurrently — the webhook and order page racing', async () => {
 		const order = await paidOrder()
 
-		await Promise.all(Array.from({ length: 5 }, () => sendOrderConfirmation(order.orderId)))
+		const outcomes = await Promise.all(Array.from({ length: 5 }, () => sendOrderConfirmation(order.orderId)))
 
 		expect(sendTransactionalEmail).toHaveBeenCalledTimes(1)
+		expect(outcomes.filter((outcome) => outcome === 'sent')).toHaveLength(1)
+		expect(outcomes.filter((outcome) => outcome === 'skipped')).toHaveLength(4)
 	})
 
 	it('does nothing for an order that is not paid', async () => {
@@ -151,7 +153,7 @@ describe('sendOrderConfirmation', () => {
 		)
 		if (reserved.status !== 'reserved') throw new Error(`Expected reserved, got ${reserved.status}`)
 
-		await sendOrderConfirmation(reserved.orderId)
+		expect(await sendOrderConfirmation(reserved.orderId)).toBe('skipped')
 
 		expect(sendTransactionalEmail).not.toHaveBeenCalled()
 		expect(await confirmationSentAt(reserved.orderId)).toBeNull()
@@ -161,12 +163,12 @@ describe('sendOrderConfirmation', () => {
 		const order = await paidOrder()
 		sendTransactionalEmail.mockRejectedValueOnce(new Error('Brevo send failed: 500'))
 
-		await expect(sendOrderConfirmation(order.orderId)).resolves.toBeUndefined()
+		await expect(sendOrderConfirmation(order.orderId)).resolves.toBe('failed')
 		expect(await confirmationSentAt(order.orderId)).toBeNull()
 		// Logs are the only signal a confirmation failed — it must never be silent
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining(order.orderId), expect.any(Error))
 
-		await sendOrderConfirmation(order.orderId)
+		expect(await sendOrderConfirmation(order.orderId)).toBe('sent')
 		expect(sendTransactionalEmail).toHaveBeenCalledTimes(2)
 		expect(await confirmationSentAt(order.orderId)).toBeInstanceOf(Date)
 	})
@@ -175,7 +177,7 @@ describe('sendOrderConfirmation', () => {
 		const order = await paidOrder()
 		sendTransactionalEmail.mockResolvedValueOnce('duplicate')
 
-		await sendOrderConfirmation(order.orderId)
+		expect(await sendOrderConfirmation(order.orderId)).toBe('sent')
 
 		expect(await confirmationSentAt(order.orderId)).toBeInstanceOf(Date)
 		expect(console.warn).toHaveBeenCalledWith(expect.stringContaining(order.orderId))
@@ -185,7 +187,7 @@ describe('sendOrderConfirmation', () => {
 		const order = await paidOrder()
 		await db.sql`update orders set access_token = null where id = ${order.orderId}`
 
-		await sendOrderConfirmation(order.orderId)
+		expect(await sendOrderConfirmation(order.orderId)).toBe('skipped')
 
 		expect(sendTransactionalEmail).not.toHaveBeenCalled()
 		expect(console.error).toHaveBeenCalledWith(expect.stringContaining(order.orderId))
