@@ -8,12 +8,13 @@ jest.mock('./sendOrderConfirmation', () => ({
 describe('retryUnsentConfirmations', () => {
 	let db: TestDatabase
 	let retryUnsentConfirmations: typeof import('./retryUnsentConfirmations').retryUnsentConfirmations
+	let RETRY_BATCH_SIZE: number
 	let sendOrderConfirmation: jest.MockedFunction<(orderId: string) => Promise<ConfirmationOutcome>>
 
 	beforeAll(async () => {
 		db = await startTestDatabase()
 		// Dynamic, after startTestDatabase — see its note on lib/db.ts.
-		;({ retryUnsentConfirmations } = await import('./retryUnsentConfirmations'))
+		;({ retryUnsentConfirmations, RETRY_BATCH_SIZE } = await import('./retryUnsentConfirmations'))
 		sendOrderConfirmation = (await import('./sendOrderConfirmation')).sendOrderConfirmation as typeof sendOrderConfirmation
 	}, 60_000)
 
@@ -74,17 +75,17 @@ describe('retryUnsentConfirmations', () => {
 		expect(summary).toEqual({ found: 6, sent: 0, skipped: 0, failed: 3, stoppedEarly: true })
 	})
 
-	it('handles at most 50 orders per run', async () => {
+	it('handles at most one batch of orders per run', async () => {
 		await db.sql`
 			insert into orders (event_id, provider, email, amount_total, status, created_at)
 			select 'retry-test-event', 'sumup', 'buyer@example.com', 1000, 'paid', now() - interval '1 hour'
-			from generate_series(1, 55)
+			from generate_series(1, ${RETRY_BATCH_SIZE + 5})
 		`
 
 		const summary = await retryUnsentConfirmations()
 
-		expect(summary.found).toBe(50)
-		expect(sendOrderConfirmation).toHaveBeenCalledTimes(50)
+		expect(summary.found).toBe(RETRY_BATCH_SIZE)
+		expect(sendOrderConfirmation).toHaveBeenCalledTimes(RETRY_BATCH_SIZE)
 	})
 
 	it('does nothing when there is nothing to retry', async () => {

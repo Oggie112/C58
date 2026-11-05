@@ -6,8 +6,11 @@ import { sendOrderConfirmation } from './sendOrderConfirmation'
 // so an order paid late in its checkout window can still overlap a live
 // send; the sender's atomic claim makes that harmless (one 'skipped').
 export const RETRY_GRACE_MINUTES = 5
-// Bounds one run's duration; a larger backlog drains over successive runs.
-export const RETRY_BATCH_SIZE = 50
+// Bounds one run's duration (~1s per send), keeping it well inside any
+// platform function timeout: a run killed mid-send would leave that order
+// claimed but never sent. A larger backlog drains over successive runs;
+// 20/hour already exceeds the Free plan's daily quota.
+export const RETRY_BATCH_SIZE = 20
 // Failures in a row that mean "account-wide problem" (quota, outage, bad
 // key) rather than one bad order — stop and leave the rest for the next run.
 export const MAX_CONSECUTIVE_FAILURES = 3
