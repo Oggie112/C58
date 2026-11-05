@@ -12,10 +12,10 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | All migrations pushed to live Supabase; RLS enabled on every table (new project trigger covers future tables automatically) | — | — |
-| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase; 8API.1 confirmation email sent via Brevo | 8DX.1 (Brevo quota plan doc), 8API.3 (mailing list push) | — |
+| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase; 8API.1 confirmation email sent via Brevo | 8API.4 (confirmation retry), 8API.3 (mailing list push) | — |
 | **UI**   | 7UI.1/7UI.2/8UI.2/8UI.1 complete — SumUp checkout returns buyers to `/orders/[token]` with a scannable QR per ticket, and the confirmation email carries the same QRs as attachments | 8UI.3 (resend form) | — |
 | **QA**   | 7QA.1/7QA.2 complete — concurrency test + full security review, real Turnstile keys live | —                                | — |
-| **DX**   | 6DX.1/8DX.2 complete — Brevo account, `c58.uk` authenticated (branded `mail.c58.uk`), restricted API key, env vars in Vercel | 8DX.1 (quota plan) | — |
+| **DX**   | 6DX.1/8DX.2 complete — Brevo account, `c58.uk` authenticated (branded `mail.c58.uk`), restricted API key, env vars in Vercel; 8DX.1 quota plan written | — | — |
 
 ---
 
@@ -136,12 +136,12 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 - [ ] 8UI.3. Resend-confirmation form on `/orders` — email in, resend of every paid order for that address out, neutral response, never displays order data; rate-limited via existing `checkRateLimit`
 - [ ] 8API.3. Mailing list push (`POST /v3/contacts`) when `marketing_opt_in = true` — via `after()`, log-and-continue on failure, must never fail the webhook
-- [ ] 8DX.1. Brevo quota plan documented — campaigns scheduled days before release, never on release day; note trigger for upgrading to Starter tier. Confirmed via the API: Free plan, **300 sends/day** (`sendLimit`), transactional included — a release selling to 300+ buyers in a day would leave later confirmations unsent
-
+- [ ] 8API.4. Scheduled retry for unsent confirmations — closes the gap found in 8DX.1: a failed send is otherwise only retried when the buyer reopens their order page. A secret-protected route handler finds paid orders with `confirmation_sent_at` null and older than 5 minutes (grace for in-flight sends) and calls the existing `sendOrderConfirmation` for each, sequentially; stops on the first quota error, caps each run (~50). Triggered **hourly** by a GitHub Actions schedule, like `supabase-keepalive.yml` (Vercel Cron on Hobby is once a day). Hourly rather than after the daily quota reset: most failures are transient (Brevo outage, network) and recover within the hour, Brevo's reset time isn't clearly documented, and pre-reset runs cost one API call each. Doesn't help a same-day buyer caught by quota — prevention (the quota plan's upgrade rule) covers that. Known, accepted: a claim left by a crash mid-send is invisible to it (8UI.3 covers); a retry over 30 minutes after a send Brevo silently accepted could duplicate the email (identical tickets, harmless). New `CRON_SECRET` in Vercel and GitHub
 <a name="m8-blocked"><h4>Blocked (Milestone 8)</h4></a>
 
 <a name="m8-done"><h4>Completed (Milestone 8)</h4></a>
 
+- [x] 8DX.1. Brevo quota plan — [`docs/brevo-quota-plan.md`](../brevo-quota-plan.md) (2026-11-05). Free plan's 300 sends/day treated as one pool shared by campaigns and confirmations (1 send per paid order, not per ticket). Rules: no campaigns on release days (≥2 days before); daily budget of 250 for campaign recipients + expected orders, with tickets released as the upper bound on orders. Upgrade to Starter (no daily cap, billed monthly) for a release that could sell ~200+ tickets in a day or once the opt-in list passes ~250. Monitoring query for paid orders missing a confirmation. Found while writing it: a confirmation rejected for quota is only retried when the buyer reopens their order page — buyers who never click back get nothing, even after the reset; documented, and planned as 8API.4
 - [x] 8API.1 + 8UI.1. Order confirmation email (`feat/order-confirmation-email`, 2026-11-05)
   - **Migration:** `orders.confirmation_sent_at` (pushed live ahead of merge); existing paid orders — sandbox data — backfilled so old order pages don't send weeks-old confirmations
   - **`lib/brevo.ts`:** `POST /v3/smtp/email` client; idempotency key (the order id) in the body's `headers`. Brevo answers a repeated key within its 30-minute TTL with `duplicate_parameter` — treated as already sent, not a failure. `BREVO_REPLY_TO_EMAIL` optional with a warning (replies would bounce off the mailbox-less sender)

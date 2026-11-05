@@ -298,3 +298,4 @@ The canonical site is **`https://www.c58.uk`** — `c58.uk` and `c58.vercel.app`
 - [`docs/roadmaps/ticketing.md`](docs/roadmaps/ticketing.md) — ticketing roadmap and implementation notes
 - [`docs/adrs/`](docs/adrs/) — architecture decision records
 - [`docs/sale-architecture.md`](docs/sale-architecture.md) — ticket sales design sketch
+- [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md) — staying inside Brevo's daily email limit, and when to upgrade
