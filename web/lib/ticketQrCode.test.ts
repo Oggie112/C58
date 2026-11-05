@@ -54,7 +54,11 @@ describe('ticketQrPng', () => {
 	})
 
 	it('encodes the bare ticket code with the same options as the order page', async () => {
-		const toBuffer = jest.spyOn(QRCode, 'toBuffer')
+		// Only the arguments matter here — stub the render, which takes ~2.5s
+		// inside Jest's sandbox (~30ms in plain Node). `as never`: toBuffer is
+		// overloaded and spyOn types the spy from its callback form, which
+		// returns void, so TypeScript won't accept any resolved value.
+		const toBuffer = jest.spyOn(QRCode, 'toBuffer').mockResolvedValue(Buffer.alloc(0) as never)
 
 		await ticketQrPng(code)
 
