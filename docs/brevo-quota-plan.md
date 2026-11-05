@@ -22,7 +22,9 @@ How C58 stays inside Brevo's sending limit, and when to pay for more. Roadmap it
 
 ## Why it matters
 
-When the quota is used up, Brevo rejects further sends. A rejected confirmation is logged and released for retry (`lib/sendOrderConfirmation.ts`), but **it's only retried when the buyer reopens their order page** — SumUp doesn't re-send a webhook it already got a reply to. A buyer who paid, closed the tab and never clicked back to the site **gets no email, even after the quota resets.** Their tickets still exist (valid in the database, visible on the order page), but they have no link to it.
+When the quota is used up, Brevo rejects further sends. A rejected confirmation is logged and released for retry (`lib/sendOrderConfirmation.ts`), and an **hourly retry** (8API.4) sends it once Brevo accepts again — after the daily reset, or after an upgrade.
+
+That's fine for a buyer whose event is days away. It's no help to someone buying **on the day of the event**: their retry can't succeed until the quota resets, by which time the event may be over. Their tickets still exist (valid in the database, visible on the order page if they clicked back from SumUp), but they may have no email to show at the door.
 
 So the plan is mostly about never hitting the limit on a day people are buying.
 
@@ -53,13 +55,21 @@ Starter is billed monthly, so it can be bought for the month of a big release an
   order by created_at;
   ```
 
-  This should return nothing. Rows that stay there after a few minutes mean confirmations are failing — check the Vercel function logs for `confirmation email failed` (each line names the order id).
+  This should return nothing for long: anything here is picked up by the next hourly retry.
+- **The hourly retry alerts you.** The *Retry Confirmation Emails* GitHub Actions workflow fails — and GitHub emails the repo owner — whenever a send fails or the retry endpoint can't be reached. During a quota outage that's one email an hour until the reset.
 
-## If confirmations fail anyway
+## When the retry alert arrives
 
-Once the quota resets (or after upgrading), affected buyers need a nudge to their order page, which retries the send on load. Until 8UI.3's resend form exists, there's no self-serve route — contact them from the business inbox using the email addresses from the query above, and ask them to reply if they need their tickets resent.
+1. **Open the failed run** (GitHub → Actions → *Retry Confirmation Emails*). Its summary line — e.g. `found 12, sent 0, failed 3, stoppedEarly true` — gives the scale. `stoppedEarly` means three failures in a row: almost certainly account-wide (quota, outage, key) rather than one bad order. The log is public, so it holds counts only.
+2. **Vercel → Logs**, search `confirmation email failed`. Each line names the order and Brevo's actual error — e.g. a credits/quota message, `401 … Key not found`, or a 5xx. That's the cause.
+3. **Brevo dashboard:** *Usage* (quota used up?), *SMTP & API → API keys* (key expired or deactivated?), and Brevo's status page (outage?).
+4. **Database:** the query above lists exactly which buyers are still waiting.
+5. **Fix the cause** — wait for the reset, upgrade the plan, or renew the key — then either wait for the next hourly run or press **Run workflow** on the workflow to clear the backlog straight away.
+6. **One order failing while others send** is probably a bad address: the Vercel line names it. It's retried (and logged) every hour without blocking the rest; contact that buyer another way.
 
-**Planned: an hourly automatic retry (roadmap 8API.4)** for paid orders still missing a confirmation. Once built, recovery after a reset or an outage needs no action. It **won't help a buyer caught by the quota on the day of the event** — their retry can't run until the reset, by which time the event may be over. Only staying inside the limit (the rules above) protects them.
+**Same-day buyers** caught by quota won't be rescued by the retry in time (see above) — contact them from the business inbox, and ask them to open their order page from SumUp's "Back to merchant website" link if they still have it, or reply for help.
+
+**Not covered by the retry:** an order whose send was interrupted mid-flight (the server crashed after claiming it) is marked as sent and won't appear in the query. It's rare; the resend form (8UI.3) will be the fallback.
 
 ## Review
 
