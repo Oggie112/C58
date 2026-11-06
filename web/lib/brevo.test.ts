@@ -1,4 +1,4 @@
-import { sendTransactionalEmail, type TransactionalEmail } from './brevo'
+import { addContactToList, sendTransactionalEmail, type TransactionalEmail } from './brevo'
 
 const EMAIL: TransactionalEmail = {
 	to: 'buyer@example.com',
@@ -81,5 +81,52 @@ describe('sendTransactionalEmail', () => {
 
 		await expect(sendTransactionalEmail(EMAIL)).rejects.toThrow('BREVO_API_KEY is not set')
 		expect(fetchMock).not.toHaveBeenCalled()
+	})
+})
+
+describe('addContactToList', () => {
+	const originalEnv = process.env
+	const fetchMock = jest.fn()
+	const CONTACT = {
+		email: 'buyer@example.com',
+		listId: 3,
+		attributes: { OPT_IN_SOURCE: 'ticket purchase', OPT_IN_DATE: '2026-11-06' },
+	}
+
+	beforeEach(() => {
+		process.env = { ...originalEnv, BREVO_API_KEY: 'test-key' }
+		fetchMock.mockReset().mockResolvedValue({ ok: true, status: 201, text: async () => '{"id":21}' })
+		global.fetch = fetchMock
+	})
+
+	afterAll(() => {
+		process.env = originalEnv
+	})
+
+	it('creates or updates the contact on the list, with its attributes', async () => {
+		await addContactToList(CONTACT)
+
+		const [url, init] = fetchMock.mock.calls[0]
+		expect(url).toBe('https://api.brevo.com/v3/contacts')
+		expect(init.headers['api-key']).toBe('test-key')
+		expect(JSON.parse(init.body)).toEqual({
+			email: 'buyer@example.com',
+			listIds: [3],
+			// A returning buyer is an update, not a 4xx
+			updateEnabled: true,
+			attributes: { OPT_IN_SOURCE: 'ticket purchase', OPT_IN_DATE: '2026-11-06' },
+		})
+	})
+
+	it("never touches the contact's unsubscribe status", async () => {
+		await addContactToList(CONTACT)
+
+		expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty('emailBlacklisted')
+	})
+
+	it('throws on failure', async () => {
+		fetchMock.mockResolvedValue({ ok: false, status: 400, text: async () => '{"code":"invalid_parameter"}' })
+
+		await expect(addContactToList(CONTACT)).rejects.toThrow('Brevo contact update failed: 400')
 	})
 })

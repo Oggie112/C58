@@ -80,3 +80,40 @@ export async function sendTransactionalEmail(email: TransactionalEmail): Promise
 
 	throw new Error(`Brevo send failed: ${response.status} ${errorText}`)
 }
+
+export interface ListContact {
+	email: string
+	listId: number
+	// Uppercase names of attributes that already exist in Brevo — values for
+	// unknown attributes are silently dropped by Brevo, not rejected
+	attributes: Record<string, string>
+}
+
+// Adds a contact to a list (POST /v3/contacts), creating or updating them —
+// updateEnabled makes a returning buyer an update rather than a 4xx. Never
+// sends emailBlacklisted, so it can't undo someone's unsubscribe. Throws on
+// failure.
+export async function addContactToList(contact: ListContact): Promise<void> {
+	const apiKey = process.env.BREVO_API_KEY
+	if (!apiKey) throw new Error('BREVO_API_KEY is not set')
+
+	const response = await fetch(`${BREVO_API_BASE}/v3/contacts`, {
+		method: 'POST',
+		headers: {
+			'api-key': apiKey,
+			'Content-Type': 'application/json',
+			Accept: 'application/json',
+		},
+		body: JSON.stringify({
+			email: contact.email,
+			listIds: [contact.listId],
+			updateEnabled: true,
+			attributes: contact.attributes,
+		}),
+	})
+
+	// 201 when created; an update succeeds without one
+	if (!response.ok) {
+		throw new Error(`Brevo contact update failed: ${response.status} ${await response.text()}`)
+	}
+}

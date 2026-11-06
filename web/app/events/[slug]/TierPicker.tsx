@@ -5,6 +5,7 @@ import Script from 'next/script'
 import type { SanityTier } from '@/types/sanity'
 import { computeRemainingStock, type TierStock } from '@/lib/stock'
 import { PER_ORDER_MAX } from '@/lib/orderLimits'
+import { MARKETING_OPT_IN_WORDING } from '@/lib/marketingOptIn'
 import { createOrder, type CreateOrderState } from './actions'
 
 declare global {
@@ -258,7 +259,7 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 					className="mt-1"
 				/>
 				<span className="font-body text-body text-c58-muted">
-					Keep me posted about future C58 events and news.
+					{MARKETING_OPT_IN_WORDING}
 				</span>
 			</label>
 
