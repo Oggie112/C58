@@ -140,6 +140,8 @@ Where to get each value:
 
 `VERCEL_ENV` is set automatically by Vercel; `robots.ts` only allows indexing when it equals `production`.
 
+Don't set `NODE_ENV` yourself, locally or in Vercel — Next sets it (`development` for `next dev`, `production` for builds), and overriding it causes inconsistent behaviour.
+
 ### 4. Run locally
 
 ```bash
@@ -276,7 +278,9 @@ Jest runs two projects: `*.test.ts` under Node and `*.test.tsx` under jsdom. `li
 
 The frontend deploys automatically to Vercel on push to `main`. No manual steps required.
 
-**Required Vercel environment variables** — add every variable from `web/.env.local` to the Vercel project settings, with `NEXT_PUBLIC_SITE_URL` set to the deployed domain.
+**Required Vercel environment variables** — add every variable from `web/.env.local` to the Vercel project settings (for **Production**), with `NEXT_PUBLIC_SITE_URL` set to the deployed domain, plus the production-only `SANITY_REVALIDATE_SECRET` and `CRON_SECRET`. `NEXT_PUBLIC_*` values are inlined at build time, so changing one needs a **redeploy**; server-only values are read at runtime but still only reach existing deployments after a redeploy.
+
+> **`NEXT_PUBLIC_SITE_URL` must be the exact canonical address, `https://www.c58.uk`** — not `c58.uk` or `c58.vercel.app`, which redirect to it. It builds the URLs that SumUp calls back (the payment webhook) and that emails link to, and SumUp's webhook doesn't follow redirects. Get it wrong and payments still go through, but orders stay `pending` until the buyer clicks back to the site — seen in production on 2026-11-05, when it pointed at a redirecting domain.
 
 The Sanity Studio is deployed to [c58.sanity.studio](https://c58.sanity.studio) (redirects to its `sanity.io/@…` dashboard address, deep links included) by GitHub Actions on push to `main` when `studio/` changes.
 
