@@ -73,10 +73,13 @@ export async function createOrder(
 
 	const { limited } = await checkRateLimit(ip)
 	if (limited) {
-		const tokenValid = parsed.data.turnstileToken
-			? await verifyTurnstileToken(parsed.data.turnstileToken, ip)
-			: false
-		if (!tokenValid) {
+		if (!parsed.data.turnstileToken) {
+			// Logged so a stalled purchase is traceable — never the IP itself
+			console.warn('createOrder: rate limit reached — Turnstile challenge required')
+			return { status: 'challenge_required' }
+		}
+		// verifyTurnstileToken logs its own rejection reason
+		if (!(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
 			return { status: 'challenge_required' }
 		}
 	}

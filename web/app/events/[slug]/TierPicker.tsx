@@ -10,7 +10,10 @@ import { createOrder, type CreateOrderState } from './actions'
 declare global {
 	interface Window {
 		turnstile?: {
-			render: (container: string, params: { sitekey: string; callback: (token: string) => void }) => string
+			render: (
+				container: string,
+				params: { sitekey: string; callback: (token: string) => void; 'error-callback'?: (errorCode: string) => void },
+			) => string
 			remove: (widgetId: string) => void
 		}
 	}
@@ -39,6 +42,9 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 	const [stockState, setStockState] = useState<StockState>({ status: 'loading' })
 	const [state, dispatch, isPending] = useActionState(createOrder, initialActionState)
 	const [turnstileScriptLoaded, setTurnstileScriptLoaded] = useState(false)
+	const [turnstileFailed, setTurnstileFailed] = useState(false)
+	// Inlined at build time — missing means the widget can never render
+	const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 	useEffect(() => {
 		let cancelled = false
@@ -124,18 +130,33 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 	// Only ever rendered once the server has actually seen enough attempts
 	// to ask for it — most real buyers never see this at all. Re-submits
 	// automatically once solved, rather than making them click again.
+	// Turnstile reports misconfiguration (e.g. this hostname not on the
+	// widget's allowlist) through error-callback rather than throwing.
+	const handleTurnstileError = useEffectEvent((errorCode: string) => {
+		console.error(`Turnstile security check failed to load: ${errorCode}`)
+		setTurnstileFailed(true)
+	})
+
 	useEffect(() => {
 		if (state.status !== 'challenge_required' || !turnstileScriptLoaded) return
-		const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-		if (!siteKey || !window.turnstile) return
+		if (!turnstileSiteKey) {
+			console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set — the security check cannot render')
+			return
+		}
+		if (!window.turnstile) return
 
 		const widgetId = window.turnstile.render(`#${TURNSTILE_CONTAINER_ID}`, {
-			sitekey: siteKey,
+			sitekey: turnstileSiteKey,
 			callback: handleTurnstileSuccess,
+			'error-callback': handleTurnstileError,
 		})
 
 		return () => window.turnstile?.remove(widgetId)
-	}, [state.status, turnstileScriptLoaded])
+	}, [state.status, turnstileScriptLoaded, turnstileSiteKey])
+
+	// Without this, a broken challenge is just an empty space and a buyer
+	// who can't get past it — with nothing to say why
+	const challengeUnavailable = state.status === 'challenge_required' && (!turnstileSiteKey || turnstileFailed)
 
 	return (
 		<form onSubmit={handleSubmit}>
@@ -248,6 +269,12 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 			)}
 
 			{state.status === 'challenge_required' && <div id={TURNSTILE_CONTAINER_ID} className="mb-4" />}
+
+			{challengeUnavailable && (
+				<p className="font-body text-body text-c58-muted mb-4" role="alert">
+					We couldn&apos;t load a quick security check. Please refresh the page and try again in a few minutes.
+				</p>
+			)}
 
 			<button
 				type="submit"
