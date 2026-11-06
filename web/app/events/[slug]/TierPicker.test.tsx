@@ -206,4 +206,19 @@ describe('TierPicker', () => {
 		await renderAndWaitForStock()
 		expect(screen.getByRole('checkbox')).not.toBeChecked()
 	})
+
+	it('explains when the security check cannot load, instead of leaving an empty space', async () => {
+		// No NEXT_PUBLIC_TURNSTILE_SITE_KEY in the test environment — the
+		// production misconfiguration this guards against
+		const { createOrder } = await import('./actions')
+		jest.mocked(createOrder).mockResolvedValue({ status: 'challenge_required' })
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock()
+
+		fireEvent.click(screen.getByLabelText('Increase quantity for General Admission'))
+		fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'buyer@example.com' } })
+		fireEvent.click(screen.getByRole('button', { name: /Get Tickets/ }))
+
+		expect(await screen.findByRole('alert')).toHaveTextContent("couldn't load a quick security check")
+	})
 })
