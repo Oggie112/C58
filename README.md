@@ -310,3 +310,4 @@ The canonical site is **`https://www.c58.uk`** — `c58.uk` and `c58.vercel.app`
 - [`docs/adrs/`](docs/adrs/) — architecture decision records
 - [`docs/sale-architecture.md`](docs/sale-architecture.md) — ticket sales design sketch
 - [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md) — staying inside Brevo's daily email limit, and when to upgrade
+- [`docs/compliance-inventory.md`](docs/compliance-inventory.md) — what personal data the site collects, who receives it, cookies, and the decisions behind the privacy policy, cookie policy and ticket terms
