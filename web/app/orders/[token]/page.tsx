@@ -4,7 +4,7 @@ import { after, connection } from 'next/server'
 import Link from 'next/link'
 import { getOrderByToken, type OrderSummary } from '@/lib/getOrderByToken'
 import { confirmOrder } from '@/lib/confirmOrder'
-import { sendOrderConfirmation } from '@/lib/sendOrderConfirmation'
+import { runPaidOrderFollowUps } from '@/lib/runPaidOrderFollowUps'
 import { getEventByDetailsId } from '@/sanity/fetch'
 import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { formatEventDate } from '@/lib/dateFormat'
@@ -54,9 +54,10 @@ export default async function OrderPage({ params }: PageProps<'/orders/[token]'>
 	if (!order) notFound()
 
 	// The buyer can get here before SumUp's webhook, so this page may be the
-	// first to see the order paid — and on later visits it retries a send that
-	// failed. A no-op once the confirmation has gone; never delays the page.
-	if (order.status === 'paid') after(() => sendOrderConfirmation(order.id))
+	// first to see the order paid — and on later visits it retries any
+	// follow-up (email, marketing list) that failed. No-ops once they've
+	// succeeded; never delays the page.
+	if (order.status === 'paid') after(() => runPaidOrderFollowUps(order.id))
 
 	const event = await getEventByDetailsId(order.eventId, PUBLISHED_FETCH_OPTIONS)
 	const eventHref = event?.slug?.current ? `/events/${event.slug.current}` : '/'

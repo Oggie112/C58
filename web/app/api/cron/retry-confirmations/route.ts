@@ -1,8 +1,11 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { retryUnsentConfirmations } from '@/lib/retryUnsentConfirmations'
+import { retryUnsyncedOptIns } from '@/lib/retryUnsyncedOptIns'
 
 // Called hourly by .github/workflows/retry-confirmations.yml (8API.4).
+// Retries both paid-order follow-ups — confirmation emails and, since
+// 8API.3, marketing-list sync — despite the path's name.
 // POST, not GET: it has side effects, and is never prerendered or cached.
 // It takes no input and only ever re-sends to an order's own buyer, but is
 // still secret-protected so nobody else can spend the Brevo quota.
@@ -17,8 +20,11 @@ export async function POST(request: Request) {
 		return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 	}
 
-	// Counts only — this response is printed in public GitHub Actions logs.
-	return NextResponse.json(await retryUnsentConfirmations())
+	// Confirmations first — tickets matter more than the mailing list. Counts
+	// only: this response is printed in public GitHub Actions logs.
+	const confirmations = await retryUnsentConfirmations()
+	const marketing = await retryUnsyncedOptIns()
+	return NextResponse.json({ confirmations, marketing })
 }
 
 // Constant-time comparison so response timing can't reveal the secret byte
