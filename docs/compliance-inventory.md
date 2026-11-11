@@ -101,7 +101,7 @@ Needed by all three documents:
 
 ## 5. Marketing email
 
-> **Status: dormant.** The checkbox is hidden and nothing is sent to Brevo until ICO registration (K1) and the privacy policy are done — then switched on via C6.
+> **Status: to be made dormant (C6).** Today the checkbox is **live** — ticks are recorded in `orders.marketing_opt_in`, but nothing reaches Brevo (the sync, PR #56, isn't merged). C6 hides the checkbox and blocks the sync until ICO registration (K1) and the privacy policy are done; then it's switched on.
 
 - **Consent:** an **unticked** checkbox at checkout — *"Keep me posted about future C58 events and news."* — stored word for word with each contact (`lib/marketingOptIn.ts`)
 - **Who's added:** buyers of **paid** orders who ticked it — abandoned checkouts never are
