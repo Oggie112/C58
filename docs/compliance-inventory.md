@@ -12,23 +12,23 @@ Everything open or decided, in one place. Each links to the section with the det
 
 | # | Decision | Status | Answer / what's still open |
 | --- | --- | --- | --- |
-| D1 | **Retention period** | 🟡 | **6 years** (2026-11-11). **Open:** 6 years matches HMRC record-keeping for a **limited company** — confirm the business structure (sole traders' periods are calculated differently). And 6 years is for **financial** records: should the buyer's **email** be anonymised earlier (e.g. 12 months after the event) while the financial row is kept? → C4 |
+| D1 | **Retention period** | 🟡 | **6 years for the financial record** (order id, date, items, amounts, status, SumUp checkout id) — covers HMRC either way: limited company 6 years from the end of the accounting period; sole trader at least 5 years after the 31 January filing deadline (≈ 5¾–6¾ years). **Proposed: anonymise the buyer's email 12 months after the event** — for consumer sales by a non-VAT-registered business, HMRC needs income records (what, when, how much), not each customer's identity, and SumUp's records independently back every payment; 12 months clears the card-chargeback window (~120 days, occasionally longer). **Open:** confirm with the accountant ("are anonymised sales records plus SumUp's records enough?") → C4 |
 | D2 | **Google Maps embed** | ✅ | **Click-to-load** placeholder (~40 lines) rather than a consent banner. A banner only becomes unavoidable if tracking (e.g. Meta/Google Analytics) or more third-party embeds are added — revisit then. → C1 |
 | D3 | **Marketing scope** | ✅ | **Marketing and news only — no partners** (can extend later, with new consent wording). Content: upcoming events, pop-ups, news about DJs C58 is working with or whose house DJs are playing notable events, and where the business is going. **Frequency** not yet set |
-| D4 | **Refunds** | 🟡 | **Cancelled → full refund. Postponed → refunded** (proposed: ticket stays valid for the new date, refund on request within a set window). **No refund for change of mind** (the leisure-services exemption; normal industry practice). **Open:** line-up changes — proposed: no refund for minor changes ("line-up subject to change"), refund if an advertised **headline act** pulls out and the event is materially different (a blanket "no refunds" term risks being unfair under the Consumer Rights Act 2015). No refund process is built yet |
-| D5 | **Admission** | 🟡 | One entry per QR code, right to refuse entry, conduct rules — **wording**, agreed in principle. **Open:** age limit (18+ with ID?) and whether **re-entry** is allowed |
-| D6 | **Transfers and resale** | 🟡 | **Resale forbidden. Transfers by contacting C58.** **Open:** what a transfer involves — tickets aren't name-bound, so in practice it means changing the order's email and re-sending (a manual database edit today; an admin feature later). Is the aim to know who holds each ticket, or mainly to discourage resale? |
+| D4 | **Refunds** | ✅ | **Cancelled → full refund. Postponed → ticket valid for the new date, refund on request within a set window. Headline act pulls out and the event is materially different → refund. Minor line-up changes → no refund** ("line-up subject to change"). **Change of mind → no refund** (leisure-services exemption). No refund process is built yet |
+| D5 | **Admission** | ✅ | One entry per QR code (first scan only), right to refuse entry, conduct rules, **18+ with ID**. **Re-entry varies by event** — terms say "as stated on the event page" (a per-event Sanity field could show it automatically later) |
+| D6 | **Transfers and resale** | ✅ | **Bearer tickets:** whoever holds a valid ticket can use it, so transfers and resale are the holder's business. Terms: the buyer is **responsible for keeping tickets secure** (don't post them or show the QR publicly); **only the first scan is admitted**; **C58 isn't responsible for tickets bought from anyone else** |
 | D7 | **Re-subscribing after an unsubscribe** | ✅ | **Keep the cautious default:** an unsubscribe always wins, even if the box is ticked again |
 
 ### Checks (facts that can't be confirmed from the code)
 
 | # | Check | Status | Answer / what's still open |
 | --- | --- | --- | --- |
-| K1 | **ICO registration** | ⏳ | **In progress** (not yet registered, 2026-11-11). Note: the fee usually applies to **any** personal-data processing — ticket sales already process buyers' emails and orders — so complete it before tickets go on public sale, not only before marketing. Marketing stays dormant until then → C6 |
+| K1 | **ICO data protection fee** | 🟡 | **Possibly exempt.** The ICO exempts processing done **only** for exempt purposes, including **accounts and records** (records of sales "to ensure payments, deliveries or services are made") and **advertising, marketing and PR for your own business** — selling, issuing and emailing tickets arguably fits both. The exemption is lost if *any* processing falls outside them — commonly **CCTV for crime prevention**; checkout rate limiting is treated here as part of the sale. **Open:** any CCTV C58 controls? Then confirm with the ICO's *"Do I need to pay the data protection fee?"* self-assessment. Fee or not, **UK GDPR still applies** (privacy policy etc.). Marketing stays dormant until the policy is done → C6 |
 | K2 | **VAT** | ✅ | **Not VAT-registered** (below the threshold). Prices are the total charged; no VAT statement needed beyond that. Revisit if turnover approaches the threshold |
 | K3 | **Vercel log retention** | 🟡 | **1 hour on Hobby** (believed; worth confirming in the plan details). **Correction:** order-page tokens are **not** scrubbed from Vercel's request logs — `RedactedAnalytics` only redacts Analytics and Speed Insights. A known, accepted exposure (8UI.2), short-lived at 1 hour; the policy shouldn't claim logs are scrubbed |
 | K4 | **Cloudflare Turnstile cookies** | ⏳ | Unclear from Cloudflare's own documentation; forum reports conflict. Working position: any cookie/storage it uses is for **bot detection**, i.e. strictly necessary security — no consent needed, but named in the policy. **Waiting on** Cloudflare's Turnstile privacy addendum. C3 reduces exposure either way |
-| K5 | **Behold / Instagram feed** | 🟡 | **No cookies.** Behold keeps anonymous request logs (for quota) and serves media from C58's own Instagram account. **Open:** do visitors' browsers load the images from Behold's servers or **directly from Instagram's CDN** (`cdninstagram.com` / `fbcdn.net`)? If the latter, **Meta** sees visitor IPs and must be listed. Check: DevTools → Network on a page with the feed, filter `fbcdn` / `instagram` |
+| K5 | **Behold / Instagram feed** | ✅ | **No cookies.** Behold keeps anonymous request logs (for quota) and **serves the images itself** — no requests to Instagram's CDN (`fbcdn` / `instagram`) in DevTools (2026-11-11), so **Meta doesn't see visitor IPs**. List Behold as a recipient of visitor IPs |
 | K6 | **Sanity** | ✅ | Sanity sees visitor **IP addresses** (hero videos load from `cdn.sanity.io`); **no cookies**. List Sanity as a **processor** (not a "sub-processor" — that term is for a processor's own suppliers). Lawful basis: **legitimate interests (UK GDPR Art. 6(1)(f))** — delivering site assets. No PECR consent needed as nothing is stored on the device. **Open (minor):** Sanity's hosting location for the policy |
 
 ### Code fixes (would simplify the policies)
@@ -38,7 +38,7 @@ Everything open or decided, in one place. Each links to the section with the det
 | C1 | **Google Maps → click-to-load** | Avoids a consent banner for a single embed | Ready (D2 decided) |
 | C2 | **Guaranteed IP cleanup** — the hourly job deletes `reservation_attempts` older than 10 minutes | Today they're only deleted on the next checkout attempt, so "kept for 10 minutes" isn't strictly true on a quiet site | Ready |
 | C3 | **Load Turnstile only when a challenge is needed** | Today every visitor to an on-sale event page contacts Cloudflare; most never need to | Ready |
-| C4 | **Automated deletion / anonymisation** past the retention period | Makes the stated retention true without manual work | Waits on D1's follow-up |
+| C4 | **Automated retention** — anonymise buyer emails 12 months after the event; delete financial rows after 6 years | Makes the stated retention true without manual work | Waits on the accountant's confirmation (D1) |
 | C5 | **Enforce tier `saleStart` / `saleEnd`** (roadmap 8API.5) | The ticket terms will describe sale windows the site doesn't currently enforce | Ready |
 | C6 | **Marketing opt-in dormant** — a `MARKETING_OPT_IN_ENABLED = false` switch: checkbox hidden, `createOrder` forces opt-in off server-side, follow-ups and the hourly retry skip the sync | Lets 8API.3 (PR #56) merge with nothing collected or shared until ICO registration (K1) and the privacy policy are done; switching on is a one-line change | Ready |
 
@@ -54,14 +54,14 @@ Needed by all three documents:
 
 - Business **legal name**, **trading name**, **postal address**
 - **Contact email** for data requests and complaints
-- ICO registration number — registration in progress (K1)
-- **Business structure** (limited company or sole trader) — affects the record-keeping period behind D1
+- ICO registration number, if the fee applies (K1)
+- **Business structure** (limited company or sole trader) — either way, 6 years covers HMRC record-keeping (D1)
 
 ## 2. Personal data collected
 
 | Data | Where | Why | Kept for (today) |
 | --- | --- | --- | --- |
-| **Email address** | `orders` — **Supabase, London (eu-west-2)** | Delivering tickets and the order page; resends | **Indefinitely today.** Decided: **6 years** — open whether the email is anonymised earlier (D1); enforced by C4 |
+| **Email address** | `orders` — **Supabase, London (eu-west-2)** | Delivering tickets and the order page; resends | **Indefinitely today.** Proposed: **anonymised 12 months after the event** (pending the accountant, D1); enforced by C4 |
 | **Order details** — tiers, quantities, prices, status, timestamps | `orders`, `order_items` | The sale, accounting, door validation | Indefinitely today → **6 years** (D1, C4) |
 | **Ticket codes and status** (valid / used / voided) | `tickets` | Admission and scanning | Indefinitely today → **6 years** (D1, C4) |
 | **Order access token** | `orders.access_token` | The private order-page link | As the order |
@@ -113,9 +113,9 @@ Needed by all three documents:
 
 - **Contract:** formed when payment succeeds; tickets delivered **by email and on the order page**
 - **Cancellation rights:** UK consumer law generally gives **no 14-day cancellation right for event tickets for a specific date** (leisure-services exemption) — say so explicitly
-- **Refunds (D4):** event **cancelled → full refund**; **postponed → refund** (proposed: ticket valid for the new date, refund on request within a set window); **no refund for change of mind**; line-up changes — proposed: none for minor changes, refund if an advertised headline act pulls out and the event is materially different (open). A `refunded` status exists; no refund process is built
-- **Admission (D5):** one entry per QR code (the Milestone 9 door scanner enforces it), right to refuse entry, conduct rules. Open: age limit / ID, re-entry
-- **Transfers and resale (D6):** **resale forbidden**; **transfers by contacting C58** — tickets aren't name-bound, so a transfer means updating the order's email and re-sending (manual today)
+- **Refunds (D4):** **cancelled → full refund**; **postponed → valid for the new date, refund on request within a set window**; **headline act pulls out and the event is materially different → refund**; **minor line-up changes → no refund**; **change of mind → no refund**. A `refunded` status exists; no refund process is built
+- **Admission (D5):** **18+ with ID**; one entry per QR code — **first scan only** (the Milestone 9 door scanner enforces it); right to refuse entry; conduct rules; **re-entry as stated on the event page**
+- **Tickets are bearer tickets (D6):** whoever holds a valid ticket can use it; transfers and resale are the holder's business. The buyer is **responsible for keeping tickets secure** (don't post them or show the QR publicly); **C58 isn't responsible for tickets bought from anyone else**
 - **Lost tickets:** the email can be resent (order-page link; resend form 8UI.3 when built)
 - **Price:** the total shown is the total charged — **no booking fee**; **not VAT-registered** (K2)
 - **Sale windows:** tiers can have start/end times — not enforced until C5
