@@ -12,7 +12,7 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | All migrations pushed to live Supabase; RLS enabled on every table (new project trigger covers future tables automatically) | — | — |
-| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase; 8API.1 confirmation email sent via Brevo, retried hourly if it fails (8API.4) | 8API.3 (mailing list push) | — |
+| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase; 8API.1 confirmation email sent via Brevo, retried hourly if it fails (8API.4); 8API.3 marketing-list sync built (merge waits on the privacy policy) | 8API.5 (enforce tier sale windows) | 8API.3 merge: privacy policy must name Brevo |
 | **UI**   | 7UI.1/7UI.2/8UI.2/8UI.1 complete — SumUp checkout returns buyers to `/orders/[token]` with a scannable QR per ticket, and the confirmation email carries the same QRs as attachments | 8UI.3 (resend form) | — |
 | **QA**   | 7QA.1/7QA.2 complete — concurrency test + full security review, real Turnstile keys live | —                                | — |
 | **DX**   | 6DX.1/8DX.2 complete — Brevo account, `c58.uk` authenticated (branded `mail.c58.uk`), restricted API key, env vars in Vercel; 8DX.1 quota plan written | — | — |
@@ -135,10 +135,19 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 <a name="m8-todo"><h4>To Do (Milestone 8)</h4></a>
 
 - [ ] 8UI.3. Resend-confirmation form on `/orders` — email in, resend of every paid order for that address out, neutral response, never displays order data; rate-limited via existing `checkRateLimit`
-- [ ] 8API.3. Mailing list push (`POST /v3/contacts`) when `marketing_opt_in = true` — via `after()`, log-and-continue on failure, must never fail the webhook
+- [ ] 8API.5. Enforce tier `saleStart`/`saleEnd` — found 2026-11-06: the fields exist in Sanity and are fetched, but nothing checks them, so a tier with a sale window can be bought outside it. Only `ticketingStatus` and the previous-sold-out release are enforced today. Needs enforcing server-side in `createOrder`/`reserveOrder` (the UI alone isn't a guard), with the picker showing "on sale from …" / "sale ended"
+
 <a name="m8-blocked"><h4>Blocked (Milestone 8)</h4></a>
 
 <a name="m8-done"><h4>Completed (Milestone 8)</h4></a>
+
+- [x] 8API.3. Opted-in buyers added to the Brevo marketing list (`feat/marketing-opt-in`, 2026-11-09) — **ships dormant** behind `MARKETING_OPT_IN_ENABLED` (compliance C6, 2026-11-12): while unset the checkbox is hidden, `createOrder` forces opt-in off server-side, and the sync and its hourly retry do nothing. Switch on (env var + redeploy) once the privacy policy names Brevo as the marketing processor
+  - **Dormant switch verified:** a production build of an on-sale event page renders the ticket form without the checkbox; tests cover the server-side force (a hand-crafted `marketingOptIn: true` is recorded as false — confirmed failing with the guard removed), the sync skipping without claiming (so earlier opt-ins still sync once switched on), and the retry returning an empty summary of the same shape
+  - **Migration:** `orders.marketing_synced_at` (claim, like `confirmation_sent_at`); existing opted-in paid orders backfilled
+  - **`lib/syncMarketingOptIn.ts`:** claim only where `status = 'paid' and marketing_opt_in` — abandoned checkouts and opted-out buyers never reach Brevo; release on failure; never throws. `addContactToList` uses `updateEnabled` and never sends `emailBlacklisted`
+  - **Consent evidence** as Brevo contact attributes (normal, created in the dashboard): `OPT_IN_SOURCE`, `OPT_IN_DATE` (UK date of the order via new `londonDate()`), `OPT_IN_WORDING` (the checkbox text — one constant, `lib/marketingOptIn.ts`, shared with `TierPicker`), `OPT_IN_ORDER` (the order row proving it), `LAST_EVENT`
+  - **Triggers:** `runPaidOrderFollowUps()` runs the confirmation and the sync side by side from the webhook and order page; the hourly retry covers both via a shared `retryInSequence()`, and the workflow fails on a failure in either
+  - **Verified end to end locally against the live database and Brevo:** opted-in purchase → on list 3 with all five attributes (an existing contact's own fields kept); not-opted-in purchase (plus address) → not a Brevo contact at all; **blocklisted contact re-buying with the box ticked stays blocklisted** (attributes updated to the newest order). A re-opt-in after unsubscribing therefore needs re-subscribing by hand or through a Brevo form
 
 - [x] 8API.4. Scheduled retry for unsent confirmations (`feat/confirmation-retry`, 2026-11-05) — closes the gap found in 8DX.1: a failed send was otherwise only retried when the buyer reopened their order page
   - **`sendOrderConfirmation`** now returns `'sent' | 'skipped' | 'failed'` (still never throws; the `after()` callers ignore it)

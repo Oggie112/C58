@@ -1,13 +1,18 @@
 process.env.CRON_SECRET = 'cron-secret'
 
 import { retryUnsentConfirmations } from '@/lib/retryUnsentConfirmations'
+import { retryUnsyncedOptIns } from '@/lib/retryUnsyncedOptIns'
 import { POST } from './route'
 
 jest.mock('@/lib/retryUnsentConfirmations', () => ({
 	retryUnsentConfirmations: jest.fn(),
 }))
+jest.mock('@/lib/retryUnsyncedOptIns', () => ({
+	retryUnsyncedOptIns: jest.fn(),
+}))
 
-const SUMMARY = { found: 2, sent: 1, skipped: 0, failed: 1, stoppedEarly: false }
+const CONFIRMATIONS = { found: 2, sent: 1, skipped: 0, failed: 1, stoppedEarly: false }
+const MARKETING = { found: 1, synced: 1, skipped: 0, failed: 0, stoppedEarly: false }
 
 function request(authorization?: string) {
 	return new Request('http://localhost/api/cron/retry-confirmations', {
@@ -18,7 +23,8 @@ function request(authorization?: string) {
 
 describe('retry-confirmations cron route', () => {
 	beforeEach(() => {
-		jest.mocked(retryUnsentConfirmations).mockReset().mockResolvedValue(SUMMARY)
+		jest.mocked(retryUnsentConfirmations).mockReset().mockResolvedValue(CONFIRMATIONS)
+		jest.mocked(retryUnsyncedOptIns).mockReset().mockResolvedValue(MARKETING)
 		jest.spyOn(console, 'error').mockImplementation(() => {})
 	})
 
@@ -26,12 +32,13 @@ describe('retry-confirmations cron route', () => {
 		jest.restoreAllMocks()
 	})
 
-	it('runs the retry and returns its summary for the right secret', async () => {
+	it('runs both retries and returns both summaries for the right secret', async () => {
 		const response = await POST(request('Bearer cron-secret'))
 
 		expect(response.status).toBe(200)
-		expect(await response.json()).toEqual(SUMMARY)
+		expect(await response.json()).toEqual({ confirmations: CONFIRMATIONS, marketing: MARKETING })
 		expect(retryUnsentConfirmations).toHaveBeenCalledTimes(1)
+		expect(retryUnsyncedOptIns).toHaveBeenCalledTimes(1)
 	})
 
 	it.each([
@@ -43,6 +50,7 @@ describe('retry-confirmations cron route', () => {
 
 		expect(response.status).toBe(401)
 		expect(retryUnsentConfirmations).not.toHaveBeenCalled()
+		expect(retryUnsyncedOptIns).not.toHaveBeenCalled()
 	})
 
 	it('fails closed when CRON_SECRET is not configured', async () => {
@@ -52,6 +60,7 @@ describe('retry-confirmations cron route', () => {
 			const response = await POST(request('Bearer cron-secret'))
 			expect(response.status).toBe(500)
 			expect(retryUnsentConfirmations).not.toHaveBeenCalled()
+			expect(retryUnsyncedOptIns).not.toHaveBeenCalled()
 		} finally {
 			process.env.CRON_SECRET = saved
 		}

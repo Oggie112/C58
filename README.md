@@ -110,6 +110,11 @@ BREVO_REPLY_TO_EMAIL=your_reply_to_address
 # CRON_SECRET GitHub Actions secret
 CRON_SECRET=your_cron_secret
 
+# --- Feature switches (optional) ---
+# Marketing opt-in: off unless exactly "true" (checkbox hidden, nothing synced
+# to Brevo). Leave unset until the privacy policy covers marketing.
+# MARKETING_OPT_IN_ENABLED=true
+
 # --- Cloudflare Turnstile ---
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_site_key
 TURNSTILE_SECRET_KEY=your_secret_key
@@ -130,8 +135,9 @@ Where to get each value:
 | `SUMUP_MERCHANT_CODE` | SumUp dashboard → account / profile |
 | `BREVO_API_KEY` | Brevo → **SMTP & API → API keys**. Restricted access: transactional email send, contacts read/write, account read. Shown once — copy it straight into env vars. Keep Brevo's unknown-IP blocking **off** (Vercel's outbound IPs aren't fixed) |
 | `BREVO_SENDER_EMAIL` / `BREVO_SENDER_NAME` | An active sender on the authenticated `c58.uk` domain (Brevo → **Senders, Domains & Dedicated IPs**) |
-| `BREVO_LIST_ID` | Brevo → **Contacts → Lists** — the marketing opt-in list's numeric ID |
+| `BREVO_LIST_ID` | Brevo → **Contacts → Lists** — the marketing opt-in list's numeric ID. The consent attributes the sync writes (`OPT_IN_SOURCE`, `OPT_IN_DATE`, `OPT_IN_WORDING`, `OPT_IN_ORDER`, `LAST_EVENT`) must exist under **Contacts → Settings → Contact attributes → Normal** — Brevo silently drops values for attributes it doesn't have |
 | `BREVO_REPLY_TO_EMAIL` | The business inbox buyers' replies should reach |
+| `MARKETING_OPT_IN_ENABLED` | Optional. Leave **unset** until the privacy policy covers marketing email (see [`docs/compliance-inventory.md`](docs/compliance-inventory.md), C6). Setting it to `true` in Vercel and redeploying shows the opt-in checkbox and turns on the Brevo list sync — no code change |
 | `CRON_SECRET` | Generate a long random value, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Set the **same value** in Vercel and as a GitHub Actions secret (see [GitHub Actions secrets](#github-actions-secrets)) |
 | Turnstile keys | Cloudflare dashboard → **Turnstile**. Add `localhost` to the widget's hostname allowlist for local dev |
 | `NEXT_PUBLIC_BEHOLD_FEED_ID` | [behold.so](https://behold.so) feed settings |
@@ -229,6 +235,7 @@ Purchase flow, end to end:
 3. A SumUp hosted checkout is created and the buyer is redirected to it.
 4. SumUp calls `/api/webhooks/sumup`. The handler re-fetches the checkout status from SumUp, then marks the order paid and issues one ticket per admission. The buyer's "Back to merchant website" button leads to `/orders/[token]`, which confirms the same way if it gets there first.
 5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery, order-page visit, or the **hourly retry** (`.github/workflows/retry-confirmations.yml` → `POST /api/cron/retry-confirmations`). A failed retry fails the workflow, so GitHub emails the repo owner — what to do next is in [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md).
+6. Alongside the email (`lib/runPaidOrderFollowUps.ts`), a buyer who ticked the marketing checkbox is added to the Brevo list (`lib/syncMarketingOptIn.ts`) — paid orders only, never abandoned checkouts. Same claim-and-retry pattern on `orders.marketing_synced_at`, retried by the same hourly job. The contact records their consent as attributes — `OPT_IN_SOURCE`, `OPT_IN_DATE` (UK date), `OPT_IN_WORDING` (the checkbox text, from `lib/marketingOptIn.ts`), `OPT_IN_ORDER`, plus `LAST_EVENT`. It never touches a contact's unsubscribe (blocklist) status: someone who unsubscribed stays unsubscribed even if they tick the box again. **Dormant by default:** with `MARKETING_OPT_IN_ENABLED` unset, the checkbox is hidden, `createOrder` records every order as not opted in whatever the request says, and the sync and its retry do nothing.
 
 Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 

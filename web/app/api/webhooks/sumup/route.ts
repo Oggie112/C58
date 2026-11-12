@@ -2,7 +2,7 @@ import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
 import { sql } from '@/lib/db'
 import { confirmOrder } from '@/lib/confirmOrder'
-import { sendOrderConfirmation } from '@/lib/sendOrderConfirmation'
+import { runPaidOrderFollowUps } from '@/lib/runPaidOrderFollowUps'
 
 // No signature on SumUp's side — the payload is just a "go check" nudge, not
 // a claim to trust. Everything consequential is gated on confirmOrder's own
@@ -44,17 +44,17 @@ export async function POST(request: Request) {
 	// an already-resolved order. Not the actual guard; confirmOrder's atomic
 	// claim is what prevents double-processing under a genuine race.
 	if (order.status !== 'pending') {
-		// A re-delivery for a paid order doubles as the email's retry: if an
-		// earlier send failed, this tries again. A no-op once it's been sent.
-		if (order.status === 'paid') after(() => sendOrderConfirmation(order.id))
+		// A re-delivery for a paid order doubles as a retry of its follow-ups
+		// (email, marketing list): no-ops once they've succeeded.
+		if (order.status === 'paid') after(() => runPaidOrderFollowUps(order.id))
 		return NextResponse.json({ success: true })
 	}
 
 	try {
 		const result = await confirmOrder({ id: order.id, providerSessionId: checkoutId })
-		// after(): SumUp gets its response without waiting on Brevo, and an
-		// email failure can't fail the webhook (sendOrderConfirmation never throws).
-		if (result === 'paid') after(() => sendOrderConfirmation(order.id))
+		// after(): SumUp gets its response without waiting on Brevo, and a
+		// follow-up failure can't fail the webhook (neither follow-up throws).
+		if (result === 'paid') after(() => runPaidOrderFollowUps(order.id))
 	} catch (error) {
 		console.error('Failed to confirm order from SumUp webhook:', error)
 		return NextResponse.json({ error: 'Confirmation failed' }, { status: 500 })

@@ -1,10 +1,11 @@
 name: Retry Confirmation Emails
 
 # Re-sends order confirmation emails that failed (Brevo quota, outage, network)
-# — roadmap 8API.4. Calls the site's secret-protected endpoint, which retries
-# paid orders still missing a confirmation. The job fails, and GitHub emails
-# the repo owner, if any send failed; see docs/brevo-quota-plan.md for what
-# to do. Logs here are public: the endpoint returns counts only.
+# — roadmap 8API.4 — and, since 8API.3, re-tries adding opted-in buyers to the
+# Brevo marketing list. Calls the site's secret-protected endpoint. The job
+# fails, and GitHub emails the repo owner, if anything failed; see
+# docs/brevo-quota-plan.md for what to do. Logs here are public: the endpoint
+# returns counts only.
 
 on:
   schedule:
@@ -26,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Retry unsent confirmations
+      - name: Retry unsent confirmations and marketing-list sync
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           SITE_URL: https://www.c58.uk
@@ -37,8 +38,18 @@ jobs:
             "${SITE_URL}/api/cron/retry-confirmations")
           echo "Summary: ${summary}"
 
-          failed=$(echo "${summary}" | jq -r '.failed')
-          if [ "${failed}" != "0" ]; then
-            echo "::error::${failed} confirmation email(s) failed to send — see docs/brevo-quota-plan.md (check Vercel logs for 'confirmation email failed')"
+          # A missing count is an error (fails the job), never read as zero —
+          # an unexpected response must not pass silently
+          read_count() { echo "${summary}" | jq -er "$1 | numbers"; }
+          email_failed=$(read_count '.confirmations.failed')
+          marketing_failed=$(read_count '.marketing.failed')
+
+          if [ "${email_failed}" != "0" ]; then
+            echo "::error::${email_failed} confirmation email(s) failed to send — see docs/brevo-quota-plan.md (check Vercel logs for 'confirmation email failed')"
+          fi
+          if [ "${marketing_failed}" != "0" ]; then
+            echo "::error::${marketing_failed} opted-in buyer(s) couldn't be added to the marketing list — check Vercel logs for 'marketing list sync failed'"
+          fi
+          if [ "${email_failed}" != "0" ] || [ "${marketing_failed}" != "0" ]; then
             exit 1
           fi
