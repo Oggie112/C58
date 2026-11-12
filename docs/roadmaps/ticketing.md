@@ -141,7 +141,8 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 <a name="m8-done"><h4>Completed (Milestone 8)</h4></a>
 
-- [x] 8API.3. Opted-in buyers added to the Brevo marketing list (`feat/marketing-opt-in`, 2026-11-09) — **not to be merged until the privacy policy names Brevo as the marketing processor** (the checkbox is already live; merging is what starts sharing)
+- [x] 8API.3. Opted-in buyers added to the Brevo marketing list (`feat/marketing-opt-in`, 2026-11-09) — **ships dormant** behind `MARKETING_OPT_IN_ENABLED` (compliance C6, 2026-11-12): while unset the checkbox is hidden, `createOrder` forces opt-in off server-side, and the sync and its hourly retry do nothing. Switch on (env var + redeploy) once the privacy policy names Brevo as the marketing processor
+  - **Dormant switch verified:** a production build of an on-sale event page renders the ticket form without the checkbox; tests cover the server-side force (a hand-crafted `marketingOptIn: true` is recorded as false — confirmed failing with the guard removed), the sync skipping without claiming (so earlier opt-ins still sync once switched on), and the retry returning an empty summary of the same shape
   - **Migration:** `orders.marketing_synced_at` (claim, like `confirmation_sent_at`); existing opted-in paid orders backfilled
   - **`lib/syncMarketingOptIn.ts`:** claim only where `status = 'paid' and marketing_opt_in` — abandoned checkouts and opted-out buyers never reach Brevo; release on failure; never throws. `addContactToList` uses `updateEnabled` and never sends `emailBlacklisted`
   - **Consent evidence** as Brevo contact attributes (normal, created in the dashboard): `OPT_IN_SOURCE`, `OPT_IN_DATE` (UK date of the order via new `londonDate()`), `OPT_IN_WORDING` (the checkbox text — one constant, `lib/marketingOptIn.ts`, shared with `TierPicker`), `OPT_IN_ORDER` (the order row proving it), `LAST_EVENT`
