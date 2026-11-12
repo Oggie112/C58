@@ -135,7 +135,12 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 <a name="m8-todo"><h4>To Do (Milestone 8)</h4></a>
 
 - [ ] 8UI.3. Resend-confirmation form on `/orders` — email in, resend of every paid order for that address out, neutral response, never displays order data; rate-limited via existing `checkRateLimit`
-- [ ] 8API.5. Enforce tier `saleStart`/`saleEnd` — found 2026-11-06: the fields exist in Sanity and are fetched, but nothing checks them, so a tier with a sale window can be bought outside it. Only `ticketingStatus` and the previous-sold-out release are enforced today. Needs enforcing server-side in `createOrder`/`reserveOrder` (the UI alone isn't a guard), with the picker showing "on sale from …" / "sale ended"
+- [ ] 8API.5. Enforce the sale state — found 2026-11-06, widened 2026-11-12. Only **capacity** and the **previous-sold-out release** are enforced today. Not enforced:
+  - tier `saleStart`/`saleEnd` — fetched but never checked, so a tier can be bought outside its window
+  - **`ticketingStatus`** — **display-only**: its one use is the status label on the event page. "Closed", "Not yet on sale" and "Sold out" stop nothing
+  - the **event date** — tickets stay on sale after the event has happened
+  - Needs enforcing server-side in `createOrder`/`reserveOrder` (the UI alone isn't a guard)
+  - **Display:** the status label is the static Sanity field, so it stays "On sale" when every tier sells out; sold-out tiers show no "Sold out" text; the email field and a disabled "Get Tickets" stay with no explanation. The picker should derive the live state from the stock it already fetches (sold out / sale ended / on sale from …)
 
 <a name="m8-blocked"><h4>Blocked (Milestone 8)</h4></a>
 
