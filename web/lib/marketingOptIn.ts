@@ -8,3 +8,14 @@ export const MARKETING_OPT_IN_WORDING = 'Keep me posted about future C58 events 
 // Where the consent was captured (OPT_IN_SOURCE), in case more sign-up
 // routes are added later.
 export const MARKETING_OPT_IN_SOURCE = 'ticket purchase'
+
+// Marketing opt-in is dormant until the privacy policy covers it (and ICO
+// position is settled) — see docs/compliance-inventory.md, C6. Off unless
+// MARKETING_OPT_IN_ENABLED is exactly "true": a missing or mistyped value
+// stays off. While off, the checkbox isn't shown, createOrder records every
+// order as not opted in whatever the request says, and nothing is synced to
+// Brevo. Switching on: set the env var in Vercel and redeploy (the event
+// page is prerendered, so it picks the value up at build time).
+export function isMarketingOptInEnabled(): boolean {
+	return process.env.MARKETING_OPT_IN_ENABLED === 'true'
+}

@@ -25,9 +25,25 @@ describe('retryUnsyncedOptIns', () => {
 		await db.stop()
 	})
 
+	const originalEnv = process.env
+
 	beforeEach(async () => {
 		await db.sql`delete from orders`
 		syncMarketingOptIn.mockReset().mockResolvedValue('synced')
+		// Switched on for these tests — the dormant default has its own test below
+		process.env = { ...originalEnv, MARKETING_OPT_IN_ENABLED: 'true' }
+	})
+
+	afterEach(() => {
+		process.env = originalEnv
+	})
+
+	it('does nothing while marketing is switched off, returning an empty summary of the same shape', async () => {
+		await insertOrder()
+		delete process.env.MARKETING_OPT_IN_ENABLED
+
+		expect(await retryUnsyncedOptIns()).toEqual({ found: 0, synced: 0, skipped: 0, failed: 0, stoppedEarly: false })
+		expect(syncMarketingOptIn).not.toHaveBeenCalled()
 	})
 
 	async function insertOrder(options: { status?: string; optIn?: boolean; syncedAt?: Date | null; minutesAgo?: number } = {}) {

@@ -12,6 +12,7 @@ import { failReservation } from '@/lib/failReservation'
 import { PER_ORDER_MAX } from '@/lib/orderLimits'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyTurnstileToken } from '@/lib/turnstile'
+import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -94,7 +95,10 @@ export async function createOrder(
 		}
 	}
 
-	const result = await reserveOrder(parsed.data, eventDetails.tiers)
+	// Never trust the client about consent while marketing opt-in is off: a
+	// hand-crafted request can't record anyone as opted in (C6)
+	const marketingOptIn = isMarketingOptInEnabled() && parsed.data.marketingOptIn
+	const result = await reserveOrder({ ...parsed.data, marketingOptIn }, eventDetails.tiers)
 
 	switch (result.status) {
 		case 'reserved': {

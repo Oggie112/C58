@@ -57,7 +57,8 @@ describe('syncMarketingOptIn', () => {
 	})
 
 	beforeEach(() => {
-		process.env = { ...originalEnv, BREVO_LIST_ID: '3' }
+		// Switched on for these tests — the dormant default has its own test below
+		process.env = { ...originalEnv, BREVO_LIST_ID: '3', MARKETING_OPT_IN_ENABLED: 'true' }
 		addContactToList.mockReset().mockResolvedValue(undefined)
 		getEventByDetailsId.mockReset().mockResolvedValue({ title: 'Beach Party', date: '2026-11-20' })
 		jest.spyOn(console, 'error').mockImplementation(() => {})
@@ -118,6 +119,20 @@ describe('syncMarketingOptIn', () => {
 		await syncMarketingOptIn(order.orderId)
 
 		expect(getEventByDetailsId).toHaveBeenCalledWith(eventId, { perspective: 'published', stega: false })
+	})
+
+	it.each([
+		['unset', undefined],
+		['anything but "true"', 'yes'],
+	])('does nothing while marketing is switched off (%s) — no Brevo call, nothing claimed', async (_case, value) => {
+		const order = await paidOrder()
+		if (value === undefined) delete process.env.MARKETING_OPT_IN_ENABLED
+		else process.env.MARKETING_OPT_IN_ENABLED = value
+
+		expect(await syncMarketingOptIn(order.orderId)).toBe('skipped')
+		expect(addContactToList).not.toHaveBeenCalled()
+		// Left unclaimed, so it still syncs once marketing is switched on
+		expect(await syncedAt(order.orderId)).toBeNull()
 	})
 
 	it('never adds a buyer who did not opt in', async () => {

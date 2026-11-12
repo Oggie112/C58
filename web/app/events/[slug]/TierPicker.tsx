@@ -34,9 +34,12 @@ type StockState =
 interface TierPickerProps {
 	eventDetailsId: string
 	tiers: SanityTier[]
+	// From isMarketingOptInEnabled() on the server — the checkbox is only
+	// shown when marketing opt-in is switched on (see lib/marketingOptIn.ts)
+	marketingOptInEnabled: boolean
 }
 
-export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
+export default function TierPicker({ eventDetailsId, tiers, marketingOptInEnabled }: TierPickerProps) {
 	const [quantities, setQuantities] = useState<Record<string, number>>({})
 	const [email, setEmail] = useState('')
 	const [marketingOptIn, setMarketingOptIn] = useState(false)
@@ -233,7 +236,8 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 				</span>
 			</div>
 
-			<div className="mb-4">
+			{/* Takes the checkbox's bottom spacing when it's the last field */}
+			<div className={marketingOptInEnabled ? 'mb-4' : 'mb-8'}>
 				<label
 					htmlFor="email"
 					className="block font-body text-label text-c58-muted uppercase tracking-[0.15em] mb-2"
@@ -251,17 +255,19 @@ export default function TierPicker({ eventDetailsId, tiers }: TierPickerProps) {
 				/>
 			</div>
 
-			<label className="flex items-start gap-3 mb-8 cursor-pointer">
-				<input
-					type="checkbox"
-					checked={marketingOptIn}
-					onChange={(e) => setMarketingOptIn(e.target.checked)}
-					className="mt-1"
-				/>
-				<span className="font-body text-body text-c58-muted">
-					{MARKETING_OPT_IN_WORDING}
-				</span>
-			</label>
+			{marketingOptInEnabled && (
+				<label className="flex items-start gap-3 mb-8 cursor-pointer">
+					<input
+						type="checkbox"
+						checked={marketingOptIn}
+						onChange={(e) => setMarketingOptIn(e.target.checked)}
+						className="mt-1"
+					/>
+					<span className="font-body text-body text-c58-muted">
+						{MARKETING_OPT_IN_WORDING}
+					</span>
+				</label>
+			)}
 
 			{state.status !== 'idle' && state.message && (
 				<p className="font-body text-body text-c58-muted mb-4" role="status">

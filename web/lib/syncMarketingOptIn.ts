@@ -1,6 +1,6 @@
 import { sql } from './db'
 import { addContactToList } from './brevo'
-import { MARKETING_OPT_IN_SOURCE, MARKETING_OPT_IN_WORDING } from './marketingOptIn'
+import { isMarketingOptInEnabled, MARKETING_OPT_IN_SOURCE, MARKETING_OPT_IN_WORDING } from './marketingOptIn'
 import { londonDate } from './dateFormat'
 import { getEventByDetailsId } from '@/sanity/fetch'
 import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
@@ -22,6 +22,11 @@ export type MarketingSyncOutcome = 'synced' | 'skipped' | 'failed'
 // released on failure for the next trigger or the hourly retry; never
 // throws, so it can't fail a payment webhook or an order page.
 export async function syncMarketingOptIn(orderId: string): Promise<MarketingSyncOutcome> {
+	// Dormant until switched on (lib/marketingOptIn.ts) — the one place every
+	// caller (webhook, order page, hourly retry) passes through. Nothing is
+	// claimed, so once switched on, any earlier opt-in still syncs.
+	if (!isMarketingOptInEnabled()) return 'skipped'
+
 	const [claimed] = await sql<{ email: string; event_id: string; created_at: Date }[]>`
 		update orders set marketing_synced_at = now()
 		where id = ${orderId} and status = 'paid' and marketing_opt_in and marketing_synced_at is null

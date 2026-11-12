@@ -1,6 +1,7 @@
 import { sql } from './db'
 import { syncMarketingOptIn } from './syncMarketingOptIn'
 import { retryInSequence } from './retryInSequence'
+import { isMarketingOptInEnabled } from './marketingOptIn'
 import { RETRY_BATCH_SIZE, RETRY_GRACE_MINUTES } from './retryUnsentConfirmations'
 
 export interface OptInRetrySummary {
@@ -16,6 +17,9 @@ export interface OptInRetrySummary {
 // grace period, batch size and stop-after-three rule as the confirmation
 // retry; counts only, as the summary is printed in public GitHub logs.
 export async function retryUnsyncedOptIns(): Promise<OptInRetrySummary> {
+	// Same summary shape while dormant, so the workflow's checks still read it
+	if (!isMarketingOptInEnabled()) return { found: 0, synced: 0, skipped: 0, failed: 0, stoppedEarly: false }
+
 	const orders = await sql<{ id: string }[]>`
 		select id from orders
 		where status = 'paid'
