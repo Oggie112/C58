@@ -19,6 +19,7 @@ Everything open or decided, in one place. Each links to the section with the det
 | D5 | **Admission** | ✅ | One entry per QR code (first scan only), right to refuse entry, conduct rules, **18+ with ID**. **Re-entry varies by event** — terms say "as stated on the event page" (a per-event Sanity field could show it automatically later) |
 | D6 | **Transfers and resale** | ✅ | **Bearer tickets:** whoever holds a valid ticket can use it, so transfers and resale are the holder's business. Terms: the buyer is **responsible for keeping tickets secure** (don't post them or show the QR publicly); **only the first scan is admitted**; **C58 isn't responsible for tickets bought from anyone else** |
 | D7 | **Re-subscribing after an unsubscribe** | ✅ | **Keep the cautious default:** an unsubscribe always wins, even if the box is ticked again |
+| D8 | **People featured on the site** (team, volunteers, talent) | 🟡 | Their **names, photos and bios** are personal data, stored in Sanity and published. **Open:** get each person's **agreement to being featured** (a short written OK is enough — keep a record), and a **removal process**: on request, delete their document *and* its revision history in Sanity (Sanity keeps past revisions unless the document is fully deleted). The privacy policy should cover featured people as well as buyers |
 
 ### Checks (facts that can't be confirmed from the code)
 
@@ -29,7 +30,7 @@ Everything open or decided, in one place. Each links to the section with the det
 | K3 | **Vercel log retention** | ✅ | **1 hour on Hobby** (confirmed 2026-11-12). **Note:** order-page tokens are **not** scrubbed from Vercel's request logs — `RedactedAnalytics` only redacts Analytics and Speed Insights. A known, accepted exposure (8UI.2), short-lived at 1 hour; the policy shouldn't claim logs are scrubbed |
 | K4 | **Cloudflare Turnstile** | ✅ | Per Cloudflare's **Turnstile Privacy Addendum** (last updated 18 June 2025): collects IP address, TLS fingerprint, user agent, site key and origin, and says it can't identify individuals from them. **Two roles:** a **processor for C58** when protecting the site (C58 is the controller — lawful basis: **legitimate interests in security**), and a **controller in its own right** when using the signals to improve Turnstile (its own legitimate interests). The signals are **"strictly necessary"** for bot detection — no PECR consent needed. Policy: name Cloudflare as processor, mention its own improvement use, **link to the addendum** (rather than copying it). C3 limits it to visitors actually challenged |
 | K5 | **Behold / Instagram feed** | ✅ | **No cookies.** Behold keeps anonymous request logs (for quota) and **serves the images itself** — no requests to Instagram's CDN (`fbcdn` / `instagram`) in DevTools (2026-11-11), so **Meta doesn't see visitor IPs**. List Behold as a recipient of visitor IPs |
-| K6 | **Sanity** | ✅ | Sanity sees visitor **IP addresses** (hero videos load from `cdn.sanity.io`); **no cookies**. List Sanity as a **processor** (not a "sub-processor" — that term is for a processor's own suppliers). Lawful basis: **legitimate interests (UK GDPR Art. 6(1)(f))** — delivering site assets. No PECR consent needed as nothing is stored on the device. **Open (minor):** the policy needs **where** the data is processed — **countries/regions**, not the cloud vendor — and, if outside the UK, the **safeguard** (UK–US Data Bridge, or the UK addendum to the EU Standard Contractual Clauses). Sanity is a **US company** and its asset CDN is **global**; its **Data Processing Agreement and sub-processor list** give the dataset's hosting region and the transfer mechanism |
+| K6 | **Sanity** | ✅ | Sanity sees visitor **IP addresses** (hero videos load from `cdn.sanity.io`); **no cookies**. List Sanity as a **processor** (not a "sub-processor" — that term is for a processor's own suppliers). Lawful basis: **legitimate interests (UK GDPR Art. 6(1)(f))** — delivering site assets. No PECR consent needed as nothing is stored on the device. **Transfers:** Sanity's official [Data Processing Addendum](https://www.sanity.io/legal/dpa) covers transfers outside the UK with the **EU Standard Contractual Clauses plus the UK International Data Transfer Addendum** (confirmed 2026-11-12). Sanity is US-headquartered; its asset CDN is global. **Hosting region:** sources conflict on whether EU (Belgium) hosting is the default on non-Enterprise plans — the policy can name the safeguard without a region; ask Sanity support if a region is wanted. See also D8 — Sanity also holds people's personal data as site content |
 
 ### Code fixes (would simplify the policies)
 
@@ -48,8 +49,8 @@ Everything open or decided, in one place. Each links to the section with the det
 | --- | --- | --- | --- |
 | S1 | **Skiddle's role** | ✅ | Skiddle is the **seller of record and a controller in its own right** for its sales — it collects buyers' details under its own privacy policy and takes payment |
 | S2 | **HMRC records for Skiddle sales** | ✅ | Keep **Skiddle's settlement / payout statements for 6 years** — they're C58's income records for those events, with no customer data needed |
-| S3 | **Data C58 receives from Skiddle** | 🟡 | **Open:** does C58 download **attendee lists** (names, emails, ticket types) or receive **promoter marketing opt-ins**? If so, C58 is a controller of that copy: it needs covering in the privacy policy, keeping only as long as needed (same anonymisation rule as D1), and opt-ins used only within what buyers agreed to on Skiddle |
-| S4 | **Transition plan** | 🟡 | **Open:** move fully to the site's own ticketing, or run both for a while? Decides whether the privacy policy needs a Skiddle section |
+| S3 | **Data C58 receives from Skiddle** | ✅ | **None today** — C58 can download attendee lists but doesn't. **Skiddle emails its previous buyers about new events itself**, as controller under its own policy, so C58 never holds that data. If C58 ever downloads attendee lists, it becomes controller of that copy: privacy-policy coverage and retention apply. That alone probably **wouldn't** trigger the ICO fee — door check-in and own-event marketing fall within the same exempt purposes (K1) |
+| S4 | **Transition plan** | ✅ | **A clean switch** — all Skiddle or all the site's own ticketing, never both. While on Skiddle the policy needs at most one line ("tickets for some events are sold by Skiddle under its own privacy policy"). **Note for the switch:** Skiddle's past buyers are on **Skiddle's** list, not C58's — the site's own marketing list starts from zero; past buyers would need to opt in through the site |
 
 ### Resolved
 
@@ -81,7 +82,9 @@ Needed by all three documents:
 | **IP address + time of each checkout attempt** | `reservation_attempts` | Rate limiting / bot protection | **~10 minutes**, deleted when the next checkout attempt runs after that — can persist longer on a quiet site (C2) |
 | **Card details** | **Never reach C58** — entered on SumUp's hosted page | Payment | SumUp's responsibility |
 
-**Not collected:** names, phone numbers, postal addresses, dates of birth. No user accounts.
+**Not collected from buyers:** names, phone numbers, postal addresses, dates of birth. No user accounts.
+
+**People featured on the site** (D8): team members, volunteers and talent have **names, photos and bios** stored in Sanity and published publicly — personal data of those people, separate from buyers.
 
 ## 3. Who else receives data
 
@@ -95,7 +98,7 @@ Needed by all three documents:
 | **Cloudflare Turnstile** | **IP and browser signals.** The script loads on **every event page with tickets on sale** (C3); challenge verification also sends the IP | Bot protection | Global (K4) |
 | **Google Maps** (embed) | Visitor IP and Google's **cookies**, on any page whose contact block shows a map | Showing the location | US/global (D2) |
 | **Behold / Instagram** | Visitor IP when the Instagram feed block loads; **no cookies**; Behold keeps anonymous request logs for quota. Media is C58's own Instagram content | Instagram feed | K5 — whether images come from Instagram's CDN (then **Meta** also sees IPs) |
-| **Sanity** (processor) | Content only; visitors' browsers fetch **hero background videos** straight from `cdn.sanity.io`, so Sanity sees their **IP addresses** (images go via Vercel); **no cookies**; editors have Sanity accounts | CMS — legitimate interests (Art. 6(1)(f)) | K6 — hosting location |
+| **Sanity** (processor) | Site content, **including featured people's names, photos and bios** (D8); visitors' browsers fetch **hero background videos** straight from `cdn.sanity.io`, so Sanity sees their **IP addresses** (images go via Vercel); **no cookies**; editors have Sanity accounts | CMS — legitimate interests (Art. 6(1)(f)) | Transfers: SCCs + UK Addendum (K6); region unconfirmed |
 | **GitHub Actions** | Nothing personal — the hourly retry logs counts only | Scheduled retry | — |
 | **Google Fonts** | **Nothing** — `next/font` self-hosts the fonts at build time | — | — |
 
