@@ -72,6 +72,8 @@ describe('ticketQrPng', () => {
 		})
 	})
 
+	// The one real render: ~2s inside Jest's sandbox on its own (~40ms in plain
+	// Node), and over the 5s default when the full suite runs in parallel
 	it(`returns a real PNG ${TICKET_QR_PNG_WIDTH}px wide`, async () => {
 		const png = await ticketQrPng(code)
 
@@ -79,5 +81,5 @@ describe('ticketQrPng', () => {
 		// IHDR is always the first chunk: width is the big-endian uint32 at byte 16
 		expect(png.readUInt32BE(16)).toBe(TICKET_QR_PNG_WIDTH)
 		expect(png.readUInt32BE(20)).toBe(TICKET_QR_PNG_WIDTH)
-	})
+	}, 20_000)
 })

@@ -39,9 +39,15 @@ const openStock = {
 	[tiers[1]._key]: { capacity: tiers[1].capacity, reserved: 0 },
 }
 
-async function renderAndWaitForStock(props: { eventDetailsId?: string; tiers?: SanityTier[] } = {}) {
+async function renderAndWaitForStock(
+	props: { eventDetailsId?: string; tiers?: SanityTier[]; marketingOptInEnabled?: boolean } = {},
+) {
 	const result = render(
-		<TierPicker eventDetailsId={props.eventDetailsId ?? 'details-1'} tiers={props.tiers ?? tiers} />,
+		<TierPicker
+			eventDetailsId={props.eventDetailsId ?? 'details-1'}
+			tiers={props.tiers ?? tiers}
+			marketingOptInEnabled={props.marketingOptInEnabled ?? false}
+		/>,
 	)
 	await waitFor(() =>
 		expect(screen.queryByText('Checking availability…')).not.toBeInTheDocument(),
@@ -56,13 +62,13 @@ describe('TierPicker', () => {
 
 	it('shows a checking-availability state before stock has loaded', () => {
 		mockFetchOnce(openStock)
-		render(<TierPicker eventDetailsId="details-1" tiers={tiers} />)
+		render(<TierPicker eventDetailsId="details-1" tiers={tiers} marketingOptInEnabled={false} />)
 		expect(screen.getByText('Checking availability…')).toBeInTheDocument()
 	})
 
 	it('disables quantity buttons while stock is still loading', () => {
 		mockFetchOnce(openStock)
-		render(<TierPicker eventDetailsId="details-1" tiers={tiers} />)
+		render(<TierPicker eventDetailsId="details-1" tiers={tiers} marketingOptInEnabled={false} />)
 		expect(screen.getByLabelText('Increase quantity for General Admission')).toBeDisabled()
 	})
 
@@ -201,9 +207,15 @@ describe('TierPicker', () => {
 		expect(screen.getByRole('button', { name: /Get Tickets/ })).not.toBeDisabled()
 	})
 
-	it('defaults the marketing opt-in checkbox to unchecked', async () => {
+	it('hides the marketing opt-in checkbox while marketing is switched off', async () => {
 		mockFetchOnce(openStock)
-		await renderAndWaitForStock()
+		await renderAndWaitForStock({ marketingOptInEnabled: false })
+		expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+	})
+
+	it('shows the opt-in checkbox, unticked, once marketing is switched on', async () => {
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock({ marketingOptInEnabled: true })
 		expect(screen.getByRole('checkbox')).not.toBeChecked()
 	})
 

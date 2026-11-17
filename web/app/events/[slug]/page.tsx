@@ -7,6 +7,7 @@ import { getAllEventSlugs, getEventBySlug } from '@/sanity/fetch'
 import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
+import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
 import portableTextComponents from '@/lib/portableTextComponents'
 import type { SanityLineupEntry, SanityFaqEntry, TicketingStatus } from '@/types/sanity'
 import TierPicker from './TierPicker'
@@ -106,7 +107,11 @@ export default async function EventPage({ params }: PageProps<'/events/[slug]'>)
 									{TICKETING_STATUS_LABEL[details.ticketingStatus]}
 								</span>
 							</div>
-							<TierPicker eventDetailsId={details._id} tiers={tiers} />
+							<TierPicker
+								eventDetailsId={details._id}
+								tiers={tiers}
+								marketingOptInEnabled={isMarketingOptInEnabled()}
+							/>
 						</>
 					) : event.ticketUrl ? (
 						<Link

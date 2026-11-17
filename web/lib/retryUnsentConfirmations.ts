@@ -1,5 +1,6 @@
 import { sql } from './db'
 import { sendOrderConfirmation } from './sendOrderConfirmation'
+import { retryInSequence } from './retryInSequence'
 
 // Skip orders this young: their webhook/order-page send may still be in
 // flight. Measured from created_at (reservation time) — there's no paid_at —
@@ -11,9 +12,6 @@ export const RETRY_GRACE_MINUTES = 5
 // claimed but never sent. A larger backlog drains over successive runs;
 // 20/hour already exceeds the Free plan's daily quota.
 export const RETRY_BATCH_SIZE = 20
-// Failures in a row that mean "account-wide problem" (quota, outage, bad
-// key) rather than one bad order — stop and leave the rest for the next run.
-export const MAX_CONSECUTIVE_FAILURES = 3
 
 export interface RetrySummary {
 	found: number
@@ -39,19 +37,10 @@ export async function retryUnsentConfirmations(): Promise<RetrySummary> {
 		limit ${RETRY_BATCH_SIZE}
 	`
 
-	const summary: RetrySummary = { found: orders.length, sent: 0, skipped: 0, failed: 0, stoppedEarly: false }
-	let consecutiveFailures = 0
-
-	for (const order of orders) {
-		const outcome = await sendOrderConfirmation(order.id)
-		summary[outcome] += 1
-
-		consecutiveFailures = outcome === 'failed' ? consecutiveFailures + 1 : 0
-		if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-			summary.stoppedEarly = true
-			break
-		}
-	}
-
-	return summary
+	const { counts, stoppedEarly } = await retryInSequence(
+		orders.map((order) => order.id),
+		['sent', 'skipped', 'failed'] as const,
+		sendOrderConfirmation,
+	)
+	return { found: orders.length, ...counts, stoppedEarly }
 }
