@@ -61,4 +61,41 @@ describe('reserveOrder concurrency', () => {
 
 		expect(result).toEqual({ status: 'invalid_tier', tierKey: 'does-not-exist' })
 	})
+
+	it.each([
+		['before its saleStart', { saleStart: '2026-11-21T19:00:00Z' }],
+		['after its saleEnd', { saleStart: '2026-11-01T09:00:00Z', saleEnd: '2026-11-19T23:59:00Z' }],
+	])('refuses a tier %s, reserving nothing (8API.5)', async (_case, window) => {
+		const eventId = `window-test-${_case.replace(/\W+/g, '-')}`
+		await sql`insert into tiers (event_id, tier_key, capacity, reserved) values (${eventId}, 'windowed', 10, 0)`
+		const tiers: SanityTier[] = [
+			{ _key: 'windowed', name: 'Windowed', price: 10, capacity: 10, releaseTrigger: 'scheduled', ...window },
+		]
+
+		const result = await reserveOrder(
+			{ eventDetailsId: eventId, items: [{ tierKey: 'windowed', quantity: 1 }], email: 'buyer@example.com', marketingOptIn: false },
+			tiers,
+			new Date('2026-11-20T14:00:00Z'),
+		)
+
+		expect(result).toEqual({ status: 'tier_not_on_sale', tierKey: 'windowed' })
+		const [tier] = await sql<{ reserved: number }[]>`select reserved from tiers where event_id = ${eventId}`
+		expect(tier.reserved).toBe(0)
+	})
+
+	it('reserves a tier inside its window', async () => {
+		const eventId = 'window-test-open'
+		await sql`insert into tiers (event_id, tier_key, capacity, reserved) values (${eventId}, 'windowed', 10, 0)`
+		const tiers: SanityTier[] = [
+			{ _key: 'windowed', name: 'Windowed', price: 10, capacity: 10, releaseTrigger: 'scheduled', saleStart: '2026-11-01T09:00:00Z' },
+		]
+
+		const result = await reserveOrder(
+			{ eventDetailsId: eventId, items: [{ tierKey: 'windowed', quantity: 1 }], email: 'buyer@example.com', marketingOptIn: false },
+			tiers,
+			new Date('2026-11-20T14:00:00Z'),
+		)
+
+		expect(result.status).toBe('reserved')
+	})
 })

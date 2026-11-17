@@ -13,6 +13,7 @@ import { PER_ORDER_MAX } from '@/lib/orderLimits'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyTurnstileToken } from '@/lib/turnstile'
 import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
+import { eventSaleState } from '@/lib/saleState'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -46,6 +47,16 @@ const CreateOrderSchema = z.object({
 })
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
+
+// Why an event isn't on sale, in the buyer's words. Keyed by the closed
+// reason, or the status itself for the others.
+const SALE_UNAVAILABLE_MESSAGE: Record<'status' | 'event_day' | 'windows_ended' | 'not_open' | 'sold_out', string> = {
+	status: 'Tickets for this event are no longer on sale.',
+	event_day: 'Online sales have closed — tickets are available on the door.',
+	windows_ended: 'Tickets for this event are no longer on sale.',
+	not_open: "Tickets for this event aren't on sale yet.",
+	sold_out: 'Sorry, this event has sold out.',
+}
 
 export interface CreateOrderState {
 	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed' | 'challenge_required'
@@ -95,10 +106,27 @@ export async function createOrder(
 		}
 	}
 
+	// One clock for the event check here and the tier windows in reserveOrder,
+	// so the two can't disagree across a boundary (e.g. midnight)
+	const now = new Date()
+
+	// The event as a whole must be on sale — an editor's status, the event
+	// date — whatever the (possibly cached) page showed (8API.5). Stock isn't
+	// passed: capacity is enforced atomically by reserveOrder itself.
+	const sale = eventSaleState({
+		ticketingStatus: eventDetails.ticketingStatus,
+		eventDate: eventDetails.eventDate ?? undefined,
+		tiers: eventDetails.tiers,
+		now,
+	})
+	if (sale.status !== 'on_sale') {
+		return { status: 'unavailable', message: SALE_UNAVAILABLE_MESSAGE[sale.status === 'closed' ? sale.reason : sale.status] }
+	}
+
 	// Never trust the client about consent while marketing opt-in is off: a
 	// hand-crafted request can't record anyone as opted in (C6)
 	const marketingOptIn = isMarketingOptInEnabled() && parsed.data.marketingOptIn
-	const result = await reserveOrder({ ...parsed.data, marketingOptIn }, eventDetails.tiers)
+	const result = await reserveOrder({ ...parsed.data, marketingOptIn }, eventDetails.tiers, now)
 
 	switch (result.status) {
 		case 'reserved': {
@@ -147,6 +175,11 @@ export async function createOrder(
 			return {
 				status: 'sold_out',
 				message: "One of the selected tiers isn't open yet.",
+			}
+		case 'tier_not_on_sale':
+			return {
+				status: 'unavailable',
+				message: "One of the selected tiers isn't on sale right now.",
 			}
 		case 'invalid_tier':
 			return {

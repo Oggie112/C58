@@ -74,19 +74,24 @@ export const EVENT_BY_DETAILS_ID_QUERY = defineQuery(/* groq */ `
 
 // Fetch eventDetails directly by its own _id — used server-side by
 // createOrder/reserveOrder, which only ever have eventDetailsId (not an
-// event slug), so the slug-based join above doesn't fit. Just tiers: that's
-// all reserveOrder needs (name/price/releaseTrigger for the snapshot and
-// previousSoldOut gating) — capacity itself comes from the Postgres mirror,
-// never from this query.
+// event slug), so the slug-based join above doesn't fit. The tiers (name/
+// price/releaseTrigger for the snapshot and previousSoldOut gating, plus
+// saleStart/saleEnd for each tier's window), the ticketing status and the
+// event's date — what lib/saleState.ts needs to enforce the sale state.
+// Capacity itself comes from the Postgres mirror, never from this query.
 export const EVENT_DETAILS_BY_ID_QUERY = defineQuery(/* groq */ `
 	*[_type == "eventDetails" && _id == $id][0] {
 		_id,
+		ticketingStatus,
+		"eventDate": event->date,
 		tiers[] {
 			_key,
 			name,
 			price,
 			capacity,
-			releaseTrigger
+			releaseTrigger,
+			saleStart,
+			saleEnd
 		}
 	}
 `)

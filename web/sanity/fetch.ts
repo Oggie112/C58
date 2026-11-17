@@ -25,13 +25,15 @@ export async function getEventBySlug(slug: string, options: FetchOptions): Promi
 	return data as SanityEventWithDetails | null
 }
 
-export async function getEventDetailsById(
-	id: string,
-	options: FetchOptions,
-): Promise<Pick<SanityEventDetails, '_id' | 'tiers'> | null> {
+export type EventDetailsForSale = Pick<SanityEventDetails, '_id' | 'tiers' | 'ticketingStatus'> & {
+	// The linked event's date (YYYY-MM-DD) — null if the event link is missing
+	eventDate: string | null
+}
+
+export async function getEventDetailsById(id: string, options: FetchOptions): Promise<EventDetailsForSale | null> {
 	'use cache'
 	const { data } = await sanityFetch({ query: EVENT_DETAILS_BY_ID_QUERY, params: { id }, ...options })
-	return data as Pick<SanityEventDetails, '_id' | 'tiers'> | null
+	return data as EventDetailsForSale | null
 }
 
 export async function getEventByDetailsId(

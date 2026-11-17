@@ -4,6 +4,7 @@ import { getTierAvailability } from './getTierAvailability'
 import { computeRemainingStock } from './stock'
 import { latchOpenTiers } from './latchOpenTiers'
 import { generateAccessToken } from './generateAccessToken'
+import { tierWindow } from './saleState'
 import type { SanityTier } from '@/types/sanity'
 
 // Deliberately not imported from actions.ts's CreateOrderInput — lib/ is the
@@ -20,6 +21,7 @@ export type ReserveResult =
 	| { status: 'reserved'; orderId: string; amountTotal: number; accessToken: string }
 	| { status: 'sold_out'; tierKey: string }
 	| { status: 'tier_not_open'; tierKey: string }
+	| { status: 'tier_not_on_sale'; tierKey: string }
 	| { status: 'invalid_tier'; tierKey: string }
 
 class SoldOutError extends Error {
@@ -38,7 +40,12 @@ class TierNotOpenError extends Error {
 // current data for this event, fetched by the caller (createOrder) before
 // this runs — kept outside the transaction deliberately, so the transaction
 // never holds a DB lock open across an external HTTP call to Sanity.
-export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]): Promise<ReserveResult> {
+// `now` is a parameter so tests can pin the clock.
+export async function reserveOrder(
+	input: ReserveOrderInput,
+	tiers: SanityTier[],
+	now: Date = new Date(),
+): Promise<ReserveResult> {
 	// An unknown tierKey is a bad-input problem, not a concurrency one — fail
 	// before opening the transaction at all, not partway through it. Returned,
 	// not thrown: a client probing with a bogus tierKey shouldn't produce an
@@ -47,6 +54,9 @@ export async function reserveOrder(input: ReserveOrderInput, tiers: SanityTier[]
 	for (const item of input.items) {
 		const tier = tiers.find((t) => t._key === item.tierKey)
 		if (!tier) return { status: 'invalid_tier', tierKey: item.tierKey }
+		// A tier's sale window is time, not stock — no transaction needed, and a
+		// direct call to the server action can't buy outside it (8API.5)
+		if (tierWindow(tier, now) !== 'open') return { status: 'tier_not_on_sale', tierKey: item.tierKey }
 		resolvedItems.push({
 			tierKey: item.tierKey,
 			quantity: item.quantity,
