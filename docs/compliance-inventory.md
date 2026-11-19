@@ -40,7 +40,7 @@ Everything open or decided, in one place. Each links to the section with the det
 | C2 | **Guaranteed IP cleanup** — the hourly job deletes `reservation_attempts` older than 10 minutes | Today they're only deleted on the next checkout attempt, so "kept for 10 minutes" isn't strictly true on a quiet site | Ready |
 | C3 | **Load Turnstile only when a challenge is needed** | Today every visitor to an on-sale event page contacts Cloudflare; most never need to | Ready |
 | C4 | **Automated retention** — anonymise buyer emails 12 months after the event; delete financial rows after 6 years | Makes the stated retention true without manual work | Waits on the accountant's confirmation (D1) |
-| C5 | **Enforce tier `saleStart` / `saleEnd`** (roadmap 8API.5) | The ticket terms will describe sale windows the site doesn't currently enforce | Ready |
+| C5 | **Enforce tier `saleStart` / `saleEnd`** (roadmap 8API.5) | The ticket terms will describe sale windows the site doesn't currently enforce | ✅ Done (`feat/enforce-sale-state`) — also enforces the editor's status and closes online sales at 00:00 UK time on the event date |
 | C6 | **Marketing opt-in dormant** — a `MARKETING_OPT_IN_ENABLED = false` switch: checkbox hidden, `createOrder` forces opt-in off server-side, follow-ups and the hourly retry skip the sync | Lets 8API.3 (PR #56) merge with nothing collected or shared until ICO registration (K1) and the privacy policy are done; switching on is a one-line change | Ready |
 
 ### Skiddle (current ticketing for existing events)
@@ -132,5 +132,5 @@ Needed by all three documents:
 - **Tickets are bearer tickets (D6):** whoever holds a valid ticket can use it; transfers and resale are the holder's business. The buyer is **responsible for keeping tickets secure** (don't post them or show the QR publicly); **C58 isn't responsible for tickets bought from anyone else**
 - **Lost tickets:** the email can be resent (order-page link; resend form 8UI.3 when built)
 - **Price:** the total shown is the total charged — **no booking fee**; **not VAT-registered** (K2)
-- **Sale windows:** tiers can have start/end times — not enforced until C5
+- **Sale windows (C5):** tiers can have start/end times, enforced at checkout; **online sales close at 00:00 UK time on the event date** — tickets on the door after that
 - Liability limits, **governing law (England and Wales)**, complaints contact
