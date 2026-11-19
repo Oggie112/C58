@@ -79,7 +79,7 @@ describe('createOrder — sale state (8API.5)', () => {
 	it.each([
 		['an editor closed it', { ticketingStatus: 'closed' }, 'Tickets for this event are no longer on sale.'],
 		["it isn't on sale yet", { ticketingStatus: 'not_open' }, "Tickets for this event aren't on sale yet."],
-		['an editor marked it sold out', { ticketingStatus: 'sold_out' }, 'Sorry, this event has sold out.'],
+		['an editor marked it sold out', { ticketingStatus: 'sold_out' }, 'This event has sold out.'],
 		// Today, in UK time — online sales stop at 00:00 on the event date
 		['it is the event day', { eventDate: londonDate(new Date()) }, 'Online sales have closed — tickets are available on the door.'],
 		['the event has passed', { eventDate: '2020-01-01' }, 'Online sales have closed — tickets are available on the door.'],

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import TierPicker from './TierPicker'
-import type { SanityTier } from '@/types/sanity'
+import type { SanityTier, TicketingStatus } from '@/types/sanity'
+import { londonDate } from '@/lib/dateFormat'
 
 jest.mock('./actions', () => ({
 	createOrder: jest.fn(),
@@ -39,16 +40,29 @@ const openStock = {
 	[tiers[1]._key]: { capacity: tiers[1].capacity, reserved: 0 },
 }
 
-async function renderAndWaitForStock(
-	props: { eventDetailsId?: string; tiers?: SanityTier[]; marketingOptInEnabled?: boolean } = {},
-) {
-	const result = render(
+interface PickerProps {
+	eventDetailsId?: string
+	tiers?: SanityTier[]
+	marketingOptInEnabled?: boolean
+	ticketingStatus?: TicketingStatus
+	eventDate?: string | null
+}
+
+// Defaults to an event comfortably on sale; tests override what they need
+function renderPicker(props: PickerProps = {}) {
+	return render(
 		<TierPicker
 			eventDetailsId={props.eventDetailsId ?? 'details-1'}
 			tiers={props.tiers ?? tiers}
 			marketingOptInEnabled={props.marketingOptInEnabled ?? false}
+			ticketingStatus={props.ticketingStatus ?? 'on_sale'}
+			eventDate={props.eventDate === undefined ? '2099-12-31' : props.eventDate}
 		/>,
 	)
+}
+
+async function renderAndWaitForStock(props: PickerProps = {}) {
+	const result = renderPicker(props)
 	await waitFor(() =>
 		expect(screen.queryByText('Checking availability…')).not.toBeInTheDocument(),
 	)
@@ -62,13 +76,13 @@ describe('TierPicker', () => {
 
 	it('shows a checking-availability state before stock has loaded', () => {
 		mockFetchOnce(openStock)
-		render(<TierPicker eventDetailsId="details-1" tiers={tiers} marketingOptInEnabled={false} />)
+		renderPicker()
 		expect(screen.getByText('Checking availability…')).toBeInTheDocument()
 	})
 
 	it('disables quantity buttons while stock is still loading', () => {
 		mockFetchOnce(openStock)
-		render(<TierPicker eventDetailsId="details-1" tiers={tiers} marketingOptInEnabled={false} />)
+		renderPicker()
 		expect(screen.getByLabelText('Increase quantity for General Admission')).toBeDisabled()
 	})
 
@@ -232,5 +246,89 @@ describe('TierPicker', () => {
 		fireEvent.click(screen.getByRole('button', { name: /Get Tickets/ }))
 
 		expect(await screen.findByRole('alert')).toHaveTextContent("couldn't load a quick security check")
+	})
+})
+
+describe('TierPicker — sale state (8API.5)', () => {
+	afterEach(() => {
+		jest.restoreAllMocks()
+	})
+
+	it('labels an event on sale once stock has loaded', async () => {
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock()
+		expect(screen.getByTestId('sale-status')).toHaveTextContent('On sale')
+	})
+
+	it("shows the editor's status before stock loads — what the server rendered", () => {
+		mockFetchOnce(openStock)
+		renderPicker({ ticketingStatus: 'closed' })
+		expect(screen.getByTestId('sale-status')).toHaveTextContent('Closed')
+		expect(screen.getByText('Tickets for this event are no longer on sale.')).toBeInTheDocument()
+	})
+
+	it('switches to sold out once every tier reaches capacity, and hides the purchase form', async () => {
+		mockFetchOnce({
+			[tiers[0]._key]: { capacity: 3, reserved: 3 },
+			[tiers[1]._key]: { capacity: 100, reserved: 100 },
+		})
+		await renderAndWaitForStock()
+
+		expect(screen.getByTestId('sale-status')).toHaveTextContent('Sold out')
+		expect(screen.getByText('This event has sold out.')).toBeInTheDocument()
+		expect(screen.getAllByText('Sold out', { selector: 'li p' })).toHaveLength(2)
+		expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: /Get Tickets/ })).not.toBeInTheDocument()
+	})
+
+	it.each([
+		['an editor closed it', { ticketingStatus: 'closed' as const }, 'Closed', 'Tickets for this event are no longer on sale.'],
+		["it isn't on sale yet", { ticketingStatus: 'not_open' as const }, 'Not yet on sale', "Tickets for this event aren't on sale yet."],
+		// Today, in UK time — online sales stop at 00:00 on the event date
+		['it is the event day', { eventDate: londonDate(new Date()) }, 'Closed', 'Online sales have closed — tickets are available on the door.'],
+		['the event has passed', { eventDate: '2020-01-01' }, 'Closed', 'Online sales have closed — tickets are available on the door.'],
+	])('explains why and disables every tier when %s, despite open stock', async (_case, override, label, message) => {
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock(override)
+
+		expect(screen.getByTestId('sale-status')).toHaveTextContent(label)
+		expect(screen.getByText(message)).toBeInTheDocument()
+		expect(screen.getByLabelText('Increase quantity for General Admission')).toBeDisabled()
+		expect(screen.getByLabelText('Increase quantity for VIP')).toBeDisabled()
+		expect(screen.queryByRole('button', { name: /Get Tickets/ })).not.toBeInTheDocument()
+	})
+
+	it("shows when a scheduled tier goes on sale, in UK time, and keeps it shut until then", async () => {
+		const withFutureTier: SanityTier[] = [tiers[0], { ...tiers[1], saleStart: '2099-11-21T19:00:00Z' }]
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock({ tiers: withFutureTier })
+
+		expect(screen.getByText('On sale from 21 Nov, 7:00 pm')).toBeInTheDocument()
+		expect(screen.getByLabelText('Increase quantity for VIP')).toBeDisabled()
+		// The other tier is unaffected — the event as a whole is still on sale
+		expect(screen.getByLabelText('Increase quantity for General Admission')).not.toBeDisabled()
+		expect(screen.getByTestId('sale-status')).toHaveTextContent('On sale')
+	})
+
+	it('marks a tier past its sale end as ended', async () => {
+		const withEndedTier: SanityTier[] = [tiers[0], { ...tiers[1], saleEnd: '2020-01-01T00:00:00Z' }]
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock({ tiers: withEndedTier })
+
+		expect(screen.getByText('Sale ended')).toBeInTheDocument()
+		expect(screen.getByLabelText('Increase quantity for VIP')).toBeDisabled()
+		expect(screen.getByTestId('sale-status')).toHaveTextContent('On sale')
+	})
+
+	it('closes the event once every tier is sold out or past its window', async () => {
+		const allDone: SanityTier[] = [tiers[0], { ...tiers[1], saleEnd: '2020-01-01T00:00:00Z' }]
+		mockFetchOnce({
+			[tiers[0]._key]: { capacity: 3, reserved: 3 },
+			[tiers[1]._key]: { capacity: 100, reserved: 0 },
+		})
+		await renderAndWaitForStock({ tiers: allDone })
+
+		expect(screen.getByTestId('sale-status')).toHaveTextContent('Closed')
+		expect(screen.getByText('Tickets for this event are no longer on sale.')).toBeInTheDocument()
 	})
 })

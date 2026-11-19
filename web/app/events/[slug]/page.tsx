@@ -9,15 +9,8 @@ import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
 import portableTextComponents from '@/lib/portableTextComponents'
-import type { SanityLineupEntry, SanityFaqEntry, TicketingStatus } from '@/types/sanity'
+import type { SanityLineupEntry, SanityFaqEntry } from '@/types/sanity'
 import TierPicker from './TierPicker'
-
-const TICKETING_STATUS_LABEL: Record<TicketingStatus, string> = {
-	not_open: 'Not yet on sale',
-	on_sale: 'On sale',
-	sold_out: 'Sold out',
-	closed: 'Closed',
-}
 
 export async function generateStaticParams() {
 	return await getAllEventSlugs(PUBLISHED_FETCH_OPTIONS)
@@ -98,21 +91,13 @@ export default async function EventPage({ params }: PageProps<'/events/[slug]'>)
 				{/* Ticketing */}
 				<section className="mb-12">
 					{details && tiers.length > 0 ? (
-						<>
-							<div className="flex items-center justify-between mb-6">
-								<h2 className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-white">
-									Tickets
-								</h2>
-								<span className="font-body text-label uppercase tracking-[0.15em] text-c58-ice">
-									{TICKETING_STATUS_LABEL[details.ticketingStatus]}
-								</span>
-							</div>
-							<TierPicker
-								eventDetailsId={details._id}
-								tiers={tiers}
-								marketingOptInEnabled={isMarketingOptInEnabled()}
-							/>
-						</>
+						<TierPicker
+							eventDetailsId={details._id}
+							tiers={tiers}
+							marketingOptInEnabled={isMarketingOptInEnabled()}
+							ticketingStatus={details.ticketingStatus}
+							eventDate={event.date}
+						/>
 					) : event.ticketUrl ? (
 						<Link
 							href={event.ticketUrl}

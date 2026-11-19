@@ -6,6 +6,19 @@ export function londonDate(instant: Date): string {
 	return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(instant)
 }
 
+// A sale-window instant for display, e.g. "21 Nov, 7:00 pm" — always UK
+// time, whatever the visitor's own timezone, as events are in the UK.
+export function formatSaleTime(isoInstant: string): string {
+	return new Intl.DateTimeFormat('en-GB', {
+		timeZone: 'Europe/London',
+		day: 'numeric',
+		month: 'short',
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true,
+	}).format(new Date(isoInstant))
+}
+
 export function formatEventDate(isoDate: string): string {
 	return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-GB', {
 		day: 'numeric',

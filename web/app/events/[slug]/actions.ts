@@ -13,7 +13,7 @@ import { PER_ORDER_MAX } from '@/lib/orderLimits'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyTurnstileToken } from '@/lib/turnstile'
 import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
-import { eventSaleState } from '@/lib/saleState'
+import { eventSaleState, saleUnavailableMessage } from '@/lib/saleState'
 
 const OrderItemSchema = z.object({
 	tierKey: z.string().min(1),
@@ -47,16 +47,6 @@ const CreateOrderSchema = z.object({
 })
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
-
-// Why an event isn't on sale, in the buyer's words. Keyed by the closed
-// reason, or the status itself for the others.
-const SALE_UNAVAILABLE_MESSAGE: Record<'status' | 'event_day' | 'windows_ended' | 'not_open' | 'sold_out', string> = {
-	status: 'Tickets for this event are no longer on sale.',
-	event_day: 'Online sales have closed — tickets are available on the door.',
-	windows_ended: 'Tickets for this event are no longer on sale.',
-	not_open: "Tickets for this event aren't on sale yet.",
-	sold_out: 'Sorry, this event has sold out.',
-}
 
 export interface CreateOrderState {
 	status: 'idle' | 'invalid' | 'unavailable' | 'sold_out' | 'checkout_failed' | 'challenge_required'
@@ -120,7 +110,7 @@ export async function createOrder(
 		now,
 	})
 	if (sale.status !== 'on_sale') {
-		return { status: 'unavailable', message: SALE_UNAVAILABLE_MESSAGE[sale.status === 'closed' ? sale.reason : sale.status] }
+		return { status: 'unavailable', message: saleUnavailableMessage(sale) }
 	}
 
 	// Never trust the client about consent while marketing opt-in is off: a

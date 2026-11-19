@@ -1,4 +1,11 @@
-import { eventSaleState, onlineSalesClosedForEventDate, tierSaleState, tierWindow } from './saleState'
+import {
+	eventSaleState,
+	onlineSalesClosedForEventDate,
+	saleStatusLabel,
+	saleUnavailableMessage,
+	tierSaleState,
+	tierWindow,
+} from './saleState'
 import * as fixtures from '../tests/fixtures/saleState'
 
 describe('tierWindow', () => {
@@ -125,5 +132,29 @@ describe('eventSaleState', () => {
 
 	it('without stock (the server), leaves capacity to the reservation and reports on sale', () => {
 		expect(eventSaleState(base)).toEqual({ status: 'on_sale' })
+	})
+})
+
+describe('saleUnavailableMessage', () => {
+	it.each([
+		[{ status: 'sold_out' as const }, 'This event has sold out.'],
+		[{ status: 'not_open' as const }, "Tickets for this event aren't on sale yet."],
+		[{ status: 'closed' as const, reason: 'status' as const }, 'Tickets for this event are no longer on sale.'],
+		[{ status: 'closed' as const, reason: 'windows_ended' as const }, 'Tickets for this event are no longer on sale.'],
+		// Only the event-day close points to the door — the others may mean no event at all
+		[{ status: 'closed' as const, reason: 'event_day' as const }, 'Online sales have closed — tickets are available on the door.'],
+	])('explains %j to the buyer', (state, message) => {
+		expect(saleUnavailableMessage(state)).toBe(message)
+	})
+})
+
+describe('saleStatusLabel', () => {
+	it.each([
+		[{ status: 'on_sale' as const }, 'On sale'],
+		[{ status: 'sold_out' as const }, 'Sold out'],
+		[{ status: 'not_open' as const }, 'Not yet on sale'],
+		[{ status: 'closed' as const, reason: 'event_day' as const }, 'Closed'],
+	])('labels %j', (state, label) => {
+		expect(saleStatusLabel(state)).toBe(label)
 	})
 })

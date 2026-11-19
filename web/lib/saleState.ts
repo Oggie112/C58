@@ -51,6 +51,35 @@ export interface EventSaleInput {
 	now: Date
 }
 
+// Why an event isn't on sale, in the buyer's words — shared by the server
+// action's refusal and the ticket picker, so the two can't drift.
+export function saleUnavailableMessage(state: Exclude<EventSaleState, { status: 'on_sale' }>): string {
+	switch (state.status) {
+		case 'sold_out':
+			return 'This event has sold out.'
+		case 'not_open':
+			return "Tickets for this event aren't on sale yet."
+		case 'closed':
+			return state.reason === 'event_day'
+				? 'Online sales have closed — tickets are available on the door.'
+				: 'Tickets for this event are no longer on sale.'
+	}
+}
+
+// The short status label shown beside "Tickets"
+export function saleStatusLabel(state: EventSaleState): string {
+	switch (state.status) {
+		case 'on_sale':
+			return 'On sale'
+		case 'sold_out':
+			return 'Sold out'
+		case 'not_open':
+			return 'Not yet on sale'
+		case 'closed':
+			return 'Closed'
+	}
+}
+
 export function eventSaleState({ ticketingStatus, eventDate, tiers, stock, now }: EventSaleInput): EventSaleState {
 	// An editor's explicit status wins over anything computed — the Studio
 	// describes it as a manual override, independent of tier dates/capacity
