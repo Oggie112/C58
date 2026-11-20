@@ -36,10 +36,10 @@ Everything open or decided, in one place. Each links to the section with the det
 
 | # | Fix | Why | Status |
 | --- | --- | --- | --- |
-| C1 | **Google Maps → click-to-load** | Avoids a consent banner for a single embed | Ready (D2 decided) |
-| C2 | **Guaranteed IP cleanup** — the hourly job deletes `reservation_attempts` older than 10 minutes | Today they're only deleted on the next checkout attempt, so "kept for 10 minutes" isn't strictly true on a quiet site | Ready |
-| C3 | **Load Turnstile only when a challenge is needed** | Today every visitor to an on-sale event page contacts Cloudflare; most never need to | Ready |
-| C4 | **Automated retention** — anonymise buyer emails 12 months after the event; delete financial rows after 6 years | Makes the stated retention true without manual work | Waits on the accountant's confirmation (D1) |
+| C1 | **Google Maps → click-to-load** | Avoids a consent banner for a single embed | ✅ Done (PR #61) — `ClickToLoadMap`: "Show map" plus a plain link to Google Maps; the iframe renders only after the click; the choice isn't stored |
+| C2 | **Guaranteed IP cleanup** | They were only deleted on the next checkout attempt, so on a quiet site they could sit for days | ✅ Done (`fix/clean-up-reservation-attempts`) — a **Supabase `pg_cron`** job deletes `reservation_attempts` older than 10 minutes **every 5 minutes**, so none outlives ~15 minutes. Moved from the planned GitHub job, which runs only ~3–4 times a day (roadmap 8API.6). A daily job keeps a week of cron run history |
+| C3 | **Load Turnstile only when a challenge is needed** | Every visitor to an on-sale event page contacted Cloudflare; most never need to | ✅ Done (PR #60) — the script loads only after the server asks for a challenge |
+| C4 | **Automated retention** — anonymise buyer emails 12 months after the event; delete financial rows after 6 years | Makes the stated retention true without manual work | Waits on the accountant's confirmation (D1). **Build note:** `pg_cron` is now set up (C2), so this becomes another scheduled job — but the **event date lives in Sanity**, not Postgres. "12 months after the event" needs the date synced into Postgres (the tiers webhook could carry it), or the order's `created_at` plus a margin (e.g. 13 months) as a stand-in |
 | C5 | **Enforce tier `saleStart` / `saleEnd`** (roadmap 8API.5) | The ticket terms will describe sale windows the site doesn't currently enforce | ✅ Done (`feat/enforce-sale-state`) — also enforces the editor's status and closes online sales at 00:00 UK time on the event date |
 | C6 | **Marketing opt-in dormant** — a `MARKETING_OPT_IN_ENABLED = false` switch: checkbox hidden, `createOrder` forces opt-in off server-side, follow-ups and the hourly retry skip the sync | Lets 8API.3 (PR #56) merge with nothing collected or shared until ICO registration (K1) and the privacy policy are done; switching on is a one-line change | Ready |
 
@@ -79,7 +79,7 @@ Needed by all three documents:
 | **Order access token** | `orders.access_token` | The private order-page link | As the order |
 | **SumUp checkout id** | `orders.provider_session_id` | Matching payments | As the order |
 | **Marketing consent** — yes/no and when | `orders.marketing_opt_in`, `created_at`, `marketing_synced_at` | Evidence of consent | As the order |
-| **IP address + time of each checkout attempt** | `reservation_attempts` | Rate limiting / bot protection | **~10 minutes**, deleted when the next checkout attempt runs after that — can persist longer on a quiet site (C2) |
+| **IP address + time of each checkout attempt** | `reservation_attempts` | Rate limiting / bot protection | **Up to ~15 minutes** — needed for the 10-minute rate-limit window; a scheduled database job deletes older rows every 5 minutes (C2) |
 | **Card details** | **Never reach C58** — entered on SumUp's hosted page | Payment | SumUp's responsibility |
 
 **Not collected from buyers:** names, phone numbers, postal addresses, dates of birth. No user accounts.
@@ -95,8 +95,8 @@ Needed by all three documents:
 | **Vercel Web Analytics / Speed Insights** | Page views and performance — **cookieless**; order tokens **redacted** from URLs | Analytics | Vercel |
 | **SumUp** | Order amount and reference; card details entered directly with SumUp | Payment | SumUp (UK/EU) — also a controller for payment data in its own right |
 | **Brevo** (Sendinblue SAS, France) | **Transactional:** email, order details, ticket codes, QR images. **Marketing (opted-in only — dormant until C6 is switched on):** email plus `OPT_IN_SOURCE`, `OPT_IN_DATE`, `OPT_IN_WORDING`, `OPT_IN_ORDER`, `LAST_EVENT` | Ticket emails; marketing | EU. Opens/clicks tracked **anonymously**; Brevo keeps send/delivery logs |
-| **Cloudflare Turnstile** | **IP and browser signals.** The script loads on **every event page with tickets on sale** (C3); challenge verification also sends the IP | Bot protection | Global (K4) |
-| **Google Maps** (embed) | Visitor IP and Google's **cookies**, on any page whose contact block shows a map | Showing the location | US/global (D2) |
+| **Cloudflare Turnstile** | **IP and browser signals** — only from buyers **asked to complete a security check** (rate limit reached); the script doesn't load otherwise (C3). Challenge verification also sends the IP | Bot protection | Global (K4) |
+| **Google Maps** (embed) | Visitor IP and Google's **cookies** — only after the visitor **clicks "Show map"** on a contact block (C1) | Showing the location | US/global (D2) |
 | **Behold / Instagram** | Visitor IP when the Instagram feed block loads; **no cookies**; Behold keeps anonymous request logs for quota. Media is C58's own Instagram content | Instagram feed | K5 — whether images come from Instagram's CDN (then **Meta** also sees IPs) |
 | **Sanity** (processor) | Site content, **including featured people's names, photos and bios** (D8); visitors' browsers fetch **hero background videos** straight from `cdn.sanity.io`, so Sanity sees their **IP addresses** (images go via Vercel); **no cookies**; editors have Sanity accounts | CMS — legitimate interests (Art. 6(1)(f)) | Transfers: SCCs + UK Addendum (K6); region unconfirmed |
 | **GitHub Actions** | Nothing personal — the hourly retry logs counts only | Scheduled retry | — |
@@ -108,8 +108,8 @@ Needed by all three documents:
 | --- | --- | --- | --- | --- |
 | **None for ordinary visitors** | C58's own code | — | — | — |
 | `__prerender_bypass`, Sanity perspective cookie | Next.js / next-sanity | **Editors in draft mode only** | Strictly necessary | No |
-| **Google Maps embed** | Google | Visitors who **choose to load the map** (once C1 is built; today, everyone on the page) | **No** | Yes — **click-to-load** decided (D2): the visitor's click is the consent, and nothing loads before it |
-| Cloudflare Turnstile | Cloudflare | Event-page visitors (only those challenged, once C3 is built) | **Strictly necessary** (bot detection) — working position | No, but named in the policy (K4 — awaiting Cloudflare's addendum) |
+| **Google Maps embed** | Google | Visitors who **choose to load the map** (C1) | **No** | Yes — **click-to-load** decided (D2): the visitor's click is the consent, and nothing loads before it |
+| Cloudflare Turnstile | Cloudflare | Event-page visitors who are challenged (C3) | **Strictly necessary** (bot detection) — working position | No, but named in the policy (K4 — awaiting Cloudflare's addendum) |
 | Behold / Instagram feed | Behold | Pages with the feed | — | **No cookies** (K5); name Behold as a recipient of visitor IPs |
 | Vercel Analytics | Vercel | All visitors | — | Cookieless by design; usually no consent needed, but name it |
 
