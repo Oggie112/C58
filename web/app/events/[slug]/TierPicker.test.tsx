@@ -1,10 +1,23 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react'
 import TierPicker from './TierPicker'
 import type { SanityTier, TicketingStatus } from '@/types/sanity'
 import { londonDate } from '@/lib/dateFormat'
 
 jest.mock('./actions', () => ({
 	createOrder: jest.fn(),
+}))
+// jsdom never loads external scripts, and next/script caches what it has
+// loaded across tests — so record its props instead, and let tests fire
+// onReady/onError themselves
+interface MockScriptProps {
+	src: string
+	onReady?: () => void
+	onError?: () => void
+}
+const mockScript = jest.fn<null, [MockScriptProps]>(() => null)
+jest.mock('next/script', () => ({
+	__esModule: true,
+	default: (props: MockScriptProps) => mockScript(props),
 }))
 
 const tiers: SanityTier[] = [
@@ -23,6 +36,12 @@ const tiers: SanityTier[] = [
 		releaseTrigger: 'scheduled',
 	},
 ]
+
+// Stock that never arrives — for tests of the loading state. A request that
+// resolved after the test had finished would update state outside act().
+function mockFetchPending() {
+	global.fetch = jest.fn(() => new Promise(() => {})) as jest.Mock
+}
 
 function mockFetchOnce(body: unknown, ok = true) {
 	global.fetch = jest.fn().mockResolvedValue({
@@ -75,13 +94,13 @@ describe('TierPicker', () => {
 	})
 
 	it('shows a checking-availability state before stock has loaded', () => {
-		mockFetchOnce(openStock)
+		mockFetchPending()
 		renderPicker()
 		expect(screen.getByText('Checking availability…')).toBeInTheDocument()
 	})
 
 	it('disables quantity buttons while stock is still loading', () => {
-		mockFetchOnce(openStock)
+		mockFetchPending()
 		renderPicker()
 		expect(screen.getByLabelText('Increase quantity for General Admission')).toBeDisabled()
 	})
@@ -249,6 +268,62 @@ describe('TierPicker', () => {
 	})
 })
 
+describe('TierPicker — Turnstile only when challenged (compliance C3)', () => {
+	const originalSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
+	beforeEach(() => {
+		mockScript.mockClear()
+		process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = 'test-site-key'
+	})
+
+	afterEach(() => {
+		jest.restoreAllMocks()
+		if (originalSiteKey === undefined) delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+		else process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = originalSiteKey
+	})
+
+	async function submitAndGetChallenged() {
+		const { createOrder } = await import('./actions')
+		jest.mocked(createOrder).mockResolvedValue({ status: 'challenge_required' })
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock()
+
+		fireEvent.click(screen.getByLabelText('Increase quantity for General Admission'))
+		fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'buyer@example.com' } })
+		fireEvent.click(screen.getByRole('button', { name: /Get Tickets/ }))
+		await screen.findByText('Running a quick security check…')
+	}
+
+	function lastScriptProps(): MockScriptProps {
+		return mockScript.mock.calls[mockScript.mock.calls.length - 1][0]
+	}
+
+	it("doesn't load Cloudflare's script for a visitor who's never challenged", async () => {
+		mockFetchOnce(openStock)
+		await renderAndWaitForStock()
+		expect(mockScript).not.toHaveBeenCalled()
+	})
+
+	it('loads the script once a challenge is needed, with a holding line until it is ready', async () => {
+		await submitAndGetChallenged()
+		expect(lastScriptProps().src).toContain('challenges.cloudflare.com/turnstile')
+
+		act(() => lastScriptProps().onReady?.())
+
+		expect(screen.queryByText('Running a quick security check…')).not.toBeInTheDocument()
+	})
+
+	it('explains when the script itself fails to download', async () => {
+		jest.spyOn(console, 'error').mockImplementation(() => {})
+		await submitAndGetChallenged()
+
+		act(() => lastScriptProps().onError?.())
+
+		expect(screen.queryByText('Running a quick security check…')).not.toBeInTheDocument()
+		expect(screen.getByRole('alert')).toHaveTextContent("couldn't load a quick security check")
+	})
+})
+
 describe('TierPicker — sale state (8API.5)', () => {
 	afterEach(() => {
 		jest.restoreAllMocks()
@@ -261,7 +336,7 @@ describe('TierPicker — sale state (8API.5)', () => {
 	})
 
 	it("shows the editor's status before stock loads — what the server rendered", () => {
-		mockFetchOnce(openStock)
+		mockFetchPending()
 		renderPicker({ ticketingStatus: 'closed' })
 		expect(screen.getByTestId('sale-status')).toHaveTextContent('Closed')
 		expect(screen.getByText('Tickets for this event are no longer on sale.')).toBeInTheDocument()

@@ -227,10 +227,19 @@ export default function TierPicker({
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<Script
-				src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-				onLoad={() => setTurnstileScriptLoaded(true)}
-			/>
+			{/* Loaded only once a challenge is needed, so most visitors never
+			    contact Cloudflare (compliance C3). onReady, not onLoad: it also
+			    fires when the script is already loaded from an earlier page. */}
+			{state.status === 'challenge_required' && (
+				<Script
+					src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+					onReady={() => setTurnstileScriptLoaded(true)}
+					onError={() => {
+						console.error('Turnstile script failed to load')
+						setTurnstileFailed(true)
+					}}
+				/>
+			)}
 
 			<div className="flex items-center justify-between mb-6">
 				<h2 className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-white">
@@ -347,6 +356,14 @@ export default function TierPicker({
 					{state.status !== 'idle' && state.message && (
 						<p className="font-body text-body text-c58-muted mb-4" role="status">
 							{state.message}
+						</p>
+					)}
+
+					{/* Bridges the gap while the script downloads — the widget brings
+					    its own "Verifying…" once it renders */}
+					{state.status === 'challenge_required' && !turnstileScriptLoaded && !challengeUnavailable && (
+						<p className="font-body text-body text-c58-muted mb-4" role="status">
+							Running a quick security check…
 						</p>
 					)}
 
