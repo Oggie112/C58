@@ -10,8 +10,10 @@ const MAX_ATTEMPTS_PER_WINDOW = 5
 export async function checkRateLimit(ipAddress: string): Promise<{ limited: boolean }> {
 	const cutoff = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000)
 
-	// Opportunistic cleanup, same lazy pattern as sweepStaleReservations —
-	// no separate cron job, just prunes whenever this runs.
+	// Opportunistic cleanup. The guarantee comes from pg_cron, which deletes
+	// these every 5 minutes (compliance C2) so stored IPs don't outlive the
+	// window on a quiet site; this keeps the table small wherever it's absent
+	// (the Testcontainers database). The count below filters by time anyway.
 	await sql`delete from reservation_attempts where created_at < ${cutoff}`
 
 	const [{ count }] = await sql<{ count: number }[]>`

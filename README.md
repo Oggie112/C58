@@ -239,6 +239,8 @@ Purchase flow, end to end:
 
 Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 
+Two **`pg_cron` jobs** run inside Supabase (migration `20261120120000_schedule_reservation_attempts_cleanup.sql`): `clean-up-reservation-attempts` deletes the rate limit's stored IPs past its 10-minute window, every 5 minutes, and `clean-up-cron-history` keeps a week of `cron.job_run_details`, daily. Check them in the SQL editor with `select jobname, schedule, active from cron.job;`. The Testcontainers database has no `pg_cron`, so the migration skips itself there.
+
 Prices are stored in **pounds** in Sanity and **pence** in Postgres; conversion happens once in `reserveOrder`.
 
 ### Sanity tiers webhook
