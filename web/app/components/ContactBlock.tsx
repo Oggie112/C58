@@ -1,5 +1,6 @@
 import { ContactBlock as ContactBlockType } from '@/types/sanity'
 import SectionMarker from './SectionMarker'
+import ClickToLoadMap from './ClickToLoadMap'
 
 export default function ContactBlock({ block, sectionNumber }: { block: ContactBlockType; sectionNumber?: string }) {
 	const { settings } = block
@@ -66,19 +67,7 @@ export default function ContactBlock({ block, sectionNumber }: { block: ContactB
 				</div>
 
 				{/* Map */}
-				{block.showMap && settings.address && (
-					<div className="w-full aspect-video border border-c58-border">
-						<iframe
-							src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`}
-							width="100%"
-							height="100%"
-							style={{ border: 0 }}
-							allowFullScreen={false}
-							loading="lazy"
-							referrerPolicy="no-referrer-when-downgrade"
-						/>
-					</div>
-				)}
+				{block.showMap && settings.address && <ClickToLoadMap address={settings.address} />}
 			</div>
 		</section>
 	)
