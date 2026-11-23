@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server'
 import { retryUnsentConfirmations } from '@/lib/retryUnsentConfirmations'
 import { retryUnsyncedOptIns } from '@/lib/retryUnsyncedOptIns'
 
-// Called hourly by .github/workflows/retry-confirmations.yml (8API.4).
+// Called hourly by a Supabase pg_cron job (8API.6, migration
+// 20261123120000_schedule_follow_up_retry.sql) and daily by
+// .github/workflows/retry-confirmations.yml, the watchdog that alerts (8API.4).
 // Retries both paid-order follow-ups — confirmation emails and, since
 // 8API.3, marketing-list sync — despite the path's name.
 // POST, not GET: it has side effects, and is never prerendered or cached.

@@ -22,7 +22,7 @@ How C58 stays inside Brevo's sending limit, and when to pay for more. Roadmap it
 
 ## Why it matters
 
-When the quota is used up, Brevo rejects further sends. A rejected confirmation is logged and released for retry (`lib/sendOrderConfirmation.ts`), and an **hourly retry** (8API.4) sends it once Brevo accepts again — after the daily reset, or after an upgrade.
+When the quota is used up, Brevo rejects further sends. A rejected confirmation is logged and released for retry (`lib/sendOrderConfirmation.ts`), and an **hourly retry** (8API.4, run from Supabase `pg_cron` since 8API.6) sends it once Brevo accepts again — after the daily reset, or after an upgrade.
 
 That's fine for a buyer whose event is days away. It's no help to someone buying **on the day of the event**: their retry can't succeed until the quota resets, by which time the event may be over. Their tickets still exist (valid in the database, visible on the order page if they clicked back from SumUp), but they may have no email to show at the door.
 
@@ -56,16 +56,16 @@ Starter is billed monthly, so it can be bought for the month of a big release an
   ```
 
   This should return nothing for long: anything here is picked up by the next hourly retry.
-- **The hourly retry alerts you.** The *Retry Confirmation Emails* GitHub Actions workflow fails — and GitHub emails the repo owner — whenever a send fails or the retry endpoint can't be reached. During a quota outage that's one email an hour until the reset.
+- **The daily watchdog alerts you.** The hourly retry runs inside Supabase and can't alert anyone, so the *Retry Confirmation Emails* GitHub Actions workflow runs the same retry once a day (06:17 UTC) and fails — GitHub emails the repo owner — whenever a send fails or the retry endpoint can't be reached. During a quota outage that's one email a day, at most; between watchdog runs, the README's `net._http_response` query shows what the hourly runs answered.
 
 ## When the retry alert arrives
 
-1. **Open the failed run** (GitHub → Actions → *Retry Confirmation Emails*). Its summary line — e.g. `found 12, sent 0, failed 3, stoppedEarly true` — gives the scale. `stoppedEarly` means three failures in a row: almost certainly account-wide (quota, outage, key) rather than one bad order. The log is public, so it holds counts only.
+1. **Open the failed run** (GitHub → Actions → *Retry Confirmation Emails*). It reflects that moment only — the hourly runs may have sent more since. Its summary line — e.g. `found 12, sent 0, failed 3, stoppedEarly true` — gives the scale. `stoppedEarly` means three failures in a row: almost certainly account-wide (quota, outage, key) rather than one bad order. The log is public, so it holds counts only.
 2. **Vercel → Logs**, search `confirmation email failed`. Each line names the order and Brevo's actual error — e.g. a credits/quota message, `401 … Key not found`, or a 5xx. That's the cause.
 3. **Brevo dashboard:** *Usage* (quota used up?), *SMTP & API → API keys* (key expired or deactivated?), and Brevo's status page (outage?).
 4. **Database:** the query above lists exactly which buyers are still waiting.
 5. **Fix the cause** — wait for the reset, upgrade the plan, or renew the key — then either wait for the next hourly run or press **Run workflow** on the workflow to clear the backlog straight away.
-6. **One order failing while others send** is probably a bad address: the Vercel line names it. It's retried (and logged) every hour without blocking the rest; contact that buyer another way.
+6. **One order failing while others send** is probably a bad address: the Vercel line names it. It's retried (and logged) every hour without blocking the rest — and fails the watchdog every day until dealt with; contact that buyer another way.
 
 **Same-day buyers** caught by quota won't be rescued by the retry in time (see above) — contact them from the business inbox, and ask them to open their order page from SumUp's "Back to merchant website" link if they still have it, or reply for help.
 

@@ -106,8 +106,8 @@ BREVO_LIST_ID=3
 BREVO_REPLY_TO_EMAIL=your_reply_to_address
 
 # --- Scheduled jobs (server-only) ---
-# Shared secret for the hourly confirmation-retry endpoint; must match the
-# CRON_SECRET GitHub Actions secret
+# Shared secret for the follow-up retry endpoint; must match the CRON_SECRET
+# GitHub Actions secret and the `cron_secret` in Supabase Vault
 CRON_SECRET=your_cron_secret
 
 # --- Feature switches (optional) ---
@@ -234,12 +234,45 @@ Purchase flow, end to end:
 2. The `createOrder` server action validates input, applies the rate limit (Turnstile challenge once exceeded), checks the event is on sale (the editor's status wins; online sales close at 00:00 UK time on the event date), and atomically reserves stock in Postgres (`lib/reserveOrder.ts`), refusing a tier outside its `saleStart`/`saleEnd` window.
 3. A SumUp hosted checkout is created and the buyer is redirected to it.
 4. SumUp calls `/api/webhooks/sumup`. The handler re-fetches the checkout status from SumUp, then marks the order paid and issues one ticket per admission. The buyer's "Back to merchant website" button leads to `/orders/[token]`, which confirms the same way if it gets there first.
-5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery, order-page visit, or the **hourly retry** (`.github/workflows/retry-confirmations.yml` → `POST /api/cron/retry-confirmations`; GitHub actually runs it ~3–4 times a day — roadmap 8API.6). A failed retry fails the workflow, so GitHub emails the repo owner — what to do next is in [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md).
+5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery, order-page visit, or the **hourly retry** — a Supabase `pg_cron` job calling `POST /api/cron/retry-confirmations` (see below). A **daily watchdog** (`.github/workflows/retry-confirmations.yml`) calls the same endpoint and fails if anything is still failing, so GitHub emails the repo owner — what to do next is in [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md).
 6. Alongside the email (`lib/runPaidOrderFollowUps.ts`), a buyer who ticked the marketing checkbox is added to the Brevo list (`lib/syncMarketingOptIn.ts`) — paid orders only, never abandoned checkouts. Same claim-and-retry pattern on `orders.marketing_synced_at`, retried by the same hourly job. The contact records their consent as attributes — `OPT_IN_SOURCE`, `OPT_IN_DATE` (UK date), `OPT_IN_WORDING` (the checkbox text, from `lib/marketingOptIn.ts`), `OPT_IN_ORDER`, plus `LAST_EVENT`. It never touches a contact's unsubscribe (blocklist) status: someone who unsubscribed stays unsubscribed even if they tick the box again. **Dormant by default:** with `MARKETING_OPT_IN_ENABLED` unset, the checkbox is hidden, `createOrder` records every order as not opted in whatever the request says, and the sync and its retry do nothing.
 
 Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 
-Two **`pg_cron` jobs** run inside Supabase (migration `20261120120000_schedule_reservation_attempts_cleanup.sql`): `clean-up-reservation-attempts` deletes the rate limit's stored IPs past its 10-minute window, every 5 minutes, and `clean-up-cron-history` keeps a week of `cron.job_run_details`, daily. Check them in the SQL editor with `select jobname, schedule, active from cron.job;`. The Testcontainers database has no `pg_cron`, so the migration skips itself there.
+### Scheduled database jobs
+
+Three **`pg_cron` jobs** run inside Supabase. The Testcontainers database has neither `pg_cron` nor `pg_net`, so these migrations skip themselves there.
+
+| Job | Schedule | Does | Migration |
+| --- | --- | --- | --- |
+| `clean-up-reservation-attempts` | Every 5 minutes | Deletes the rate limit's stored IPs past its 10-minute window | `20261120120000_schedule_reservation_attempts_cleanup.sql` |
+| `clean-up-cron-history` | Daily, 03:00 UTC | Keeps a week of `cron.job_run_details` (pg_cron never prunes it) | same |
+| `retry-paid-order-follow-ups` | Hourly at :17 | `pg_net` POST to `https://www.c58.uk/api/cron/retry-confirmations`, timeout 60s | `20261123120000_schedule_follow_up_retry.sql` |
+
+**One-off setup:** the retry job reads `CRON_SECRET` from Supabase Vault — it's never in the repo. Create it once in the SQL editor (same value as Vercel's), and update it there too whenever the secret is rotated:
+
+```sql
+select vault.create_secret('<CRON_SECRET>', 'cron_secret');
+-- rotating: select vault.update_secret(id, '<new value>') from vault.secrets where name = 'cron_secret';
+```
+
+**Checking them:**
+
+```sql
+-- The jobs, and whether they're active
+select jobname, schedule, active from cron.job;
+
+-- Recent runs (a run "succeeds" once its SQL runs — for the retry, that's queuing the request)
+select j.jobname, d.status, d.return_message, d.start_time
+from cron.job_run_details d join cron.job j using (jobid)
+order by d.start_time desc limit 10;
+
+-- What the retry endpoint actually answered (kept ~6 hours): expect 200 and a counts-only body
+select created, status_code, content, error_msg
+from net._http_response order by created desc limit 5;
+```
+
+`pg_net` can't alert anyone, so the daily GitHub watchdog stays: it fails — and GitHub emails the repo owner — on an endpoint error or a failed send.
 
 Prices are stored in **pounds** in Sanity and **pence** in Postgres; conversion happens once in `reserveOrder`.
 
@@ -299,6 +332,8 @@ The canonical site is **`https://www.c58.uk`** — `c58.uk` and `c58.vercel.app`
 | --- | --- |
 | Vercel (Production + Preview) | `NEXT_PUBLIC_SITE_URL=https://www.c58.uk` |
 | `deploy-studio.yml` | `SANITY_STUDIO_PREVIEW_URL: https://www.c58.uk` (plain workflow env, not a secret) |
+| `retry-confirmations.yml` | `SITE_URL: https://www.c58.uk` |
+| Migration `20261123120000_schedule_follow_up_retry.sql` | The retry job's URL — a domain change needs a new migration re-scheduling it |
 | sanity.io/manage → API → CORS origins | `https://www.c58.uk`, with credentials allowed — needed for live draft previews |
 
 ### GitHub Actions secrets
@@ -307,7 +342,7 @@ The canonical site is **`https://www.c58.uk`** — `c58.uk` and `c58.vercel.app`
 | --- | --- |
 | `SANITY_AUTH_TOKEN` | `deploy-studio.yml` — Studio deploys |
 | `DATABASE_POOLED_URL` | `supabase-keepalive.yml` — pings the database twice weekly so the free tier doesn't pause |
-| `CRON_SECRET` | `retry-confirmations.yml` — hourly retry of unsent order confirmation emails. Same value as Vercel's `CRON_SECRET` |
+| `CRON_SECRET` | `retry-confirmations.yml` — daily watchdog run of the follow-up retry. Same value as Vercel's `CRON_SECRET` and Supabase Vault's `cron_secret` |
 
 ---
 
