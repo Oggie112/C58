@@ -6,12 +6,16 @@ name: Retry Confirmation Emails
 # fails, and GitHub emails the repo owner, if anything failed; see
 # docs/brevo-quota-plan.md for what to do. Logs here are public: the endpoint
 # returns counts only.
+#
+# The hourly retry now runs from Supabase pg_cron (8API.6), which can't alert
+# anyone. This daily run is the watchdog: it retries too, and fails — emailing
+# the owner — if anything is still failing. Overlapping with an hourly run is
+# harmless: the claim columns stop a double send.
 
 on:
   schedule:
-    # Hourly at :17 — scheduled runs at the top of the hour are the most
-    # often delayed on GitHub's side
-    - cron: '17 * * * *'
+    # Daily at 06:17 UTC — off the top of the hour, which GitHub delays most
+    - cron: '17 6 * * *'
   workflow_dispatch: # "Run workflow" to clear a backlog straight away
 
 # The job only calls the site — it needs no access to the repository
