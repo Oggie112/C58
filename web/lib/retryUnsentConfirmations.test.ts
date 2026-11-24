@@ -14,7 +14,8 @@ describe('retryUnsentConfirmations', () => {
 	beforeAll(async () => {
 		db = await startTestDatabase()
 		// Dynamic, after startTestDatabase — see its note on lib/db.ts.
-		;({ retryUnsentConfirmations, RETRY_BATCH_SIZE } = await import('./retryUnsentConfirmations'))
+		;({ retryUnsentConfirmations } = await import('./retryUnsentConfirmations'))
+		;({ RETRY_BATCH_SIZE } = await import('./retryInSequence'))
 		sendOrderConfirmation = (await import('./sendOrderConfirmation')).sendOrderConfirmation as typeof sendOrderConfirmation
 	}, 60_000)
 
