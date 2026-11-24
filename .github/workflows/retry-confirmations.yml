@@ -1,7 +1,8 @@
 name: Retry Confirmation Emails
 
 # Re-sends order confirmation emails that failed (Brevo quota, outage, network)
-# — roadmap 8API.4 — and, since 8API.3, re-tries adding opted-in buyers to the
+# — roadmap 8API.4 — ticket resends requested through /orders that couldn't
+# be sent (8UI.3), and, since 8API.3, re-tries adding opted-in buyers to the
 # Brevo marketing list. Calls the site's secret-protected endpoint. The job
 # fails, and GitHub emails the repo owner, if anything failed; see
 # docs/brevo-quota-plan.md for what to do. Logs here are public: the endpoint
@@ -46,14 +47,18 @@ jobs:
           # an unexpected response must not pass silently
           read_count() { echo "${summary}" | jq -er "$1 | numbers"; }
           email_failed=$(read_count '.confirmations.failed')
+          resend_failed=$(read_count '.resends.failed')
           marketing_failed=$(read_count '.marketing.failed')
 
           if [ "${email_failed}" != "0" ]; then
             echo "::error::${email_failed} confirmation email(s) failed to send — see docs/brevo-quota-plan.md (check Vercel logs for 'confirmation email failed')"
           fi
+          if [ "${resend_failed}" != "0" ]; then
+            echo "::error::${resend_failed} requested ticket resend(s) failed to send — still queued; see docs/brevo-quota-plan.md (check Vercel logs for 'ticket resend failed')"
+          fi
           if [ "${marketing_failed}" != "0" ]; then
             echo "::error::${marketing_failed} opted-in buyer(s) couldn't be added to the marketing list — check Vercel logs for 'marketing list sync failed'"
           fi
-          if [ "${email_failed}" != "0" ] || [ "${marketing_failed}" != "0" ]; then
+          if [ "${email_failed}" != "0" ] || [ "${resend_failed}" != "0" ] || [ "${marketing_failed}" != "0" ]; then
             exit 1
           fi
