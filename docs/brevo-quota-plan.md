@@ -69,7 +69,18 @@ Starter is billed monthly, so it can be bought for the month of a big release an
 
 **Same-day buyers** caught by quota won't be rescued by the retry in time (see above) — contact them from the business inbox, and ask them to open their order page from SumUp's "Back to merchant website" link if they still have it, or reply for help.
 
-**Not covered by the retry:** an order whose send was interrupted mid-flight (the server crashed after claiming it) is marked as sent and won't appear in the query. It's rare; the resend form (8UI.3) will be the fallback.
+**Not covered by the retry:** an order whose send was interrupted mid-flight (the server crashed after claiming it) is marked as sent and won't appear in the query. It's rare; the buyer can use the resend form at `/orders` (8UI.3).
+
+**Resends share the quota.** Each order resent through `/orders` is one more send from the same daily allowance (at most 5 per request, and each order at most once every 30 minutes). A resend that hits the quota stays queued and goes out with the hourly retry **after** any first confirmations still waiting, so on a tight day new buyers' tickets go first. Queued resends:
+
+```sql
+select id, resend_requested_at
+from orders
+where resend_requested_at is not null
+order by resend_requested_at;
+```
+
+The watchdog fails on failed resends too; Vercel logs show `ticket resend failed` with the order id.
 
 ## Review
 

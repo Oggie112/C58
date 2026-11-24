@@ -237,6 +237,8 @@ Purchase flow, end to end:
 5. Whichever sees the order paid first — webhook or order page — emails the tickets via Brevo (`lib/sendOrderConfirmation.ts`, run with `after()` so neither waits on it): one PNG QR per ticket plus a link to the order page. An atomic claim on `orders.confirmation_sent_at` sends it once; a failed send is released and retried by the next webhook delivery, order-page visit, or the **hourly retry** — a Supabase `pg_cron` job calling `POST /api/cron/retry-confirmations` (see below). A **daily watchdog** (`.github/workflows/retry-confirmations.yml`) calls the same endpoint and fails if anything is still failing, so GitHub emails the repo owner — what to do next is in [`docs/brevo-quota-plan.md`](docs/brevo-quota-plan.md).
 6. Alongside the email (`lib/runPaidOrderFollowUps.ts`), a buyer who ticked the marketing checkbox is added to the Brevo list (`lib/syncMarketingOptIn.ts`) — paid orders only, never abandoned checkouts. Same claim-and-retry pattern on `orders.marketing_synced_at`, retried by the same hourly job. The contact records their consent as attributes — `OPT_IN_SOURCE`, `OPT_IN_DATE` (UK date), `OPT_IN_WORDING` (the checkbox text, from `lib/marketingOptIn.ts`), `OPT_IN_ORDER`, plus `LAST_EVENT`. It never touches a contact's unsubscribe (blocklist) status: someone who unsubscribed stays unsubscribed even if they tick the box again. **Dormant by default:** with `MARKETING_OPT_IN_ENABLED` unset, the checkbox is hidden, `createOrder` records every order as not opted in whatever the request says, and the sync and its retry do nothing.
 
+7. **Lost the email?** `/orders` (linked under the ticket picker and in the footer) takes an address and resends the tickets for its paid orders whose event is today or later — at most 5 orders, each at most once every 30 minutes (`lib/requestTicketResend.ts`, `lib/sendTicketResend.ts`). The reply is identical whatever the address and goes out before any lookup (the work runs in `after()`), so it never reveals whether an address has bought. Same rate limit and Turnstile challenge as checkout. A resend that fails (quota, outage) stays queued on `orders.resend_requested_at` and goes out with the hourly retry, after first confirmations.
+
 Abandoned reservations are released lazily after 20 minutes (the 15-minute SumUp checkout plus a 5-minute margin, `lib/reservationWindow.ts`) — no cron job.
 
 ### Scheduled database jobs
@@ -247,7 +249,7 @@ Three **`pg_cron` jobs** run inside Supabase. The Testcontainers database has ne
 | --- | --- | --- | --- |
 | `clean-up-reservation-attempts` | Every 5 minutes | Deletes the rate limit's stored IPs past its 10-minute window | `20261120120000_schedule_reservation_attempts_cleanup.sql` |
 | `clean-up-cron-history` | Daily, 03:00 UTC | Keeps a week of `cron.job_run_details` (pg_cron never prunes it) | same |
-| `retry-paid-order-follow-ups` | Hourly at :17 | `pg_net` POST to `https://www.c58.uk/api/cron/retry-confirmations`, timeout 60s | `20261123120000_schedule_follow_up_retry.sql` |
+| `retry-paid-order-follow-ups` | Hourly at :17 | `pg_net` POST to `https://www.c58.uk/api/cron/retry-confirmations`, timeout 60s — retries first confirmations, then queued resends, then marketing sync; answers `{ confirmations, resends, marketing }` | `20261123120000_schedule_follow_up_retry.sql` |
 
 **One-off setup:** the retry job reads `CRON_SECRET` from Supabase Vault — it's never in the repo. Create it once in the SQL editor (same value as Vercel's), and update it there too whenever the secret is rotated:
 
@@ -290,12 +292,14 @@ If a tier shows as unavailable despite having capacity in Sanity, the webhook mo
 
 ### Database migrations
 
-Migrations live in `supabase/migrations/`. Apply with the Supabase CLI:
+Migrations live in `supabase/migrations/`. Apply with the Supabase CLI (v3+):
 
 ```bash
 supabase link --project-ref <project-ref>
-supabase db push
+supabase db push --remote   # without --remote, v3 targets the local stack; answer y (Enter means No)
 ```
+
+On Windows, **Smart App Control** can block a brand-new CLI release ("An Application Control policy has blocked this file"): the binary is unsigned, so it's allowed only once it has built up reputation. Pin the last release that runs — e.g. `npx supabase@3.0.0 db push --remote` — rather than turning Smart App Control off. Don't apply a migration by pasting it into the SQL editor: it wouldn't be recorded in the migration history, so the next push would run it again.
 
 RLS is enabled on every table with no policies — the app connects as the table owner, so this only blocks access via Supabase's Data API.
 
