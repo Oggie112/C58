@@ -31,15 +31,46 @@ describe('ResendForm', () => {
 		expect(button).not.toBeDisabled()
 	})
 
-	it("sends the address and shows the server's reply", async () => {
+	it('replaces the form with a confirmation showing the address back — "received", never "sent"', async () => {
 		jest.mocked(resendTickets).mockResolvedValue({ status: 'requested', message: 'If we have paid orders…' })
 		render(<ResendForm />)
 
 		enterEmail('buyer@example.com')
 		fireEvent.click(screen.getByRole('button', { name: /Resend my tickets/ }))
 
-		expect(await screen.findByRole('status')).toHaveTextContent('If we have paid orders…')
+		const confirmation = await screen.findByRole('status')
+		expect(confirmation).toHaveTextContent('Request received')
+		expect(confirmation).toHaveTextContent('buyer@example.com')
+		expect(confirmation).toHaveTextContent('If we have paid orders…')
+		expect(confirmation).not.toHaveTextContent(/sent/i)
+		expect(screen.queryByLabelText('Email used to buy')).not.toBeInTheDocument()
 		expect(jest.mocked(resendTickets).mock.calls[0][1]).toEqual({ email: 'buyer@example.com', turnstileToken: undefined })
+	})
+
+	it('brings back an empty, focused form for a different address', async () => {
+		jest.mocked(resendTickets).mockResolvedValue({ status: 'requested', message: 'If we have paid orders…' })
+		render(<ResendForm />)
+		enterEmail('buyer@example.com')
+		fireEvent.click(screen.getByRole('button', { name: /Resend my tickets/ }))
+
+		fireEvent.click(await screen.findByRole('button', { name: /Use a different address/ }))
+
+		const input = screen.getByLabelText('Email used to buy')
+		expect(input).toHaveValue('')
+		expect(input).toHaveFocus()
+		expect(screen.queryByText('Request received')).not.toBeInTheDocument()
+	})
+
+	it('shows an invalid-address reply beside the form, keeping what was typed', async () => {
+		jest.mocked(resendTickets).mockResolvedValue({ status: 'invalid', message: 'Enter a valid email address' })
+		render(<ResendForm />)
+
+		// Passes the browser-side pattern, so it reaches the server's stricter check
+		enterEmail('buyer@example.c')
+		fireEvent.click(screen.getByRole('button', { name: /Resend my tickets/ }))
+
+		expect(await screen.findByRole('status')).toHaveTextContent('Enter a valid email address')
+		expect(screen.getByLabelText('Email used to buy')).toHaveValue('buyer@example.c')
 	})
 
 	it('shows the security check when the server asks for one', async () => {
