@@ -1,7 +1,6 @@
 'use client'
 
-import { startTransition, useActionState, useEffect, useEffectEvent, useMemo, useState, type SubmitEvent } from 'react'
-import Script from 'next/script'
+import { startTransition, useActionState, useEffect, useMemo, useState, type SubmitEvent } from 'react'
 import type { SanityTier, TicketingStatus } from '@/types/sanity'
 import { computeRemainingStock, type TierStock } from '@/lib/stock'
 import { PER_ORDER_MAX } from '@/lib/orderLimits'
@@ -15,21 +14,8 @@ import {
 	type TierSaleState,
 } from '@/lib/saleState'
 import { formatSaleTime } from '@/lib/dateFormat'
+import TurnstileChallenge from '@/app/components/TurnstileChallenge'
 import { createOrder, type CreateOrderState } from './actions'
-
-declare global {
-	interface Window {
-		turnstile?: {
-			render: (
-				container: string,
-				params: { sitekey: string; callback: (token: string) => void; 'error-callback'?: (errorCode: string) => void },
-			) => string
-			remove: (widgetId: string) => void
-		}
-	}
-}
-
-const TURNSTILE_CONTAINER_ID = 'turnstile-container'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -79,10 +65,6 @@ export default function TierPicker({
 	// or the first client render, so they match (no hydration mismatch)
 	const [now, setNow] = useState<Date | null>(null)
 	const [state, dispatch, isPending] = useActionState(createOrder, initialActionState)
-	const [turnstileScriptLoaded, setTurnstileScriptLoaded] = useState(false)
-	const [turnstileFailed, setTurnstileFailed] = useState(false)
-	// Inlined at build time — missing means the widget can never render
-	const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 	useEffect(() => {
 		let cancelled = false
@@ -185,62 +167,8 @@ export default function TierPicker({
 		submitOrder()
 	}
 
-	// Always calls submitOrder using the render's current email/quantities/
-	// marketingOptIn at the moment this actually fires — not whatever was
-	// current when the widget first mounted. Lets the effect below skip
-	// re-running on every keystroke while the challenge is still showing,
-	// without silently submitting stale form values once it resolves.
-	const handleTurnstileSuccess = useEffectEvent((token: string) => {
-		submitOrder(token)
-	})
-
-	// Only ever rendered once the server has actually seen enough attempts
-	// to ask for it — most real buyers never see this at all. Re-submits
-	// automatically once solved, rather than making them click again.
-	// Turnstile reports misconfiguration (e.g. this hostname not on the
-	// widget's allowlist) through error-callback rather than throwing.
-	const handleTurnstileError = useEffectEvent((errorCode: string) => {
-		console.error(`Turnstile security check failed to load: ${errorCode}`)
-		setTurnstileFailed(true)
-	})
-
-	useEffect(() => {
-		if (state.status !== 'challenge_required' || !turnstileScriptLoaded) return
-		if (!turnstileSiteKey) {
-			console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set — the security check cannot render')
-			return
-		}
-		if (!window.turnstile) return
-
-		const widgetId = window.turnstile.render(`#${TURNSTILE_CONTAINER_ID}`, {
-			sitekey: turnstileSiteKey,
-			callback: handleTurnstileSuccess,
-			'error-callback': handleTurnstileError,
-		})
-
-		return () => window.turnstile?.remove(widgetId)
-	}, [state.status, turnstileScriptLoaded, turnstileSiteKey])
-
-	// Without this, a broken challenge is just an empty space and a buyer
-	// who can't get past it — with nothing to say why
-	const challengeUnavailable = state.status === 'challenge_required' && (!turnstileSiteKey || turnstileFailed)
-
 	return (
 		<form onSubmit={handleSubmit}>
-			{/* Loaded only once a challenge is needed, so most visitors never
-			    contact Cloudflare (compliance C3). onReady, not onLoad: it also
-			    fires when the script is already loaded from an earlier page. */}
-			{state.status === 'challenge_required' && (
-				<Script
-					src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-					onReady={() => setTurnstileScriptLoaded(true)}
-					onError={() => {
-						console.error('Turnstile script failed to load')
-						setTurnstileFailed(true)
-					}}
-				/>
-			)}
-
 			<div className="flex items-center justify-between mb-6">
 				<h2 className="font-display font-bold text-headline uppercase tracking-[0.04em] text-c58-white">
 					Tickets
@@ -359,21 +287,12 @@ export default function TierPicker({
 						</p>
 					)}
 
-					{/* Bridges the gap while the script downloads — the widget brings
-					    its own "Verifying…" once it renders */}
-					{state.status === 'challenge_required' && !turnstileScriptLoaded && !challengeUnavailable && (
-						<p className="font-body text-body text-c58-muted mb-4" role="status">
-							Running a quick security check…
-						</p>
-					)}
-
-					{state.status === 'challenge_required' && <div id={TURNSTILE_CONTAINER_ID} className="mb-4" />}
-
-					{challengeUnavailable && (
-						<p className="font-body text-body text-c58-muted mb-4" role="alert">
-							We couldn&apos;t load a quick security check. Please refresh the page and try again in a few minutes.
-						</p>
-					)}
+					{/* Re-submits automatically once solved, rather than making the
+					    buyer click again */}
+					<TurnstileChallenge
+						active={state.status === 'challenge_required'}
+						onSolved={(token) => submitOrder(token)}
+					/>
 
 					<button
 						type="submit"

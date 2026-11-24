@@ -1,8 +1,7 @@
 import { sql } from './db'
 import { syncMarketingOptIn } from './syncMarketingOptIn'
-import { retryInSequence } from './retryInSequence'
+import { retryInSequence, RETRY_BATCH_SIZE, RETRY_GRACE_MINUTES } from './retryInSequence'
 import { isMarketingOptInEnabled } from './marketingOptIn'
-import { RETRY_BATCH_SIZE, RETRY_GRACE_MINUTES } from './retryUnsentConfirmations'
 
 export interface OptInRetrySummary {
 	found: number

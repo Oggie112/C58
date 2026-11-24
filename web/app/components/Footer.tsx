@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { cacheLife } from 'next/cache'
 import { getSiteSettings } from '@/sanity/fetch'
 import { getDynamicFetchOptions } from '@/sanity/fetchOptions'
@@ -39,14 +40,23 @@ export default async function Footer() {
 					</nav>
 				)}
 
-				{privacyPolicyHref && (
-					<a
-						href={privacyPolicyHref}
+				<div className="flex gap-6">
+					{/* Lost confirmation emails (8UI.3) */}
+					<Link
+						href="/orders"
 						className="font-body text-micro text-c58-muted uppercase tracking-[0.15em] hover:text-c58-ice transition-colors duration-200"
 					>
-						Privacy Policy
-					</a>
-				)}
+						Resend tickets
+					</Link>
+					{privacyPolicyHref && (
+						<a
+							href={privacyPolicyHref}
+							className="font-body text-micro text-c58-muted uppercase tracking-[0.15em] hover:text-c58-ice transition-colors duration-200"
+						>
+							Privacy Policy
+						</a>
+					)}
+				</div>
 			</div>
 		</footer>
 	)

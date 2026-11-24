@@ -91,13 +91,24 @@ export default async function EventPage({ params }: PageProps<'/events/[slug]'>)
 				{/* Ticketing */}
 				<section className="mb-12">
 					{details && tiers.length > 0 ? (
-						<TierPicker
-							eventDetailsId={details._id}
-							tiers={tiers}
-							marketingOptInEnabled={isMarketingOptInEnabled()}
-							ticketingStatus={details.ticketingStatus}
-							eventDate={event.date}
-						/>
+						<>
+							<TierPicker
+								eventDetailsId={details._id}
+								tiers={tiers}
+								marketingOptInEnabled={isMarketingOptInEnabled()}
+								ticketingStatus={details.ticketingStatus}
+								eventDate={event.date}
+							/>
+							{/* Whatever the sale state — a sold-out or event-day page is
+							    where a buyer who's lost their email lands (8UI.3). Our own
+							    ticketing only: Skiddle sends its own tickets. */}
+							<p className="font-body text-body text-c58-muted mt-6">
+								Already bought?{' '}
+								<Link href="/orders" className="text-c58-ice hover:text-c58-white transition-colors duration-200">
+									Resend your tickets →
+								</Link>
+							</p>
+						</>
 					) : event.ticketUrl ? (
 						<Link
 							href={event.ticketUrl}

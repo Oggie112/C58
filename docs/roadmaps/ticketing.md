@@ -12,8 +12,8 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 | -------- | ------------------------------------------------ | ------------------------------- | --------------------------------- |
 | **CMS**  | Milestone 6 complete                               | —                                  | — |
 | **DB**   | All migrations pushed to live Supabase; RLS enabled on every table (new project trigger covers future tables automatically) | — | — |
-| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase; 8API.1 confirmation email sent via Brevo, retried hourly from Supabase `pg_cron` if it fails (8API.4, 8API.6), with a daily GitHub watchdog that alerts; 8API.3 marketing-list sync built (merge waits on the privacy policy); 8API.5 sale state enforced (editor status, event date, tier windows) and shown live in the ticket picker | 8UI.3 (resend form) | 8API.3 merge: privacy policy must name Brevo |
-| **UI**   | 7UI.1/7UI.2/8UI.2/8UI.1 complete — SumUp checkout returns buyers to `/orders/[token]` with a scannable QR per ticket, and the confirmation email carries the same QRs as attachments | 8UI.3 (resend form) | — |
+| **API**  | 7API.1–7API.4 complete, real Milestone 7 flow verified end-to-end against the live SumUp sandbox and live Supabase; 8API.1 confirmation email sent via Brevo, retried hourly from Supabase `pg_cron` if it fails (8API.4, 8API.6), with a daily GitHub watchdog that alerts; 8API.3 marketing-list sync built (merge waits on the privacy policy); 8API.5 sale state enforced (editor status, event date, tier windows) and shown live in the ticket picker | Milestone 9 (door operations) | 8API.3 merge: privacy policy must name Brevo |
+| **UI**   | 7UI.1/7UI.2/8UI.2/8UI.1/8UI.3 complete — SumUp checkout returns buyers to `/orders/[token]` with a scannable QR per ticket, the confirmation email carries the same QRs as attachments, and `/orders` resends lost tickets | — | — |
 | **QA**   | 7QA.1/7QA.2 complete — concurrency test + full security review, real Turnstile keys live | —                                | — |
 | **DX**   | 6DX.1/8DX.2 complete — Brevo account, `c58.uk` authenticated (branded `mail.c58.uk`), restricted API key, env vars in Vercel; 8DX.1 quota plan written | — | — |
 
@@ -134,11 +134,19 @@ Architecture decisions are resolved — see [Decisions](#decisions) — and reco
 
 <a name="m8-todo"><h4>To Do (Milestone 8)</h4></a>
 
-- [ ] 8UI.3. Resend-confirmation form on `/orders` — email in, resend of every paid order for that address out, neutral response, never displays order data; rate-limited via existing `checkRateLimit`
 
 <a name="m8-blocked"><h4>Blocked (Milestone 8)</h4></a>
 
 <a name="m8-done"><h4>Completed (Milestone 8)</h4></a>
+
+- [x] 8UI.3. Resend form at `/orders` (`feat/resend-tickets-form`, 2026-11-24) — email in, tickets resent, nothing displayed; also the fallback for a first confirmation lost to a crash mid-send (8API.4's accepted gap)
+  - **Which orders:** paid orders matching the address case-insensitively (new `lower(email)` index), for events **today or later** (UK date, so the event-day buyer at the door is covered — one Sanity lookup per event), the **5 most recent** at most
+  - **Queued, never dropped:** migration adds `orders.resend_requested_at` (the queue) and `last_resent_at` (the cooldown). A request queues each order unless it's already waiting or was resent in the last **30 minutes** — repeated presses or many IPs can't flood an inbox. `sendTicketResend` claims in one statement (CTE `for update skip locked`, returning the old values), sends, and on failure restores both — so a **Brevo quota or outage leaves it queued** and the cooldown unspent. The hourly retry sends queued resends (10 per run) **after** first confirmations, so resends never take quota from new buyers; the daily watchdog fails on failed resends. A successful resend also marks a never-sent first confirmation as sent, so the retry doesn't follow with a duplicate
+  - **Fresh idempotency key per resend** — the order id is the first confirmation's key, and Brevo drops a repeat for 30 minutes
+  - **Reveals nothing:** the same reply ("Request received" panel, showing the typed address back) whatever the address; the lookup and sends run in `after()`, so response time doesn't differ either. Rate-limited on checkout's counter with a Turnstile challenge once exceeded
+  - **Refactors on the way:** `emailOrderTickets` (render-and-send shared by first confirmation and resend), `TurnstileChallenge` (shared by the ticket picker and this form; renders into a ref'd element), `lib/clientIp`, shared retry settings in `retryInSequence`; migrations in tests now run on a notice-silent connection
+  - **Linked** under the ticket picker on our own events (whatever the sale state) and in the footer; per-event FAQs can link to `/orders` as content
+  - **Verified:** unit + Testcontainers tests (queue/cooldown/upcoming filter, claim race, re-queue on failure, retry order and cap, the action's identical replies and after() timing, the form); migration pushed live; checked locally against the live database — resend received with QR attachments, an immediate repeat sent nothing, an unknown address got the same reply
 
 - [x] 8API.6. Reliable retry schedule (`feat/retry-schedule-pg-cron`, 2026-11-23) — found after 8API.4 shipped: GitHub ran the "hourly" workflow only **~3–4 times a day** (scheduled runs are best-effort), and **disables scheduled workflows in public repos after 60 days without repository activity** — silently — so a quiet stretch between events would have stopped the retry altogether
   - **Hourly retry moved into the database:** a `pg_cron` job, `retry-paid-order-follow-ups`, at :17 calls `POST /api/cron/retry-confirmations` via `pg_net` (migration `20261123120000_schedule_follow_up_retry.sql`). URL hardcoded to `https://www.c58.uk` (the apex redirects); `timeout_milliseconds` 60s, as `pg_net`'s default is a few seconds and a run can send 20 emails. Guarded to skip where `pg_cron`/`pg_net` are absent (Testcontainers)

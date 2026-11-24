@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import postgres from 'postgres'
 import { PostgreSqlContainer } from '@testcontainers/postgresql'
 
 type DbClient = typeof import('@/lib/db').sql
@@ -25,14 +26,19 @@ export async function startTestDatabase(): Promise<TestDatabase> {
 
 	const { sql } = await import('@/lib/db')
 
+	// Migrations run on their own connection that ignores notices — the
+	// pg_cron/pg_net migrations raise one when they skip themselves here,
+	// which would otherwise be printed to the console by every DB suite
+	const migrator = postgres(container.getConnectionUri(), { onnotice: () => {} })
 	const migrationsDir = path.resolve(__dirname, '../../../supabase/migrations')
 	const migrationFiles = fs
 		.readdirSync(migrationsDir)
 		.filter((file) => file.endsWith('.sql'))
 		.sort()
 	for (const file of migrationFiles) {
-		await sql.file(path.join(migrationsDir, file))
+		await migrator.file(path.join(migrationsDir, file))
 	}
+	await migrator.end()
 
 	return {
 		sql,

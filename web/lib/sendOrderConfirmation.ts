@@ -1,10 +1,5 @@
 import { sql } from './db'
-import { getOrderById } from './getOrderByToken'
-import { renderConfirmationEmail, ticketAttachmentName, type ConfirmationEvent } from './confirmationEmail'
-import { sendTransactionalEmail } from './brevo'
-import { ticketQrPng } from './ticketQrCode'
-import { getEventByDetailsId } from '@/sanity/fetch'
-import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
+import { emailOrderTickets } from './emailOrderTickets'
 
 // Emails a paid order's tickets (8API.1). Run via after() from every place
 // that sees a paid order — the SumUp webhook and the order page — so calling
@@ -43,34 +38,7 @@ export async function sendOrderConfirmation(orderId: string): Promise<Confirmati
 	}
 
 	try {
-		const order = await getOrderById(orderId)
-		if (!order) throw new Error('order vanished after being claimed')
-
-		const event = await getEventByDetailsId(order.eventId, PUBLISHED_FETCH_OPTIONS)
-		const confirmationEvent: ConfirmationEvent | null = event
-			? { title: event.title, date: event.date, time: event.time, location: event.location }
-			: null
-
-		// A fresh confirmation's tickets are all valid; filtering keeps a
-		// voided ticket out if this ever runs for a part-refunded order.
-		const tickets = order.tickets.filter((ticket) => ticket.status === 'valid')
-
-		const email = renderConfirmationEmail({
-			order: { ...order, tickets },
-			event: confirmationEvent,
-			orderUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/orders/${claimed.access_token}`,
-		})
-		const attachments = await Promise.all(
-			tickets.map(async (ticket) => ({ name: ticketAttachmentName(ticket.code), content: await ticketQrPng(ticket.code) })),
-		)
-
-		const result = await sendTransactionalEmail({
-			to: order.email,
-			...email,
-			attachments,
-			idempotencyKey: orderId,
-			tags: ['order-confirmation'],
-		})
+		const result = await emailOrderTickets(orderId, claimed.access_token, orderId)
 		if (result === 'duplicate') {
 			console.warn(`Order ${orderId}: Brevo had already accepted this confirmation — not sent again`)
 		}
