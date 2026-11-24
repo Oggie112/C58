@@ -7,6 +7,7 @@ import { ALL_PAGE_SLUGS_QUERY, PAGE_BY_SLUG_QUERY } from "./queries/page-builder
 import { GET_SITE_SETTINGS } from "./queries/singleton"
 import { ALL_POST_SLUGS_QUERY, POST_BY_SLUG_QUERY } from "./queries/posts"
 import { ALL_TALENT_SLUGS_QUERY, TALENT_BY_SLUG_QUERY } from "./queries/talents"
+import { SITEMAP_QUERY } from "./queries/sitemap"
 
 // Every wrapper takes FetchOptions explicitly — see sanity/fetchOptions.ts —
 // and is a 'use cache' scope: sanityFetch tags and times the entry, and the
@@ -89,4 +90,16 @@ export async function getTalentBySlug(slug: string, options: FetchOptions): Prom
 	'use cache'
 	const { data } = await sanityFetch({ query: TALENT_BY_SLUG_QUERY, params: { slug }, ...options })
 	return data as SanityTalent | null
+}
+
+export interface SitemapDocument {
+	_type: 'page' | 'event' | 'post' | 'talent'
+	slug: string
+	_updatedAt: string
+}
+
+export async function getSitemapDocuments(options: FetchOptions): Promise<SitemapDocument[]> {
+	'use cache'
+	const { data } = await sanityFetch({ query: SITEMAP_QUERY, ...options })
+	return data as SitemapDocument[]
 }
