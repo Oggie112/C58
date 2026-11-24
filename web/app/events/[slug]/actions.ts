@@ -1,6 +1,5 @@
 'use server'
 
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { getEventDetailsById } from '@/sanity/fetch'
@@ -11,6 +10,7 @@ import { attachCheckoutSession } from '@/lib/attachCheckoutSession'
 import { failReservation } from '@/lib/failReservation'
 import { PER_ORDER_MAX } from '@/lib/orderLimits'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { clientIp } from '@/lib/clientIp'
 import { verifyTurnstileToken } from '@/lib/turnstile'
 import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
 import { eventSaleState, saleUnavailableMessage } from '@/lib/saleState'
@@ -39,7 +39,7 @@ const CreateOrderSchema = z.object({
 			(items) => new Set(items.map((item) => item.tierKey)).size === items.length,
 			'Each tier can only appear once per order',
 		),
-	email: z.string().email('Enter a valid email address'),
+	email: z.email('Enter a valid email address'),
 	marketingOptIn: z.boolean(),
 	// Only present once the client has been challenged and solved it — see
 	// checkRateLimit below.
@@ -66,12 +66,7 @@ export async function createOrder(
 		}
 	}
 
-	// x-vercel-forwarded-for over x-forwarded-for: identical on a plain
-	// Vercel deployment, but stays correct if a proxy ever sits in front —
-	// confirmed from Vercel's own docs that it overwrites (does not forward)
-	// a client-supplied x-forwarded-for, specifically to prevent spoofing.
-	const headersList = await headers()
-	const ip = headersList.get('x-vercel-forwarded-for') ?? headersList.get('x-forwarded-for') ?? 'unknown'
+	const ip = await clientIp()
 
 	const { limited } = await checkRateLimit(ip)
 	if (limited) {
