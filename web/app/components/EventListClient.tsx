@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import EventCard from './EventCard'
 import PageTitle from './PageTitle'
 import { EASE_OUT_EXPO } from '@/lib/motion'
+import type { HeadingLevel } from '@/lib/pageHeading'
 
 interface EventListClientProps {
 	upcoming: SanityEvent[]
@@ -13,11 +14,12 @@ interface EventListClientProps {
 	defaultTab: 'upcoming' | 'past'
 	heading: string
 	subheading?: string
+	headingLevel?: HeadingLevel
 }
 
 const TAB_EASE = [0.77, 0, 0.175, 1] as const
 
-export default function EventListClient({ upcoming, past, defaultTab, heading, subheading }: EventListClientProps) {
+export default function EventListClient({ upcoming, past, defaultTab, heading, subheading, headingLevel }: EventListClientProps) {
 	const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>(defaultTab)
 	const shouldReduceMotion = useReducedMotion()
 
@@ -40,7 +42,7 @@ export default function EventListClient({ upcoming, past, defaultTab, heading, s
 
 				{/* Section header */}
 				<div className="mb-16">
-					<PageTitle title={heading} subtitle={subheading} className="mb-10" />
+					<PageTitle title={heading} subtitle={subheading} className="mb-10" headingLevel={headingLevel} />
 
 					{/* Tab switcher */}
 					<div className="flex items-center gap-8">

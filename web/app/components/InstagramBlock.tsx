@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { InstagramBlock as InstagramBlockType } from '@/types/sanity'
 import BeholdWidget from '@behold/react'
+import type { HeadingLevel } from '@/lib/pageHeading'
 
-export default function InstagramBlock({ block }: { block: InstagramBlockType }) {
+export default function InstagramBlock({ block, headingLevel = 'h2' }: { block: InstagramBlockType; headingLevel?: HeadingLevel }) {
+	const Heading = headingLevel
 	const feedId = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID
 	const widgetRef = useRef<HTMLDivElement>(null)
 	const [showFallback, setShowFallback] = useState(false)
@@ -47,9 +49,9 @@ export default function InstagramBlock({ block }: { block: InstagramBlockType })
 			<div className="max-w-[1200px] mx-auto">
 
 				<div className="w-15 h-px bg-c58-ice mb-6" />
-				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
+				<Heading className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
 					{block.heading ?? 'INSTAGRAM'}
-				</h2>
+				</Heading>
 
 				{!feedId ? fallback : (
 					<>
