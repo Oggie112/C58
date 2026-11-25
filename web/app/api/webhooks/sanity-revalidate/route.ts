@@ -25,6 +25,10 @@ export async function POST(request: Request) {
 	if (!verification.ok) return verification.response
 
 	revalidatePath('/', 'layout')
+	// Route handlers aren't under the layout, so the layout revalidation
+	// doesn't reach them — the sitemap (built from Sanity) needs its own path.
+	// Found in production: event pages refreshed on publish, sitemap.xml didn't.
+	revalidatePath('/sitemap.xml')
 
 	// The document id is optional context for logs only — never trusted for
 	// anything, and absent on some operations.
