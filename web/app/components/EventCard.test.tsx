@@ -56,6 +56,12 @@ describe('EventCard', () => {
 		expect(screen.getByText('PAST')).toBeInTheDocument()
 	})
 
+	it("links a past event to its page, but doesn't offer tickets", () => {
+		render(<EventCard event={baseEvent} past />)
+		expect(screen.getByText('VIEW EVENT →').closest('a')).toHaveAttribute('href', '/events/test-event')
+		expect(screen.queryByText('TICKETS →')).not.toBeInTheDocument()
+	})
+
 	it('hides PAST label by default', () => {
 		render(<EventCard event={baseEvent} />)
 		expect(screen.queryByText('PAST')).not.toBeInTheDocument()
