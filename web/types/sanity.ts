@@ -206,8 +206,10 @@ export interface SanityEvent {
 	title: string
 	slug: SanitySlug
 	date: string // ISO date string (YYYY-MM-DD)
-	time?: string
-	location?: string
+	time?: string // free text for display, e.g. "9pm – late"
+	doorsTime?: string // HH:mm, UK time — for structured data
+	location?: string // the venue's name (labelled "Venue name" in the Studio)
+	venueAddress?: string // the venue's postal address, multi-line
 	cost?: string
 	ticketUrl?: string
 	image?: SanityImage
