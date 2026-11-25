@@ -30,6 +30,8 @@ describe('sanity-revalidate webhook', () => {
 		expect(response.status).toBe(200)
 		expect(await response.json()).toEqual({ revalidated: true })
 		expect(revalidatePath).toHaveBeenCalledWith('/', 'layout')
+		// A route handler, so not reached by the layout — it needs its own path
+		expect(revalidatePath).toHaveBeenCalledWith('/sitemap.xml')
 	})
 
 	it('rejects an unsigned request without revalidating', async () => {
