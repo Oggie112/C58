@@ -7,6 +7,10 @@ import { getAllEventSlugs, getEventBySlug } from '@/sanity/fetch'
 import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
+import { googleMapsSearchUrl, singleLineAddress } from '@/lib/address'
+import { eventJsonLd } from '@/lib/structuredData'
+import { siteUrl } from '@/lib/siteUrl'
+import JsonLd from '@/app/components/JsonLd'
 import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
 import portableTextComponents from '@/lib/portableTextComponents'
 import type { SanityLineupEntry, SanityFaqEntry } from '@/types/sanity'
@@ -53,6 +57,7 @@ export default async function EventPage({ params }: PageProps<'/events/[slug]'>)
 
 	return (
 		<article className="pt-24 pb-32 px-4 md:px-6">
+			<JsonLd data={eventJsonLd(event, siteUrl(), imageUrl)} />
 			<div className="max-w-[760px] mx-auto">
 				<div className="mb-10">
 					<div className="w-15 h-px bg-c58-ice mb-6" />
@@ -74,6 +79,22 @@ export default async function EventPage({ params }: PageProps<'/events/[slug]'>)
 					<h1 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white">
 						{event.title}
 					</h1>
+					{/* Also what Google's event listing uses — the structured data
+					    below must match what the page shows */}
+					{event.venueAddress && (
+						<p className="font-body text-body text-c58-muted mt-6">
+							{singleLineAddress(event.venueAddress)}
+							{' · '}
+							<a
+								href={googleMapsSearchUrl(event.venueAddress)}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-c58-ice hover:text-c58-white transition-colors duration-200"
+							>
+								Open in Google Maps →
+							</a>
+						</p>
+					)}
 				</div>
 
 				{imageUrl && (

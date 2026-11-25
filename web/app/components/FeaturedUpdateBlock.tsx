@@ -2,12 +2,15 @@ import { FeaturedUpdateBlock as FeaturedUpdateBlockType } from '@/types/sanity'
 import { SanityPost } from '@/types/sanity'
 import EventCard from './EventCard'
 import PostCard from './PostCard'
+import type { HeadingLevel } from '@/lib/pageHeading'
 
 interface Props {
 	block: FeaturedUpdateBlockType
+	headingLevel?: HeadingLevel
 }
 
-export default function FeaturedUpdateBlock({ block }: Props) {
+export default function FeaturedUpdateBlock({ block, headingLevel = 'h2' }: Props) {
+	const Heading = headingLevel
 	const { heading, contentType, post, nextEvent } = block
 
 	let card: React.ReactNode
@@ -27,9 +30,9 @@ export default function FeaturedUpdateBlock({ block }: Props) {
 		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
 				<div className="w-15 h-px bg-c58-ice mb-6" />
-				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
+				<Heading className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
 					{heading ?? defaultHeading}
-				</h2>
+				</Heading>
 				{card}
 			</div>
 		</section>

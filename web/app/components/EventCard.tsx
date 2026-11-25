@@ -70,9 +70,19 @@ export default function EventCard({ event, featured = false, past = false }: Eve
 				{/* CTA + doors */}
 				<div className="flex items-center justify-between">
 					{past ? (
-						<span className="font-body text-label text-c58-muted uppercase tracking-[0.15em]">
-							PAST
-						</span>
+						// Past events keep their page — a record for anyone checking
+						// C58 out, and for Google, which otherwise can't find them
+						<div className="flex items-center gap-4">
+							<span className="font-body text-label text-c58-muted uppercase tracking-[0.15em]">
+								PAST
+							</span>
+							<Link
+								href={`/events/${event.slug.current}`}
+								className="font-body text-label uppercase tracking-[0.15em] text-c58-muted hover:text-c58-ice transition-colors duration-200"
+							>
+								VIEW EVENT →
+							</Link>
+						</div>
 					) : (
 						<div className="flex items-center gap-4">
 							<Link

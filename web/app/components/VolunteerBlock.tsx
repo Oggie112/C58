@@ -8,9 +8,17 @@ import { PortableText } from 'next-sanity'
 import portableTextComponents from '@/lib/portableTextComponents'
 import SectionMarker from './SectionMarker'
 import { EASE_OUT_EXPO } from '@/lib/motion'
+import type { HeadingLevel } from '@/lib/pageHeading'
 
-export default function VolunteerBlock({ block, sectionNumber }: { block: VolunteerBlockType; sectionNumber?: string }) {
+interface VolunteerBlockProps {
+	block: VolunteerBlockType
+	sectionNumber?: string
+	headingLevel?: HeadingLevel
+}
+
+export default function VolunteerBlock({ block, sectionNumber, headingLevel = 'h2' }: VolunteerBlockProps) {
 	const shouldReduceMotion = useReducedMotion()
+	const Heading = headingLevel
 	if (!block.volunteers || block.volunteers.length === 0) return null
 
 	return (
@@ -18,9 +26,9 @@ export default function VolunteerBlock({ block, sectionNumber }: { block: Volunt
 			<div className="max-w-[1200px] mx-auto">
 
 				<SectionMarker number={sectionNumber} />
-				<h2 className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
+				<Heading className="font-display font-bold text-display uppercase leading-[0.9] tracking-[0.04em] text-c58-white mb-10">
 					{block.heading ?? 'VOLUNTEERS'}
-				</h2>
+				</Heading>
 
 				{block.intro && (
 					<div className="max-w-[680px] mb-16">

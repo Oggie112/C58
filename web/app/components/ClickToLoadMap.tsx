@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { googleMapsSearchUrl, singleLineAddress } from '@/lib/address'
 
 // Google Maps only loads once the visitor asks for it: the embed sends their
 // IP to Google and can set cookies, so the click is the consent — no cookie
@@ -9,15 +10,13 @@ import { useState } from 'react'
 export default function ClickToLoadMap({ address }: { address: string }) {
 	const [loaded, setLoaded] = useState(false)
 	const query = encodeURIComponent(address)
-	// The address is multi-line in Sanity; one line reads better as a title
-	const singleLineAddress = address.split(/\s*\n\s*/).join(', ')
 
 	return (
 		<div className="w-full aspect-video border border-c58-border">
 			{loaded ? (
 				<iframe
 					src={`https://maps.google.com/maps?q=${query}&output=embed`}
-					title={`Map showing ${singleLineAddress}`}
+					title={`Map showing ${singleLineAddress(address)}`}
 					width="100%"
 					height="100%"
 					style={{ border: 0 }}
@@ -38,7 +37,7 @@ export default function ClickToLoadMap({ address }: { address: string }) {
 					</p>
 					{/* A plain link sends nothing to Google until it's followed */}
 					<a
-						href={`https://www.google.com/maps/search/?api=1&query=${query}`}
+						href={googleMapsSearchUrl(address)}
 						target="_blank"
 						rel="noopener noreferrer"
 						className="font-body text-label uppercase tracking-[0.15em] text-c58-muted hover:text-c58-ice transition-colors duration-200"

@@ -1,9 +1,17 @@
 import { ContactBlock as ContactBlockType } from '@/types/sanity'
 import SectionMarker from './SectionMarker'
 import ClickToLoadMap from './ClickToLoadMap'
+import type { HeadingLevel } from '@/lib/pageHeading'
 
-export default function ContactBlock({ block, sectionNumber }: { block: ContactBlockType; sectionNumber?: string }) {
+interface ContactBlockProps {
+	block: ContactBlockType
+	sectionNumber?: string
+	headingLevel?: HeadingLevel
+}
+
+export default function ContactBlock({ block, sectionNumber, headingLevel = 'h2' }: ContactBlockProps) {
 	const { settings } = block
+	const Heading = headingLevel
 	if (!settings) return null
 
 	return (
@@ -13,9 +21,9 @@ export default function ContactBlock({ block, sectionNumber }: { block: ContactB
 				<SectionMarker number={sectionNumber} />
 
 				<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10 mb-16">
-					<h2 className="font-display font-bold text-subhead md:text-headline uppercase leading-[0.9] tracking-[0.04em] text-c58-white">
+					<Heading className="font-display font-bold text-subhead md:text-headline uppercase leading-[0.9] tracking-[0.04em] text-c58-white">
 						WANT TO WORK WITH US?
-					</h2>
+					</Heading>
 					{settings.email && (
 						<a
 							href={`mailto:${settings.email}`}

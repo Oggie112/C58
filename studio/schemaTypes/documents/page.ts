@@ -62,6 +62,20 @@ export const page = defineType({
 				{type: 'imageBlock'},
 				{type: 'instagramBlock'},
 			],
+			// A page has one main heading (<h1>) for Google and screen readers.
+			// A "Heading 1" in Rich Text becomes it; with none, the site uses
+			// the first block's heading. Two or more is the one case the site
+			// can't sort out on its own.
+			validation: (Rule) =>
+				Rule.custom((blocks) => {
+					const headingOnes = (blocks ?? []).flatMap((block) => {
+						const {_type, body} = block as {_type?: string; body?: Array<{style?: string}>}
+						return _type === 'richTextBlock' ? (body ?? []).filter((part) => part.style === 'h1') : []
+					})
+					return headingOnes.length > 1
+						? `This page has ${headingOnes.length} "Heading 1" lines in its Rich Text — use one, and Heading 2 for the rest. A page should have a single main heading.`
+						: true
+				}).warning(),
 		}),
 	],
 	preview: {

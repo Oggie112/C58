@@ -11,6 +11,7 @@ import ImageBlock from "@/app/components/ImageBlock";
 import TeamBlock from "@/app/components/TeamBlock";
 import VolunteerBlock from "@/app/components/VolunteerBlock";
 import InstagramBlock from "@/app/components/InstagramBlock";
+import { pageHeadingBlockKey } from "@/lib/pageHeading";
 
 // Block types that participate in the "01/02/03" numbered section marker —
 // the device that ties together a page's narrative sections (e.g. About).
@@ -33,23 +34,26 @@ function numberedSections(blocks: PageBuilderBlock[]): Map<string, string> {
 
 export default function PageBuilder({blocks}: { blocks: PageBuilderBlock[]}) {
     const sectionNumbers = numberedSections(blocks)
+    // The page's one <h1> — see lib/pageHeading.ts. Every other heading is an <h2>.
+    const headingKey = pageHeadingBlockKey(blocks)
 
     return (
         <>
             {
             blocks.map(block => {
+                const headingLevel = block._key === headingKey ? "h1" : "h2"
                 switch (block._type) {
                     case "heroBlock": return <HeroBlock key={block._key} block={block}/>;
-                    case "featuredUpdateBlock": return <FeaturedUpdateBlock key={block._key} block={block}/>;
-                    case "blogListBlock": return <BlogListBlock key={block._key} block={block}/>;
-                    case "talentListBlock": return <TalentListBlock key={block._key} block={block}/>;
-                    case "partnersBlock": return <PartnersBlock key={block._key} block={block}/>;
-                    case "eventListBlock": return <EventListBlock key={block._key} block={block}/>;
+                    case "featuredUpdateBlock": return <FeaturedUpdateBlock key={block._key} block={block} headingLevel={headingLevel}/>;
+                    case "blogListBlock": return <BlogListBlock key={block._key} block={block} headingLevel={headingLevel}/>;
+                    case "talentListBlock": return <TalentListBlock key={block._key} block={block} headingLevel={headingLevel}/>;
+                    case "partnersBlock": return <PartnersBlock key={block._key} block={block} headingLevel={headingLevel}/>;
+                    case "eventListBlock": return <EventListBlock key={block._key} block={block} headingLevel={headingLevel}/>;
                     case "richTextBlock": return <RichTextBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)}/>;
-                    case "teamBlock": return <TeamBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)}/>;
-                    case "volunteerBlock": return <VolunteerBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)}/>;
-                    case "instagramBlock": return <InstagramBlock key={block._key} block={block}/>;
-                    case "contactBlock": return <ContactBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)}/>;
+                    case "teamBlock": return <TeamBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)} headingLevel={headingLevel}/>;
+                    case "volunteerBlock": return <VolunteerBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)} headingLevel={headingLevel}/>;
+                    case "instagramBlock": return <InstagramBlock key={block._key} block={block} headingLevel={headingLevel}/>;
+                    case "contactBlock": return <ContactBlock key={block._key} block={block} sectionNumber={sectionNumbers.get(block._key)} headingLevel={headingLevel}/>;
                     case "imageBlock": return <ImageBlock key={block._key} block={block}/>;
                     default:
                         if (process.env.NODE_ENV === "development") {

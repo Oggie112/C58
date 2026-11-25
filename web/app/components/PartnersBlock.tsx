@@ -1,25 +1,33 @@
 import { PartnersBlock as PartnersBlockType } from '@/types/sanity'
+import type { HeadingLevel } from '@/lib/pageHeading'
 import PageTitle from './PageTitle'
 import PartnerRow from './PartnerRow'
 
-function PartnersShell({ heading, subheading, children }: { heading: string; subheading?: string; children: React.ReactNode }) {
+interface PartnersShellProps {
+	heading: string
+	subheading?: string
+	headingLevel?: HeadingLevel
+	children: React.ReactNode
+}
+
+function PartnersShell({ heading, subheading, headingLevel, children }: PartnersShellProps) {
 	return (
 		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
-				<PageTitle title={heading} subtitle={subheading} />
+				<PageTitle title={heading} subtitle={subheading} headingLevel={headingLevel} />
 				{children}
 			</div>
 		</section>
 	)
 }
 
-export default function PartnersBlock({ block }: { block: PartnersBlockType }) {
+export default function PartnersBlock({ block, headingLevel }: { block: PartnersBlockType; headingLevel?: HeadingLevel }) {
 	const heading = block.heading ?? 'OUR PARTNERS'
 	const { partners } = block
 
 	if (!partners.length) {
 		return (
-			<PartnersShell heading={heading} subheading={block.subheading}>
+			<PartnersShell heading={heading} subheading={block.subheading} headingLevel={headingLevel}>
 				<div className="border border-c58-border p-8 md:p-12 text-center">
 					<p className="font-body text-body text-c58-ghost">No partners added yet.</p>
 				</div>
@@ -28,7 +36,7 @@ export default function PartnersBlock({ block }: { block: PartnersBlockType }) {
 	}
 
 	return (
-		<PartnersShell heading={heading} subheading={block.subheading}>
+		<PartnersShell heading={heading} subheading={block.subheading} headingLevel={headingLevel}>
 			<div>
 				{partners.map((partner) => (
 					<PartnerRow key={partner._id} partner={partner} />

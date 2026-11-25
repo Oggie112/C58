@@ -6,14 +6,16 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import PageTitle from './PageTitle'
 import TalentRow from './TalentRow'
 import { EASE_OUT_EXPO } from '@/lib/motion'
+import type { HeadingLevel } from '@/lib/pageHeading'
 
 interface TalentListClientProps {
 	talents: SanityTalent[]
 	heading: string
 	subheading?: string
+	headingLevel?: HeadingLevel
 }
 
-export default function TalentListClient({ talents, heading, subheading }: TalentListClientProps) {
+export default function TalentListClient({ talents, heading, subheading, headingLevel }: TalentListClientProps) {
 	const [activeRole, setActiveRole] = useState<string | null>(null)
 	const shouldReduceMotion = useReducedMotion()
 
@@ -27,7 +29,7 @@ export default function TalentListClient({ talents, heading, subheading }: Talen
 	return (
 		<section className="py-16 md:py-32 px-4 md:px-6">
 			<div className="max-w-[1200px] mx-auto">
-				<PageTitle title={heading} subtitle={subheading} className="mb-10" />
+				<PageTitle title={heading} subtitle={subheading} className="mb-10" headingLevel={headingLevel} />
 
 				{roles.length > 1 && (
 					<div className="flex flex-wrap gap-2 mb-12">
