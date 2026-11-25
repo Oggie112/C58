@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getSitemapDocuments, type SitemapDocument } from '@/sanity/fetch'
 import { PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
+import { siteUrl } from '@/lib/siteUrl'
 
 // Where each Sanity type is served. The "home" page is the site root.
 function pathFor(document: SitemapDocument): string {
@@ -20,11 +21,11 @@ function pathFor(document: SitemapDocument): string {
 // nothing links to yet (e.g. past events), and sees when each last changed.
 // Published only: drafts and unpublished documents are never listed.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+	const origin = siteUrl()
 	const documents = await getSitemapDocuments(PUBLISHED_FETCH_OPTIONS)
 
 	return documents.map((document) => ({
-		url: `${siteUrl}${pathFor(document)}`,
+		url: `${origin}${pathFor(document)}`,
 		lastModified: document._updatedAt,
 	}))
 }
