@@ -28,12 +28,47 @@ export const event = defineType({
 			name: 'time',
 			title: 'Time',
 			type: 'string',
-			description: 'e.g. 9pm – late',
+			description: 'What visitors see, e.g. 9pm – late',
 		}),
 		defineField({
-			name: 'location',
-			title: 'Location',
+			name: 'doorsTime',
+			title: 'Doors open (24-hour)',
 			type: 'string',
+			description:
+				'e.g. 21:00 — the start time Google shows in its events listings. The Time above is still what visitors see.',
+			validation: (Rule) =>
+				Rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/, {name: '24-hour time'}).error('Use a 24-hour time, e.g. 21:00'),
+		}),
+		// Stored as `location` (renaming would need a content migration); it's
+		// the venue's name, shown on event cards and the event page
+		defineField({
+			name: 'location',
+			title: 'Venue name',
+			type: 'string',
+			description: 'e.g. Citizen Hub',
+		}),
+		defineField({
+			name: 'venueAddress',
+			title: 'Venue address',
+			type: 'text',
+			rows: 3,
+			description:
+				'Shown on the event page, and used by Google to list the event. Starts as the address in Site Settings — change it if the event is somewhere else.',
+			// Where C58 is based is usually, not always, where the event is —
+			// so it's a starting value the editor can see and change, never an
+			// assumption made by the website
+			initialValue: async (_params, {getClient}) => {
+				const address = await getClient({apiVersion: '2025-02-26'}).fetch<string | null>(
+					`*[_id == "siteSettings"][0].address`,
+				)
+				// undefined leaves the field empty (Sanity's documented "no initial
+				// value") — the type only allows a string, hence the cast
+				return (address ?? undefined) as string
+			},
+			validation: (Rule) =>
+				Rule.custom((value) =>
+					value ? true : 'Without an address, Google won’t show this event in its events listings',
+				).warning(),
 		}),
 		defineField({
 			name: 'cost',
