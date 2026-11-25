@@ -193,6 +193,12 @@ Published Studio edits reach the cached site through a webhook, not through visi
 | Visitors with a page already open | See the change on their next navigation or refresh |
 | Everyone else | Fresh content on their next visit (webhook) |
 
+### Search engines
+
+- **`/sitemap.xml`** (`app/sitemap.ts`) lists every published page, event, post and talent with its last edit; `robots.txt` points at it in production only (previews disallow all crawling). It refreshes on publish via the revalidate webhook below. Submit it in Google Search Console.
+- **One `<h1>` per page** (`lib/pageHeading.ts`): a **Heading 1** in a Rich Text block becomes the page's main heading — use one per page (the Studio warns otherwise). Without one, the first block with a heading (e.g. "EVENTS") is used. The home page's hero has no text, so its intro section should carry the Heading 1.
+- **Structured data** (`lib/structuredData.ts`, rendered by `app/components/JsonLd.tsx`): schema.org **Event** on each event page, **Organization** on the home page. It only restates what the page shows, so keep events' **Venue address** and **Doors open (24-hour)** filled in — without an address, Google won't list the event. Check a page with Google's [Rich Results Test](https://search.google.com/test/rich-results).
+
 ### Sanity revalidate webhook
 
 Configure in **sanity.io/manage → API → Webhooks**:

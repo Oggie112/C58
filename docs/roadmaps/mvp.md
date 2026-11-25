@@ -10,7 +10,7 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 | **CMS**  | ✅ Schema, client config, TS types, queries, fetch utilities, navLinks, posts, featuredUpdate, blogList done | — | —                                |
 | **UI**   | ✅ All blocks, nav, footer, slug routing, responsive layout, featuredUpdate, blogList, PostCard, post detail pages done | — | —                                |
 | **QA**   | ✅ Error handling, edge cases, Jest fetch tests, component tests done | — | —                                |
-| **DX**   | ✅ Env vars, SEO, Draft Mode, CMS docs, README done | —                         | Custom domain (pending client)   |
+| **DX**   | ✅ Env vars, SEO (metadata, sitemap, one `<h1>` per page, Event/Organization structured data), Draft Mode, CMS docs, README done | Search Console + home page intro (content) | Custom domain (pending client)   |
 
 ---
 
@@ -165,6 +165,13 @@ description: C58 events landing page — Sanity CMS to Next.js, deployed on Verc
 - [x] 5DX.1. Root README — setup instructions, environment variables, local dev commands, deployment notes
 - [x] 5QA.2. Error UI — `BlogListBlock` shows inline fallback for fetch errors and empty state; `NextEventBlock` and `FeaturedUpdateBlock` silent-null intentionally (hero button gates on data)
 - [x] 5DX.2. CMS Guide Studio tool fixes — installed `remark-gfm` for table/list rendering, moved `CmsGuide` from `plugins` to `tools` array, added `ul`/`ol`/`li` component overrides; expanded guide content to cover social links and privacy policy page fields
+- [x] 5DX.3. SEO foundations (`feat/seo-foundations`, 2026-11-25) — from an external SEO audit (23 Nov 2026), whose technical findings were checked against the code first: it was wrong that events had no pages (they existed, but nothing linked to past ones), that there was no analytics (Vercel Analytics, cookieless), and that the Pigtails menu loaded late (it's a single image — left for now)
+  - **Sitemap** (`app/sitemap.ts`): every published page, event, post and talent with `lastmod`, from one Sanity query; `robots.txt` points at it in production only. Refreshed by the publish webhook's `revalidatePath('/', 'layout')`
+  - **One `<h1>` per page** (`lib/pageHeading.ts`): an editor's Heading 1 in Rich Text wins; otherwise the first block that renders a heading. Studio warns on more than one Heading 1
+  - **Past event cards** link to their pages ("View event")
+  - **Structured data** (`lib/structuredData.ts`, `JsonLd`): Event JSON-LD on event pages (UK start with BST/GMT offset, venue name and address, offers per tier), Organization JSON-LD on the home page; `<` escaped so Sanity content can't close the script tag
+  - **Event fields:** "Location" relabelled "Venue name" (key unchanged); new `venueAddress` (pre-filled from Site Settings on new events, shown on the event page with a Maps link, never assumed by the site) and `doorsTime` (24-hour, for structured data)
+  - **Still to do (content, off-site):** home page intro (Rich Text with a Heading 1), venue address and doors time on existing events, page descriptions, Search Console + sitemap submission, partner backlinks and local listings; Pigtails menu as text
 
 ---
 
