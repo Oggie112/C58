@@ -39,6 +39,15 @@ export const event = defineType({
 			validation: (Rule) =>
 				Rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/, {name: '24-hour time'}).error('Use a 24-hour time, e.g. 21:00'),
 		}),
+		defineField({
+			name: 'endTime',
+			title: 'Ends (24-hour)',
+			type: 'string',
+			description:
+				'Optional, e.g. 01:00 — the end time Google shows. A time earlier than Doors open means the next day.',
+			validation: (Rule) =>
+				Rule.regex(/^([01]\d|2[0-3]):[0-5]\d$/, {name: '24-hour time'}).error('Use a 24-hour time, e.g. 01:00'),
+		}),
 		// Stored as `location` (renaming would need a content migration); it's
 		// the venue's name, shown on event cards and the event page
 		defineField({

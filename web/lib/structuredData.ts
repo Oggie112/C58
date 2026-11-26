@@ -25,6 +25,37 @@ export function londonDateTime(date: string, time: string): string {
 	return `${date}T${time}:00${offset}`
 }
 
+// The calendar day after a YYYY-MM-DD date (UTC arithmetic on a plain date,
+// so no clock change can shift it)
+function nextDay(date: string): string {
+	const day = new Date(`${date}T00:00:00Z`)
+	day.setUTCDate(day.getUTCDate() + 1)
+	return day.toISOString().slice(0, 10)
+}
+
+// When the night ends. An end at or before the doors time is after midnight
+// (doors 21:00, ends 02:00 → the next day). Without a doors time, assumed
+// to be the event's own date.
+function endDateFor(event: SanityEventWithDetails): string | undefined {
+	const { endTime, doorsTime } = event
+	if (!endTime) return undefined
+	// HH:mm strings compare correctly as text ("02:00" < "21:00")
+	const endsNextDay = doorsTime !== undefined && endTime <= doorsTime
+	return londonDateTime(endsNextDay ? nextDay(event.date) : event.date, endTime)
+}
+
+// The line-up the page shows, as performers: talents (with their profile
+// page) and named guests
+function performersFor(event: SanityEventWithDetails, siteUrl: string): JsonLdObject[] {
+	return (event.eventDetails?.lineup ?? []).flatMap((entry): JsonLdObject[] => {
+		if (entry.entryType === 'talent' && entry.talent?.name) {
+			return [{ '@type': 'Person', name: entry.talent.name, url: `${siteUrl}/talents/${entry.talent.slug.current}` }]
+		}
+		if (entry.entryType === 'guest' && entry.guestName) return [{ '@type': 'Person', name: entry.guestName }]
+		return []
+	})
+}
+
 const AVAILABILITY: Record<Exclude<TicketingStatus, 'closed'>, string> = {
 	on_sale: 'https://schema.org/InStock',
 	sold_out: 'https://schema.org/SoldOut',
@@ -74,6 +105,8 @@ export function eventJsonLd(event: SanityEventWithDetails, siteUrl: string, imag
 	const eventUrl = `${siteUrl}/events/${event.slug.current}`
 	const description = event.description ? toPlainText(event.description).trim() : ''
 	const offers = offersFor(event, eventUrl)
+	const endDate = endDateFor(event)
+	const performers = performersFor(event, siteUrl)
 
 	return {
 		'@context': 'https://schema.org',
@@ -81,6 +114,7 @@ export function eventJsonLd(event: SanityEventWithDetails, siteUrl: string, imag
 		name: event.title,
 		// A full start when the doors time is set; otherwise just the date
 		startDate: event.doorsTime ? londonDateTime(event.date, event.doorsTime) : event.date,
+		...(endDate && { endDate }),
 		eventStatus: 'https://schema.org/EventScheduled',
 		eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
 		location: {
@@ -93,6 +127,7 @@ export function eventJsonLd(event: SanityEventWithDetails, siteUrl: string, imag
 		...(imageUrl && { image: imageUrl }),
 		...(description && { description }),
 		...(offers && { offers }),
+		...(performers.length > 0 && { performer: performers }),
 		organizer: {
 			'@type': 'Organization',
 			name: ORGANIZATION_NAME,

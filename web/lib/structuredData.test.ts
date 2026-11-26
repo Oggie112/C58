@@ -39,6 +39,37 @@ describe('eventJsonLd', () => {
 		expect(dateOnly.startDate).toBe('2026-08-30')
 	})
 
+	it.each([
+		['ends the same evening', '15:00', '23:00', '2026-08-30T23:00:00+01:00'],
+		['ends after midnight — the next day', '21:00', '02:00', '2026-08-31T02:00:00+01:00'],
+		['ends exactly at the doors time — taken as the next day', '21:00', '21:00', '2026-08-31T21:00:00+01:00'],
+	])('gives an end time when set — %s', (_case, doorsTime, endTime, expected) => {
+		const withEnd = eventJsonLd({ ...fixtures.ownTicketingEvent, doorsTime, endTime }, fixtures.siteUrl, IMAGE)
+		expect(withEnd.endDate).toBe(expected)
+	})
+
+	it('rolls an end over a month boundary, in the right season', () => {
+		const lastOfMonth = { ...fixtures.ownTicketingEvent, date: '2026-12-31', doorsTime: '21:00', endTime: '03:00' }
+		expect(eventJsonLd(lastOfMonth, fixtures.siteUrl, IMAGE).endDate).toBe('2027-01-01T03:00:00+00:00')
+	})
+
+	it('assumes the same day for an end time without a doors time, and leaves endDate out without one', () => {
+		const noDoors = eventJsonLd({ ...fixtures.ownTicketingEvent, doorsTime: undefined, endTime: '23:00' }, fixtures.siteUrl, IMAGE)
+		expect(noDoors.endDate).toBe('2026-08-30T23:00:00+01:00')
+		expect(event).not.toHaveProperty('endDate')
+	})
+
+	it('lists the line-up as performers — talents with their profile page, guests by name', () => {
+		expect(event.performer).toEqual([
+			{ '@type': 'Person', name: 'Sam Squire', url: 'https://www.c58.uk/talents/sam-squire' },
+			{ '@type': 'Person', name: 'DJ Guest' },
+		])
+	})
+
+	it('leaves performer out with no line-up', () => {
+		expect(eventJsonLd(fixtures.outsideTicketingEvent, fixtures.siteUrl, null)).not.toHaveProperty('performer')
+	})
+
 	it("places it at the venue's own address, on one line", () => {
 		expect(event.location).toEqual({
 			'@type': 'Place',
