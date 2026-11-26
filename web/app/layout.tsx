@@ -8,6 +8,7 @@ import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "./components/DisableDraftMode";
 import RedactedAnalytics from "./components/RedactedAnalytics";
 import { fontVariables } from "./fonts";
+import { shareMetadata } from "@/lib/shareMetadata";
 
 export const metadata: Metadata = {
 	// metadataBase is required for Next.js to construct absolute URLs for OG images.
@@ -20,11 +21,9 @@ export const metadata: Metadata = {
 		template: '%s | C58',
 	},
 	description: 'DJ events and pop-up bars rooted in St Neots.',
-	openGraph: {
-		type: 'website',
-		locale: 'en_GB',
-		siteName: 'C58 — Courtyard 58',
-	},
+	// The defaults (site name, locale, the C58 logo image) for pages that set
+	// no openGraph of their own; pages that do use the same helper
+	openGraph: shareMetadata(),
 	twitter: {
 		card: 'summary_large_image',
 	},

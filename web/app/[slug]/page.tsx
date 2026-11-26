@@ -4,6 +4,7 @@ import { getAllPageSlugs, getPageBySlug } from "@/sanity/fetch";
 import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from "@/sanity/fetchOptions";
 import PageBuilder from "@/app/components/PageBuilder";
 import { urlFor } from "@/sanity/image";
+import { shareMetadata } from "@/lib/shareMetadata";
 
 export async function generateMetadata(
 	{ params }: PageProps<'/[slug]'>
@@ -16,14 +17,11 @@ export async function generateMetadata(
 		? urlFor(page.seo.image).width(1200).height(630).url()
 		: undefined
 
+	const title = page.seo?.title ?? page.title
 	return {
-		title: page.seo?.title ?? page.title,
+		title,
 		description: page.seo?.description,
-		openGraph: {
-			title: page.seo?.title ?? page.title,
-			description: page.seo?.description,
-			...(seoImage && { images: [{ url: seoImage, width: 1200, height: 630 }] }),
-		},
+		openGraph: shareMetadata({ title, description: page.seo?.description, imageUrl: seoImage }),
 	}
 }
 

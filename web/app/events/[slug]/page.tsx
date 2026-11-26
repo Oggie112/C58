@@ -10,6 +10,7 @@ import { formatEventDate } from '@/lib/dateFormat'
 import { googleMapsSearchUrl, singleLineAddress } from '@/lib/address'
 import { eventJsonLd } from '@/lib/structuredData'
 import { siteUrl } from '@/lib/siteUrl'
+import { shareMetadata } from '@/lib/shareMetadata'
 import JsonLd from '@/app/components/JsonLd'
 import { isMarketingOptInEnabled } from '@/lib/marketingOptIn'
 import portableTextComponents from '@/lib/portableTextComponents'
@@ -33,10 +34,7 @@ export async function generateMetadata(
 
 	return {
 		title: event.title,
-		openGraph: {
-			title: event.title,
-			...(ogImage && { images: [{ url: ogImage, width: 1200, height: 630 }] }),
-		},
+		openGraph: shareMetadata({ title: event.title, imageUrl: ogImage }),
 	}
 }
 
