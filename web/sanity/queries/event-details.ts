@@ -19,6 +19,7 @@ export const EVENT_BY_SLUG_QUERY = defineQuery(/* groq */ `
 		date,
 		time,
 		doorsTime,
+		endTime,
 		location,
 		venueAddress,
 		cost,

@@ -25,6 +25,13 @@ export const ownTicketingEvent: SanityEventWithDetails = {
 	eventDetails: {
 		_id: 'details-beach-party',
 		ticketingStatus: 'on_sale',
+		lineup: [
+			{ _key: 'l1', entryType: 'talent', talent: { _id: 't1', name: 'Sam Squire', slug: { current: 'sam-squire' } } },
+			{ _key: 'l2', entryType: 'guest', guestName: 'DJ Guest' },
+			// Incomplete entries an editor left half-filled
+			{ _key: 'l3', entryType: 'talent' },
+			{ _key: 'l4', entryType: 'guest' },
+		],
 		tiers: [
 			{ _key: 'early', name: 'Early Bird', price: 8, capacity: 50, releaseTrigger: 'scheduled', saleStart: '2026-07-01T09:00:00Z' },
 			{ _key: 'ga', name: 'General Admission', price: 12.5, capacity: 150, releaseTrigger: 'previousSoldOut' },
