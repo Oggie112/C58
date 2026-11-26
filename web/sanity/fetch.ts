@@ -100,6 +100,11 @@ export interface SitemapDocument {
 
 export async function getSitemapDocuments(options: FetchOptions): Promise<SitemapDocument[]> {
 	'use cache'
+	// At most an hour stale, whatever happens on publish: in production the
+	// publish webhook's path revalidation refreshed pages but left the
+	// sitemap built from an older cached entry. Shorter than sanityFetch's
+	// own long lifetime (the shortest wins); hourly is ample for crawlers.
+	cacheLife('hours')
 	const { data } = await sanityFetch({ query: SITEMAP_QUERY, ...options })
 	return data as SitemapDocument[]
 }
