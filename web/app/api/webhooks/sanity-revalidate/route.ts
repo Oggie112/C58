@@ -25,9 +25,9 @@ export async function POST(request: Request) {
 	if (!verification.ok) return verification.response
 
 	revalidatePath('/', 'layout')
-	// Route handlers aren't under the layout, so the layout revalidation
-	// doesn't reach them — the sitemap (built from Sanity) needs its own path.
-	// Found in production: event pages refreshed on publish, sitemap.xml didn't.
+	// Not relied on: in production this didn't refresh the cached sitemap, so
+	// the sitemap is now rendered per request (app/sitemap.ts). Kept in case
+	// it clears the sitemap's cached Sanity data sooner than its hour.
 	revalidatePath('/sitemap.xml')
 
 	// The document id is optional context for logs only — never trusted for
