@@ -7,6 +7,7 @@ import { getDynamicFetchOptions, getMetadataFetchOptions } from '@/sanity/fetchO
 import { urlFor } from '@/sanity/image'
 import { formatEventDate } from '@/lib/dateFormat'
 import portableTextComponents from '@/lib/portableTextComponents'
+import { shareMetadata } from '@/lib/shareMetadata'
 
 // No generateStaticParams: under Cache Components an empty result fails the
 // build, and there are no posts yet. Post pages render on request (their
@@ -31,10 +32,7 @@ export async function generateMetadata(
 
 	return {
 		title: post.title,
-		openGraph: {
-			title: post.title,
-			...(ogImage && { images: [{ url: ogImage, width: 1200, height: 630 }] }),
-		},
+		openGraph: shareMetadata({ title: post.title, imageUrl: ogImage }),
 	}
 }
 

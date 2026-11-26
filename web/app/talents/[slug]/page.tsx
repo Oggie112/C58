@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getAllTalentSlugs, getTalentBySlug } from '@/sanity/fetch'
 import { getDynamicFetchOptions, getMetadataFetchOptions, PUBLISHED_FETCH_OPTIONS } from '@/sanity/fetchOptions'
 import { urlFor } from '@/sanity/image'
+import { shareMetadata } from '@/lib/shareMetadata'
 
 export async function generateStaticParams() {
 	return await getAllTalentSlugs(PUBLISHED_FETCH_OPTIONS)
@@ -24,10 +25,7 @@ export async function generateMetadata(
 	return {
 		title: talent.name,
 		description: talent.bio ?? undefined,
-		openGraph: {
-			title: talent.name,
-			...(ogImage && { images: [{ url: ogImage, width: 1200, height: 630 }] }),
-		},
+		openGraph: shareMetadata({ title: talent.name, description: talent.bio ?? undefined, imageUrl: ogImage }),
 	}
 }
 

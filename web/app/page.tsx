@@ -6,6 +6,7 @@ import JsonLd from "@/app/components/JsonLd"
 import { urlFor } from "@/sanity/image"
 import { organizationJsonLd } from "@/lib/structuredData"
 import { siteUrl } from "@/lib/siteUrl"
+import { shareMetadata } from "@/lib/shareMetadata"
 
 const HOME_SLUG = "home"
 
@@ -17,14 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
 		? urlFor(page.seo.image).width(1200).height(630).url()
 		: undefined
 
+	const title = page.seo?.title ?? page.title
 	return {
-		title: page.seo?.title ?? page.title,
+		title,
 		description: page.seo?.description,
-		openGraph: {
-			title: page.seo?.title ?? page.title,
-			description: page.seo?.description,
-			...(seoImage && { images: [{ url: seoImage, width: 1200, height: 630 }] }),
-		},
+		// The home page's title already names C58 ("C58 - St Neots Events"),
+		// and the layout's template doesn't apply at the root either
+		openGraph: shareMetadata({ title, brand: false, description: page.seo?.description, imageUrl: seoImage }),
 	}
 }
 
